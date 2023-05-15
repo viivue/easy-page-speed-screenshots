@@ -47,15 +47,11 @@ for link in tqdm(lines, ncols=65):
          form_factor = parse_qs(parsed_url.query)['form_factor'][0]
          file_name = link.replace("https://pagespeed.web.dev/analysis/", "")
          file_name = file_name.split('/', 1)[0]
-         file_name = 'gps-' + current_date + '-' + str(i) + '-' + file_name + '-' + form_factor + '.png'
+         file_name = str(i) + '-' + 'gps' + '-' + current_date + '-' + file_name + '-' + form_factor + '.png'
       elif link.find('gtmetrix') != -1:
          # get the url from site's html
-         import requests
-         from lxml import etree
-         resp = requests.get(link)
-         dom = etree.HTML(resp.text)
-         xpath_of_url = '//div[contains(@class, "page-wrapper")]/main/article/div[contains(@class,"report-head")]/div[contains(@class,"report-details")]/h2/a/text()' # temporary xpath
-         url = dom.xpath(xpath_of_url)[0]
+         driver.get(link)
+         url = driver.find_element(By.CSS_SELECTOR,'div.report-details > h2 > a').text
 
          # replace special characters with '-'
          url = url.replace('://', '-')
@@ -65,7 +61,28 @@ for link in tqdm(lines, ncols=65):
          if url.endswith('-'):
             url = url.removesuffix('-')
          file_name = url
-         file_name = 'gtmetrix-' + current_date + '-' + str(i) + '-' + file_name + '.png'
+         file_name = str(i) + '-' + 'gtmetrix' + '-' + current_date + '-' + file_name + '.png'
+      elif link.find('tools.pingdom') != -1:
+         import requests
+         from requests.exceptions import HTTPError
+         id = link.split('#',1)[1]
+         request_url = 'https://tools.pingdom.com/v1/tests/' + id;
+         try:
+            resp = requests.get(request_url)
+            data = resp.json()
+            url = data['url']
+
+            url = url.replace('://', '-')
+            url = url.replace('/', '-')
+            url = url.replace('.', '-')
+            if url.endswith('-'):
+               url = url.removesuffix('-')
+            file_name = url
+            file_name = str(i) + '-' + 'pingdom' + '-' + current_date + '-' + file_name + '.png'
+         except HTTPError as http_err:
+             print(f'HTTP error occurred: {http_err}')
+         except Exception as err:
+             print(f'Other error occurred: {err}')
       driver.get(link)
       time.sleep(10)
       
