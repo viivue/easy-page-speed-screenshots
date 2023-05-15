@@ -49,10 +49,23 @@ for link in tqdm(lines, ncols=65):
          file_name = file_name.split('/', 1)[0]
          file_name = 'gps-' + current_date + '-' + str(i) + '-' + file_name + '-' + form_factor + '.png'
       elif link.find('gtmetrix') != -1:
-         file_name = link.replace("https://gtmetrix.com/reports/", "")
-         file_name = file_name.split('/', 1)[0]
+         # get the url from site's html
+         import requests
+         from lxml import etree
+         resp = requests.get(link)
+         dom = etree.HTML(resp.text)
+         xpath_of_url = '//div[contains(@class, "page-wrapper")]/main/article/div[contains(@class,"report-head")]/div[contains(@class,"report-details")]/h2/a/text()' # temporary xpath
+         url = dom.xpath(xpath_of_url)[0]
+
+         # replace special characters with '-'
+         url = url.replace('://', '-')
+         url = url.replace('/', '-')
+         url = url.replace('.', '-')
+         #if the url ends with '/' the url will contain '-' at the end, remove it
+         if url.endswith('-'):
+            url = url.removesuffix('-')
+         file_name = url
          file_name = 'gtmetrix-' + current_date + '-' + str(i) + '-' + file_name + '.png'
-      
       driver.get(link)
       time.sleep(10)
       
