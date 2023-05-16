@@ -7,8 +7,6 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 
-OP_DIR = r'' # Update the correct path to store screenshots, for example: I:\easy-page-speed-screenshots\images
-
 """
 Define Global Variables
 """
@@ -84,10 +82,13 @@ def send_link_for_test(link):
 
 # collect user input link
 def user_input():
-   global input_link
-   print("Input link to test: ")
-   input_link = input()
-   res_inputs = send_link_for_test(input_link)
+   global INPUT_LINK
+   global OP_DIR
+   print("Enter save directory: ")
+   OP_DIR = input()
+   print("Enter link to test: ")
+   INPUT_LINK = input()
+   res_inputs = send_link_for_test(INPUT_LINK)
    return res_inputs
 
 # append form_factor if url is pagespeed   
@@ -129,7 +130,7 @@ def take_screenshot(file_name):
 
 # append file name
 def gen_file_name(number, tools, file_name, form_factor = ''):
-   current_date = datetime.today().strftime('%Y%m%d');
+   current_date = datetime.today().strftime('%Y%m%d')
    if (form_factor):
       return number + '-' + tools + '-' + current_date + '-' + file_name + '-' + form_factor + '.png'
    else:
@@ -140,7 +141,7 @@ def execute_screenshot(links):
    i = 1
    print("Generating screenshot")
    for link in tqdm(links, ncols=65):
-      file_name = replace_url(input_link)
+      file_name = replace_url(INPUT_LINK)
       try:
         if is_tool(link=link,tool="pagespeed"):
            parsed_url = urlparse(link)
@@ -154,7 +155,7 @@ def execute_screenshot(links):
         time.sleep(10)
         take_screenshot(file_name=file_name)
 
-        i = i + 1;
+        i = i + 1
       except WebDriverException:
         print(link)
         continue
