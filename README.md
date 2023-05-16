@@ -28,4 +28,8 @@ Testing url: https://en.wikipedia.org/wiki/Main_Page
 
 Result in terminal:
 
+![](https://hackmd.io/_uploads/H1jVPslH3.png)
 
+Screenshot result:
+
+![](https://hackmd.io/_uploads/S1lUvjgHn.png)
