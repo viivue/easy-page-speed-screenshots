@@ -1,5 +1,12 @@
 # Easy Page Speed Screenshot
 
+This tool allow automatically taking screenshot from page speed test websites. 
+
+Current websites supported:
+- https://pagespeed.web.dev/
+- https://gtmetrix.com/
+- https://tools.pingdom.com/
+
 ## Current Result
 
 Testing url: https://en.wikipedia.org/wiki/Main_Page
