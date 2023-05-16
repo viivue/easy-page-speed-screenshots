@@ -32,12 +32,15 @@ So this function run the same code twice to get the result page
 def get_res_link(): 
   from urllib.parse import unquote
 
+  #load the analyze page and get url
   new_link = driver.current_url
   decoded_url = unquote(new_link)
   time.sleep(5)
+  # proceed from the analyze page
   driver.get(decoded_url)
   time.sleep(5)
   new_link = driver.current_url
+
   return unquote(new_link)
 
 # submit link for testing
@@ -56,27 +59,28 @@ def send_link_for_test(link):
   for tool in tqdm(tools, ncols=65):
     if is_tool(link=tool,tool='pagespeed.web'):
       submit_link(tool=tool, link=link)
-      
+      # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
       res = get_res_link()
       res = res.split('?',1)[0]
       result_links.append(res)
     elif is_tool(link=tool,tool='gtmetrix'):
       submit_link(tool=tool, link=link, input_selector='.js-analyze-form-url', form_selector='.analyze-form')
-
+      # Desire url: https://gtmetrix.com/reports/en.wikipedia.org/aVrv18kF/
       res = get_res_link()
       result_links.append(res)
     elif is_tool(link=tool,tool='pingdom'):
       import requests
-      #get id
+      #Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
       base_url = tool + 'v1/tests/'
       url = base_url + 'create'
       data = {
         'url': link
       }
+      # call the api to receive the id
       resp = requests.post(url,json=data)
       resp = resp.json()
       result_id = resp['id']
-      return_url = tool + '#' + result_id
+      return_url = tool + '#' + result_id # create result url
       result_links.append(return_url)
   return result_links
 
