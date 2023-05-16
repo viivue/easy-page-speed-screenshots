@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 
-OP_DIR = r'' # Update the correct path to store screenshots, for example: I:\easy-page-speed-screenshots\images
+OP_DIR = r'C:\Users\phong\Desktop\easy-page-speed-screenshots\easy-page-speed-screenshots\screenshot' # Update the correct path to store screenshots, for example: I:\easy-page-speed-screenshots\images
 
 """
 Define Global Variables
@@ -25,15 +25,70 @@ Define functions
 
 def S(X): return driver.execute_script('return document.body.scrollHeight') + X
 
+"""
+Page speed and GTmetrix run through 2 pages:
+1. Analyze Page
+2. Result Page
+So this function run the same code twice to get the result page
+"""
+def get_res_link(): 
+  from urllib.parse import unquote
+
+  new_link = driver.current_url
+  decoded_url = unquote(new_link)
+  time.sleep(5)
+  driver.get(decoded_url)
+  time.sleep(5)
+  new_link = driver.current_url
+  return unquote(new_link)
+
+# submit link for testing
+def submit_link(tool, link, input_selector = '', form_selector = ''):
+  driver.get(tool)
+  input_field = driver.find_element(By.CSS_SELECTOR,'input' + input_selector)
+  input_field.send_keys(link)  # Replace with your desired URL
+  form = driver.find_element(By.CSS_SELECTOR,'form' + form_selector)
+  form.submit()
+
+# run through all testing tool
+def send_link_for_test(link):
+  tools = ['https://pagespeed.web.dev/', 'https://gtmetrix.com/', 'https://tools.pingdom.com/']
+  result_links = []
+  print("Getting result: ")
+  for tool in tqdm(tools, ncols=65):
+    if is_tool(link=tool,tool='pagespeed.web'):
+      submit_link(tool=tool, link=link)
+      
+      res = get_res_link()
+      res = res.split('?',1)[0]
+      result_links.append(res)
+    elif is_tool(link=tool,tool='gtmetrix'):
+      submit_link(tool=tool, link=link, input_selector='.js-analyze-form-url', form_selector='.analyze-form')
+
+      res = get_res_link()
+      result_links.append(res)
+    elif is_tool(link=tool,tool='pingdom'):
+      import requests
+      #get id
+      base_url = tool + 'v1/tests/'
+      url = base_url + 'create'
+      data = {
+        'url': link
+      }
+      resp = requests.post(url,json=data)
+      resp = resp.json()
+      result_id = resp['id']
+      return_url = tool + '#' + result_id
+      result_links.append(return_url)
+
+      return result_links
+
 # collect user input link
 def user_input():
-   res_inputs = []
-   while(1):
-      print("Input link (input -1 to finish): ")
-      res_input = input()
-      if (res_input=="-1"):
-         break;
-      res_inputs.append(res_input)
+   global input_link
+   print("Input link to test: ")
+   input_link = input()
+   res_inputs = send_link_for_test(input_link)
    return res_inputs
 
 # append form_factor if url is pagespeed   
@@ -58,6 +113,10 @@ def replace_url(url):
       url = url.removesuffix('-')
    return url
 
+# check specific tool
+def is_tool(link, tool):
+   return link.find(tool) != -1
+
 # Screenshot
 # Ref: https://stackoverflow.com/a/52572919/
 def take_screenshot(file_name):
@@ -68,10 +127,6 @@ def take_screenshot(file_name):
    driver.find_element(By.TAG_NAME, "body").screenshot(
       f'{OP_DIR}\{file_name}')  # avoids scrollbar
    driver.set_window_size(original_size['width'], original_size['height'])
-
-# check specific tool
-def is_tool(link, tool):
-   return link.find(tool) != -1
 
 # append file name
 def gen_file_name(number, tools, file_name, form_factor = ''):
@@ -84,46 +139,31 @@ def gen_file_name(number, tools, file_name, form_factor = ''):
 # execute screenshot for all link input
 def execute_screenshot(links):
    i = 1
+   print("Generating screenshot")
    for link in tqdm(links, ncols=65):
-    try:
-      # Convert link to file name
-      if is_tool(link=link,tool="pagespeed"):
-         parsed_url = urlparse(link)
-         form_factor = parse_qs(parsed_url.query)['form_factor'][0]
-         file_name = link.replace("https://pagespeed.web.dev/analysis/", "")
-         file_name = file_name.split('/', 1)[0]
-         file_name = gen_file_name(str(i), 'gps',file_name=file_name,form_factor=form_factor)
-      elif is_tool(link=link,tool="gtmetrix"):
-         # get the url from site's html
-         driver.get(link)
-         url = driver.find_element(By.CSS_SELECTOR,'div.report-details > h2 > a').text
+      file_name = replace_url(input_link)
+      try:
+        if is_tool(link=link,tool="pagespeed"):
+           parsed_url = urlparse(link)
+           form_factor = parse_qs(parsed_url.query)['form_factor'][0]
+           file_name = gen_file_name(str(i), 'gps',file_name=file_name,form_factor=form_factor)
+        elif is_tool(link=link,tool="gtmetrix"):
+           file_name = gen_file_name(str(i), 'gtmetrix',file_name=file_name)
+        elif is_tool(link=link,tool="pingdom"):
+           file_name = gen_file_name(str(i), 'pingdom',file_name=file_name) 
+        driver.get(link)
+        time.sleep(10)
+        take_screenshot(file_name=file_name)
 
-         file_name = replace_url(url)
-         file_name = gen_file_name(str(i), 'gtmetrix',file_name=file_name)
-      elif is_tool(link=link,tool="pingdom"):
-         import requests
-         from requests.exceptions import HTTPError
-         id = link.split('#',1)[1]
-         request_url = 'https://tools.pingdom.com/v1/tests/' + id;
-         try:
-            resp = requests.get(request_url)
-            data = resp.json()
-            url = data['url']
-            file_name = replace_url(url)
-            file_name = gen_file_name(str(i), 'pingdom',file_name=file_name)
-         except HTTPError as http_err:
-             print(f'HTTP error occurred: {http_err}')
-         except Exception as err:
-             print(f'Other error occurred: {err}')
-      driver.get(link)
-      time.sleep(10)
-      take_screenshot(file_name=file_name)
-
-      i = i + 1;
-    except WebDriverException:
+        i = i + 1;
+      except WebDriverException:
         print(link)
         continue
    driver.quit()
+
+"""
+Main Function
+"""
 
 def main():
    links = user_input()
