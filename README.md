@@ -13,7 +13,7 @@ Testing url: https://en.wikipedia.org/wiki/Main_Page
 
 Result in terminal:
 
-![](https://i.imgur.com/nijoaba.png)
+![](https://i.imgur.com/RWlv0qC.png)
 
 Screenshot result:
 
