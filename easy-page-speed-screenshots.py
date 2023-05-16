@@ -135,10 +135,11 @@ def take_screenshot(file_name):
 # append file name
 def gen_file_name(number, tools, file_name, form_factor = ''):
    current_date = datetime.today().strftime('%Y%m%d')
+   new_file_name = number + '-' + tools + '-' + current_date + '-' + file_name
    if (form_factor):
-      return number + '-' + tools + '-' + current_date + '-' + file_name + '-' + form_factor + '.png'
+      return new_file_name + '-' + form_factor + '.png'
    else:
-      return number + '-' + tools + '-' + current_date + '-' + file_name + '.png'
+      return new_file_name + '.png'
 
 # execute screenshot for all link input
 def execute_screenshot(links):
@@ -156,7 +157,7 @@ def execute_screenshot(links):
         elif is_tool(link=link,tool="pingdom"):
            file_name = gen_file_name(str(i), 'pingdom',file_name=file_name) 
         driver.get(link)
-        time.sleep(10)
+        time.sleep(5)
         take_screenshot(file_name=file_name)
 
         i = i + 1
