@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 
-OP_DIR = r'C:\Users\phong\Desktop\easy-page-speed-screenshots\easy-page-speed-screenshots\screenshot' # Update the correct path to store screenshots, for example: I:\easy-page-speed-screenshots\images
+OP_DIR = r'' # Update the correct path to store screenshots, for example: I:\easy-page-speed-screenshots\images
 
 """
 Define Global Variables
@@ -80,8 +80,7 @@ def send_link_for_test(link):
       result_id = resp['id']
       return_url = tool + '#' + result_id
       result_links.append(return_url)
-
-      return result_links
+  return result_links
 
 # collect user input link
 def user_input():

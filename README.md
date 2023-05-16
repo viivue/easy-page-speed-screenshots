@@ -32,4 +32,4 @@ Result in terminal:
 
 Screenshot result:
 
-![](https://i.imgur.com/77jWcRc.png)
+![](https://i.imgur.com/pyL4UXQ.png)
