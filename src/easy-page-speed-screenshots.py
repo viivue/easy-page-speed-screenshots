@@ -57,7 +57,7 @@ def epss_send_link_for_test(links):
   for link in tqdm(links, ncols=65):
       current_link = []
       print("\nRunning test for: " + link)
-      for tool in tqdm(tools, ncols=65):
+      for tool in tools:
         if epss_is_tool(link=tool,tool='pagespeed.web'):
           epss_submit_link(tool=tool, link=link)
           # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
@@ -162,7 +162,7 @@ def epss_execute_screenshot(links):
    print("Generating screenshot")
    for group in tqdm(links, ncols=65):
       print("\nGenerating screenshot for: " + INPUT_LINK[i])
-      for link in tqdm(group, ncols=65):
+      for link in group:
          file_name = epss_replace_url(INPUT_LINK[i])
          try:
            if epss_is_tool(link=link,tool="pagespeed"):
