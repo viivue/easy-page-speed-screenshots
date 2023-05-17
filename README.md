@@ -2,6 +2,8 @@
 
 This tool allow automatically taking screenshot from page speed test websites.
 
+![](https://i.imgur.com/HoE7jmF.gif)
+
 Current websites supported:
 - https://pagespeed.web.dev/
 - https://gtmetrix.com/
@@ -13,11 +15,11 @@ Testing url: https://en.wikipedia.org/wiki/Main_Page
 
 Result in terminal:
 
-![](https://i.imgur.com/RWlv0qC.png)
+![](https://i.imgur.com/JBJDtQW.png)
 
 Screenshot result:
 
-![](https://i.imgur.com/77jWcRc.png)
+![](https://i.imgur.com/BRbLID7.png)
 
 ## Getting Started
 
@@ -73,22 +75,30 @@ Now wait for the tool to complete
 
 ## Developers
 
-The program will run by `main()` function
+The program will run by `epss_main()` function
+
+### Variables
+
+| Variable   | Type            | Description                                |
+| ---------- | --------------- |:------------------------------------------ |
+| `INPUT_LINK` | Array of String | Hold the input links of users              |
+| `OP_DIR`     | String          | Holds the output directory for screenshots |
+
 
 ### Functions
 
-| Functions                 | Parameters                                                                                                                 | Return                          | Description                                                                                         |
-| ------------------------- |:-------------------------------------------------------------------------------------------------------------------------- |:------------------------------- |:--------------------------------------------------------------------------------------------------- |
-| `epss_send_link_for_test` | `link` : String                                                                                                            | `result_links`: Array of string | Send the `input` data link to all tools for testing and return all result links                     |
-| `epss_submit_link`        | `tool`: String <br/> `link` : String <br/>input_selector: String, default `''` <br/> `form_selector`: String, default `''` | None                            | Submit the input of that tool, specify the selector because some page can be different              |
-| `epss_get_res_link`       | None                                                                                                                       | `new_link`: String              | Get the result link without encoded                                                                 |
-| `epss_user_input`         | None                                                                                                                       | `result_links`: Array of string | Get user input and run the testing process, this function also set the `INPUT_LINK` global variable |
-| `epss_add_form_factor`    | `links`: Array of String                                                                                                   | `new_links`: Array of string    | add `form_factor` param to Google Page Speed links                                                  |
-| `epss_execute_screenshot` | None                                                                                                                       | None                            | execute taking screenshot with result after process with user_input()                               |
-| `epss_replace_url`        | `url`: String                                                                                                              | `new_url`: String               | replace some character in link to -                                                                 |
-| `epss_is_tool`            | `link`: String<br/> `tool`: String                                                                                         | Boolean                         | `True` if the `link` belong to `tool`, otherwise, `False`                                           |
-| `epss_take_screenshot`    | `file_name`: String                                                                                                        | None                            | take screenshot and save the file with `file_name`                                                  |
-| `epss_gen_file_name`      | `number`: String <br/>`tools`: String<br/> `file_name`: String<br/> `form_factor`: String, default `''`                    | `new_file_name`: String         | generate `file_name`                                                                                |
+| Functions                 | Parameters                                                                                                                 | Return                             | Description                                                                                         |
+| ------------------------- |:---------------------------------------------------------------------------------------------------------------------------|:-----------------------------------|:--------------------------------------------------------------------------------------------------- |
+| `epss_send_link_for_test` | `links` : Array of String                                                                                                  | `result_links`: 2d array of String | Send the `input` data link to all tools for testing and return all result links                     |
+| `epss_submit_link`        | `tool`: String <br/> `link` : String <br/>input_selector: String, default `''` <br/> `form_selector`: String, default `''` | None                               | Submit the input of that tool, specify the selector because some page can be different              |
+| `epss_get_res_link`       | None                                                                                                                       | `new_link`: String                 | Get the result link without encoded                                                                 |
+| `epss_user_input`         | None                                                                                                                       | `result_links`: 2d array of String | Get user input and run the testing process, this function also set the `INPUT_LINK` global variable |
+| `epss_add_form_factor`    | `links`: 2d Array of String                                                                                                | `new_links`: 2d array of String    | add `form_factor` param to Google Page Speed links                                                  |
+| `epss_execute_screenshot` | `links`: 2d Array of String                                                                                                | None                               | execute taking screenshot with result after process with user_input()                               |
+| `epss_replace_url`        | `url`: String                                                                                                              | `new_url`: String                  | replace some character in link to -                                                                 |
+| `epss_is_tool`            | `link`: String<br/> `tool`: String                                                                                         | Boolean                            | `True` if the `link` belong to `tool`, otherwise, `False`                                           |
+| `epss_take_screenshot`    | `file_name`: String                                                                                                        | None                               | take screenshot and save the file with `file_name`                                                  |
+| `epss_gen_file_name`      | `number`: String <br/>`tools`: String<br/> `file_name`: String<br/> `form_factor`: String, default `''`                    | `new_file_name`: String            | generate `file_name`                                                                                |
 
 > Note:
 >
