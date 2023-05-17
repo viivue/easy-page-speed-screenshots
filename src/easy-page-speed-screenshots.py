@@ -33,10 +33,10 @@ def epss_get_res_link():
   #load the analyze page and get url
   new_link = driver.current_url
   decoded_url = unquote(new_link)
-  time.sleep(5)
+  time.sleep(3)
   # proceed from the analyze page
   driver.get(decoded_url)
-  time.sleep(5)
+  time.sleep(3)
   new_link = driver.current_url
 
   return unquote(new_link)
@@ -177,8 +177,7 @@ def epss_execute_screenshot(links):
               file_name = epss_gen_file_name(str(pingdom_i), 'pingdom',file_name=file_name)
               pingdom_i = pingdom_i + 1
            driver.get(link)
-           if epss_is_tool(link=link,tool="pingdom"):
-              time.sleep(3)
+           time.sleep(3)
            epss_take_screenshot(file_name=file_name)
          except WebDriverException:
            print(link)
