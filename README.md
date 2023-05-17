@@ -53,7 +53,7 @@ pip install requests
 Then, simply run
 
 ```
-cd easy-page-speed-screenshots
+cd easy-page-speed-screenshots/src
 python easy-page-speed-screenshots.py
 ```
 
