@@ -1,6 +1,6 @@
-# Easy Page Speed Screenshot
+# Easy Page Speed Screenshot (EPSS)
 
-This tool allow automatically taking screenshot from page speed test websites. 
+This tool allow automatically taking screenshot from page speed test websites.
 
 Current websites supported:
 - https://pagespeed.web.dev/
@@ -19,53 +19,85 @@ Screenshot result:
 
 ![](https://i.imgur.com/77jWcRc.png)
 
-## Dependencies
+## Getting Started
+
+### Install Dependencies
 
 - Python: Install [Python](https://www.python.org/downloads/). Simply download the installer and follow the installation wizard
 
-> It's importart to add python to PATH to run python in terminal. Verify your installation with `python --version`
+> It's importart to add python to PATH to run python in terminal. ![](https://i.imgur.com/PDfQgJO.png)
+
+Verify your installation with `python --version`. If it is correctly configuration. You should be run python command globally
+
+![](https://i.imgur.com/46LL6jZ.png)
+
+Verify if python is your computer can run python, by run an example program.
+
+![](https://i.imgur.com/0Q2JXrD.png)
 
 - Selenium: `pip install selenium`
 
 - Webdriver: Download [ChromeDriver](https://chromedriver.chromium.org/downloads). After installation done, add `chromedriver.exe` to `your_path_to_python/Python/Scripts` folder
 
-> With who don't use Chrome, the version for others browser is in development. 
+> With who don't use Chrome, the version for others browser is in development.
 
 - Request: `pip install requests`
 
-## Users Instruction
+## Installation
 
-Open your terminal in the tool directory. Simply run:
+Clone from github:
+```
+git clone https://github.com/viivue/easy-page-speed-screenshots.git
+```
+
+## Usage
+
+Simply run
 
 ```
+cd easy-page-speed-screenshots
 python easy-page-speed-screenshots.py
 ```
 
 Your terminal will tell you to input save directory, enter your desire directory, press `Enter`
 
+![](https://i.imgur.com/g8eNUZT.png)
+
 > Directory path must be absolute path
 
 After that, enter the url of the page you need to test, press `Enter`
 
+![](https://i.imgur.com/WQovfpU.png)
+
 Now wait for the tool to complete
 
-## For Developers
-
-### Code Overview
+## Developers
 
 The program will run by `main()` function
 
-#### Side function
+### Functions
 
-| Functions          | Parameters                                          | Description                                                                                         |
-| ------------------ |:--------------------------------------------------- |:--------------------------------------------------------------------------------------------------- |
-| send_link_for_test | link                                                | Send the `input` data link to all tools for testing                                                 |
-| submit_link        | tool, link, input_selector = '', form_selector = '' | Submit the input of that tool, specify the selector because some page can be different              |
-| get_res_link       |                                                     | Get the result link without encoded                                                                 |
-| user_input         |                                                     | Get user input and run the testing process, this function also set the `INPUT_LINK` global variable |
-| add_form_factor    | link                                                | add `form_factor` param to Google Page Speed links                                                  |
-| execute_screenshot | links                                               | execute taking screenshot with result after process with user_input()                               |
-| replace_url        | url                                                 | replace some character in link to -                                                                 |
-| is_tool            | link, tool                                          | check if the `link` belong to `tool`                                                              |
-| take_screenshot    | file_name                                           | take screenshot and save the file with `file_name`                                                |
-| gen_file_name      | number, tools, file_name, form_factor = ''          | generate `file_name`                                                                                |
+| Functions                 | Parameters                                                                                                                 | Return                          | Description                                                                                         |
+| ------------------------- |:-------------------------------------------------------------------------------------------------------------------------- |:------------------------------- |:--------------------------------------------------------------------------------------------------- |
+| `epss_send_link_for_test` | `link` : String                                                                                                            | `result_links`: Array of string | Send the `input` data link to all tools for testing and return all result links                     |
+| `epss_submit_link`        | `tool`: String <br/> `link` : String <br/>input_selector: String, default `''` <br/> `form_selector`: String, default `''` | None                            | Submit the input of that tool, specify the selector because some page can be different              |
+| `epss_get_res_link`       | None                                                                                                                       | `new_link`: String              | Get the result link without encoded                                                                 |
+| `epss_user_input`         | None                                                                                                                       | `result_links`: Array of string | Get user input and run the testing process, this function also set the `INPUT_LINK` global variable |
+| `epss_add_form_factor`    | `links`: Array of String                                                                                                   | `new_links`: Array of string    | add `form_factor` param to Google Page Speed links                                                  |
+| `epss_execute_screenshot` | None                                                                                                                       | None                            | execute taking screenshot with result after process with user_input()                               |
+| `epss_replace_url`        | `url`: String                                                                                                              | `new_url`: String               | replace some character in link to -                                                                 |
+| `epss_is_tool`            | `link`: String<br/> `tool`: String                                                                                         | Boolean                         | `True` if the `link` belong to `tool`, otherwise, `False`                                           |
+| `epss_take_screenshot`    | `file_name`: String                                                                                                        | None                            | take screenshot and save the file with `file_name`                                                  |
+| `epss_gen_file_name`      | `number`: String <br/>`tools`: String<br/> `file_name`: String<br/> `form_factor`: String, default `''`                    | `new_file_name`: String         | generate `file_name`                                                                                |
+
+> Note:
+>
+> ⚠️ `epss_submit_link` and `epss_get_res_link` share the same `driver` global var. In `epss_submit_link` have called `driver.get(link)` itself, no need to call `driver.get(link)` again
+>
+> ⚠️ `epss_submit_link` should run before `epss_get_res_link`
+>
+> ⚠️ `epss_execute_screenshot` will call `driver.quit()` after the screenshot process finish
+
+## License
+
+Copyright (c) 2023 ViiVue
