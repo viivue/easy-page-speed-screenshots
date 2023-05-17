@@ -170,9 +170,9 @@ def epss_execute_screenshot(links):
 Main Function
 """
 
-def main():
+def epss_main():
    links = epss_user_input()
    links = epss_add_form_factor(links=links)
    epss_execute_screenshot(links=links)
 
-main()
+epss_main()
