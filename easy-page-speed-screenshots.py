@@ -93,14 +93,14 @@ def epss_user_input():
    global OP_DIR
    print("Enter save directory: ")
    OP_DIR = input()
-   print("Enter links to test: ")
+   print("Enter links to test (type 'done' to finish input): ")
    while(1):
-         input_link = input()
-         if (input_link == 'quit'):
-            break
-         elif input_link == '':
-            continue
-         INPUT_LINK.append(input_link)
+      input_link = input()
+      if (input_link == 'done'):
+         break
+      elif input_link == '':
+         continue
+      INPUT_LINK.append(input_link)
    res_inputs = epss_send_link_for_test(INPUT_LINK)
    return res_inputs
 
