@@ -29,7 +29,7 @@ Page speed and GTmetrix run through 2 pages:
 2. Result Page
 So this function run the same code twice to get the result page
 """
-def get_res_link(): 
+def epss_get_res_link():
   from urllib.parse import unquote
 
   #load the analyze page and get url
@@ -44,7 +44,7 @@ def get_res_link():
   return unquote(new_link)
 
 # submit link for testing
-def submit_link(tool, link, input_selector = '', form_selector = ''):
+def epss_submit_link(tool, link, input_selector = '', form_selector = ''):
   driver.get(tool)
   input_field = driver.find_element(By.CSS_SELECTOR,'input' + input_selector)
   input_field.send_keys(link)  # Replace with your desired URL
@@ -52,23 +52,23 @@ def submit_link(tool, link, input_selector = '', form_selector = ''):
   form.submit()
 
 # run through all testing tool
-def send_link_for_test(link):
+def epss_send_link_for_test(link):
   tools = ['https://pagespeed.web.dev/', 'https://gtmetrix.com/', 'https://tools.pingdom.com/']
   result_links = []
   print("Getting result: ")
   for tool in tqdm(tools, ncols=65):
-    if is_tool(link=tool,tool='pagespeed.web'):
-      submit_link(tool=tool, link=link)
+    if epss_is_tool(link=tool,tool='pagespeed.web'):
+      epss_submit_link(tool=tool, link=link)
       # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
-      res = get_res_link()
+      res = epss_get_res_link()
       res = res.split('?',1)[0]
       result_links.append(res)
-    elif is_tool(link=tool,tool='gtmetrix'):
-      submit_link(tool=tool, link=link, input_selector='.js-analyze-form-url', form_selector='.analyze-form')
+    elif epss_is_tool(link=tool,tool='gtmetrix'):
+      epss_submit_link(tool=tool, link=link, input_selector='.js-analyze-form-url', form_selector='.analyze-form')
       # Desire url: https://gtmetrix.com/reports/en.wikipedia.org/aVrv18kF/
-      res = get_res_link()
+      res = epss_get_res_link()
       result_links.append(res)
-    elif is_tool(link=tool,tool='pingdom'):
+    elif epss_is_tool(link=tool,tool='pingdom'):
       import requests
       #Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
       base_url = tool + 'v1/tests/'
@@ -85,18 +85,18 @@ def send_link_for_test(link):
   return result_links
 
 # collect user input link
-def user_input():
+def epss_user_input():
    global INPUT_LINK
    global OP_DIR
    print("Enter save directory: ")
    OP_DIR = input()
    print("Enter link to test: ")
    INPUT_LINK = input()
-   res_inputs = send_link_for_test(INPUT_LINK)
+   res_inputs = epss_send_link_for_test(INPUT_LINK)
    return res_inputs
 
 # append form_factor if url is pagespeed   
-def add_form_factor(links):
+def epss_add_form_factor(links):
    new_links = []
    for link in links:
     if link.find('pagespeed.web.dev') != -1:
@@ -107,7 +107,7 @@ def add_form_factor(links):
    return new_links
 
 # replace character in url to append to file name
-def replace_url(url): 
+def epss_replace_url(url):
    # replace special characters with '-'
    url = url.replace('://', '-')
    url = url.replace('/', '-')
@@ -118,12 +118,12 @@ def replace_url(url):
    return url
 
 # check specific tool
-def is_tool(link, tool):
+def epss_is_tool(link, tool):
    return link.find(tool) != -1
 
 # Screenshot
 # Ref: https://stackoverflow.com/a/52572919/
-def take_screenshot(file_name):
+def epss_take_screenshot(file_name):
    original_size = driver.get_window_size()
    required_width = driver.execute_script('return document.body.parentNode.scrollWidth')
    required_height = driver.execute_script('return document.body.parentNode.scrollHeight')
@@ -133,7 +133,7 @@ def take_screenshot(file_name):
    driver.set_window_size(original_size['width'], original_size['height'])
 
 # append file name
-def gen_file_name(number, tools, file_name, form_factor = ''):
+def epss_gen_file_name(number, tools, file_name, form_factor = ''):
    current_date = datetime.today().strftime('%Y%m%d')
    new_file_name = number + '-' + tools + '-' + current_date + '-' + file_name
    if (form_factor):
@@ -142,23 +142,23 @@ def gen_file_name(number, tools, file_name, form_factor = ''):
       return new_file_name + '.png'
 
 # execute screenshot for all link input
-def execute_screenshot(links):
+def epss_execute_screenshot(links):
    i = 1
    print("Generating screenshot")
    for link in tqdm(links, ncols=65):
-      file_name = replace_url(INPUT_LINK)
+      file_name = epss_replace_url(INPUT_LINK)
       try:
-        if is_tool(link=link,tool="pagespeed"):
+        if epss_is_tool(link=link,tool="pagespeed"):
            parsed_url = urlparse(link)
            form_factor = parse_qs(parsed_url.query)['form_factor'][0]
-           file_name = gen_file_name(str(i), 'gps',file_name=file_name,form_factor=form_factor)
-        elif is_tool(link=link,tool="gtmetrix"):
-           file_name = gen_file_name(str(i), 'gtmetrix',file_name=file_name)
-        elif is_tool(link=link,tool="pingdom"):
-           file_name = gen_file_name(str(i), 'pingdom',file_name=file_name) 
+           file_name = epss_gen_file_name(str(i), 'gps',file_name=file_name,form_factor=form_factor)
+        elif epss_is_tool(link=link,tool="gtmetrix"):
+           file_name = epss_gen_file_name(str(i), 'gtmetrix',file_name=file_name)
+        elif epss_is_tool(link=link,tool="pingdom"):
+           file_name = epss_gen_file_name(str(i), 'pingdom',file_name=file_name)
         driver.get(link)
         time.sleep(5)
-        take_screenshot(file_name=file_name)
+        epss_take_screenshot(file_name=file_name)
 
         i = i + 1
       except WebDriverException:
@@ -171,8 +171,8 @@ Main Function
 """
 
 def main():
-   links = user_input()
-   links = add_form_factor(links=links)
-   execute_screenshot(links=links)
+   links = epss_user_input()
+   links = epss_add_form_factor(links=links)
+   epss_execute_screenshot(links=links)
 
 main()
