@@ -26,11 +26,11 @@ First, install dependencies
 
 - Python: Install [Python](https://www.python.org/downloads/). Simply download the installer and follow the installation wizard
 
-> It's important to add python to PATH to run python in terminal. ![](https://i.imgur.com/PDfQgJO.png)
+> It's important to add python to PATH to run python in terminal. ![image](https://github.com/viivue/easy-page-speed-screenshots/assets/80519358/3560a298-998e-47e4-a3ec-53d0eaab72ae)
 
 Verify your installation with `python --version`. If it is correctly configuration. You should be run python command globally
 
-![](https://i.imgur.com/46LL6jZ.png)
+![image](https://github.com/viivue/easy-page-speed-screenshots/assets/80519358/6266976e-ca8e-4e96-971c-c5a5844a4209)
 
 - Selenium:
 ```
@@ -63,13 +63,13 @@ python easy-page-speed-screenshots.py
 
 Your terminal will tell you to input save directory, enter your desire directory
 
-![](https://i.imgur.com/g8eNUZT.png)
+![image](https://github.com/viivue/easy-page-speed-screenshots/assets/80519358/92e7876f-08f0-4c0e-876e-e89630caedbb)
 
 > Directory path must be absolute path (include hard drive name), e.g C:\Users\user\screenshots
 
 After that, enter the urls you need to test
 
-![](https://i.imgur.com/WQovfpU.png)
+![image](https://github.com/viivue/easy-page-speed-screenshots/assets/80519358/cfc7e527-bca0-4ce5-8a6d-21992371a4f3)
 
 Now wait for the tool to complete
 
@@ -79,15 +79,15 @@ Testing url: https://en.wikipedia.org/wiki/Main_Page
 
 Result in terminal:
 
-![](https://i.imgur.com/JBJDtQW.png)
+![image](https://github.com/viivue/easy-page-speed-screenshots/assets/80519358/d86c22b2-12f8-4517-8457-cff64e4d3e0e)
 
 Screenshot result:
 
-![](https://i.imgur.com/BRbLID7.png)
+![image](https://github.com/viivue/easy-page-speed-screenshots/assets/80519358/192bda1b-99a2-458a-8331-b22e347486cc)
 
 Tutorial:
 
-![](https://i.imgur.com/HoE7jmF.gif)
+![image](https://github.com/viivue/easy-page-speed-screenshots/assets/80519358/75e58eba-1cb1-4bf5-83e4-158e09781ea8)
 
 ## License
 
