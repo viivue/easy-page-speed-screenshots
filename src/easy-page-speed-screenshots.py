@@ -93,10 +93,10 @@ def epss_user_input():
    global OP_DIR
    print("Enter save directory: ")
    OP_DIR = input()
-   print("Enter links to test (type ':wq' to finish input): ")
+   print("Enter links to test (type 'done' to finish input): ")
    while(1):
       input_link = input()
-      if (input_link == ':wq'):
+      if (input_link == 'done'):
          break
       elif input_link == '':
          continue
@@ -177,7 +177,8 @@ def epss_execute_screenshot(links):
               file_name = epss_gen_file_name(str(pingdom_i), 'pingdom',file_name=file_name)
               pingdom_i = pingdom_i + 1
            driver.get(link)
-           time.sleep(5)
+           if epss_is_tool(link=link,tool="pingdom"):
+              time.sleep(3)
            epss_take_screenshot(file_name=file_name)
          except WebDriverException:
            print(link)
