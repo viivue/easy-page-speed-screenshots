@@ -91,4 +91,6 @@ Tutorial:
 
 ## License
 
+[MIT License](https://github.com/viivue/easy-page-speed-screenshots/blob/enhancement/LICENSE)
+
 Copyright (c) 2023 ViiVue
