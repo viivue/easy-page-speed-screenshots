@@ -37,6 +37,8 @@ Verify your installation with `python --version`. If it is correctly configurati
 pip install selenium
 ```
 
+> ⚠️ If you run into **SessionNotCreatedException: Message: session not created: This version of ChromeDriver only supports Chrome version xx**, you may need to install Chrome Web Driver.
+
 - Webdriver:
 
 First, check your browser version by go to Chrome -> Setting -> About Chrome
