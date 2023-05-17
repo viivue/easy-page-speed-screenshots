@@ -93,10 +93,10 @@ def epss_user_input():
    global OP_DIR
    print("Enter save directory: ")
    OP_DIR = input()
-   print("Enter links to test (type 'done' to finish input): ")
+   print("Enter links to test (type ':wq' to finish input): ")
    while(1):
       input_link = input()
-      if (input_link == 'done'):
+      if (input_link == ':wq'):
          break
       elif input_link == '':
          continue
@@ -190,8 +190,11 @@ Main Function
 """
 
 def epss_main():
-   links = epss_user_input()
-   links = epss_add_form_factor(links=links)
-   epss_execute_screenshot(links=links)
+    try:
+      links = epss_user_input()
+      links = epss_add_form_factor(links=links)
+      epss_execute_screenshot(links=links)
+    except Exception as e:
+      print(e)
 
 epss_main()
