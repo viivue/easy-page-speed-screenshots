@@ -87,7 +87,7 @@ Screenshot result:
 
 Tutorial:
 
-![image](https://github.com/viivue/easy-page-speed-screenshots/assets/80519358/75e58eba-1cb1-4bf5-83e4-158e09781ea8)
+![image](https://github.com/viivue/easy-page-speed-screenshots/blob/enhancement/Tutorial.gif)
 
 ## License
 
