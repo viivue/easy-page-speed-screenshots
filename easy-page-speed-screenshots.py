@@ -147,7 +147,7 @@ def epss_take_screenshot(file_name):
 # append file name
 def epss_gen_file_name(number, tools, file_name, form_factor = ''):
    current_date = datetime.today().strftime('%Y%m%d')
-   new_file_name = number + '-' + tools + '-' + current_date + '-' + file_name
+   new_file_name = tools + '-' + number + '-' + current_date + '-' + file_name
    if (form_factor):
       return new_file_name + '-' + form_factor + '.png'
    else:
