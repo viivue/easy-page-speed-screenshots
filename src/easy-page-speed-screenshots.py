@@ -44,42 +44,55 @@ def epss_submit_link(tool, link, input_selector = '', form_selector = ''):
   form.submit()
 
   from urllib.parse import unquote
+  if epss_is_tool(link=tool,tool='pagespeed.web'):
 
-  #load the analyze page and get url
-  new_link = get_link_driver.current_url
-  decoded_url = unquote(new_link)
-  time.sleep(10)
-  # proceed from the analyze page
-  get_link_driver.get(decoded_url)
-  time.sleep(5)
-  new_link = get_link_driver.current_url
+    #load the analyze page and get url
+    new_link = get_link_driver.current_url
+    decoded_url = unquote(new_link)
+    time.sleep(10)
+    # proceed from the analyze page
+    get_link_driver.get(decoded_url)
+    time.sleep(5)
+    new_link = get_link_driver.current_url
+    return unquote(new_link)
 
-  return unquote(new_link)
+def submit_by_form(tool, link, current_link):
+   res = epss_submit_link(tool=tool, link=link)
+   res = res.split('?',1)[0]
+   current_link.append(res)
+
+def get_link_by_api(tool, link, current_link):
+   import requests
+   #Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
+   base_url = tool + 'v1/tests/'
+   url = base_url + 'create'
+   data = {
+     'url': link
+   }
+   # call the api to receive the id
+   resp = requests.post(url,json=data)
+   resp = resp.json()
+   result_id = resp['id']
+   return_url = tool + '#' + result_id # create result url
+   current_link.append(return_url)
 
 def epss_thread_function(link):
-  tools = ['https://pagespeed.web.dev/', 'https://tools.pingdom.com/']
-  current_link = []
-  for tool in tqdm(tools, ncols=65):
-    if epss_is_tool(link=tool,tool='pagespeed.web'):
-      # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
-      res = epss_submit_link(tool=tool, link=link)
-      res = res.split('?',1)[0]
-      current_link.append(res)
-    elif epss_is_tool(link=tool,tool='pingdom'):
-      import requests
-      #Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
-      base_url = tool + 'v1/tests/'
-      url = base_url + 'create'
-      data = {
-        'url': link
-      }
-      # call the api to receive the id
-      resp = requests.post(url,json=data)
-      resp = resp.json()
-      result_id = resp['id']
-      return_url = tool + '#' + result_id # create result url
-      current_link.append(return_url)
-  RESULT_LINKS.append(current_link)
+   tools = ['https://pagespeed.web.dev/', 'https://tools.pingdom.com/']
+   current_link = []
+   worker_threads = []
+   for tool in tqdm(tools, ncols=65):
+     if epss_is_tool(link=tool,tool='pagespeed.web'):
+       # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
+       worker_thread = threading.Thread(target=submit_by_form, args=(tool, link, current_link,))
+       worker_threads.append(worker_thread)
+       worker_thread.start()
+     elif epss_is_tool(link=tool,tool='pingdom'):
+       worker_thread = threading.Thread(target=get_link_by_api, args=(tool, link, current_link,))
+       worker_threads.append(worker_thread)
+       worker_thread.start()
+   for thread in worker_threads:
+       thread.join()
+   RESULT_LINKS.append(current_link)
 # run through all testing tool
 def epss_send_link_for_test(links):
   global RESULT_LINKS
