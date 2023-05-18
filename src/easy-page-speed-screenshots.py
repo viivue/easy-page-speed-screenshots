@@ -6,6 +6,7 @@ import time
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
+import threading
 
 """
 Define Global Variables
@@ -17,6 +18,8 @@ options.add_argument('--log-level=3')
 driver = webdriver.Chrome(options=options)
 driver.execute_cdp_cmd('Network.setUserAgentOverride', {
                        "userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36'})
+
+threads = []
 """
 Define functions
 """
@@ -27,64 +30,68 @@ Page speed and GTmetrix run through 2 pages:
 2. Result Page
 So this function run the same code twice to get the result page
 """
-def epss_get_res_link():
-  from urllib.parse import unquote
-
-  #load the analyze page and get url
-  new_link = driver.current_url
-  decoded_url = unquote(new_link)
-  time.sleep(5)
-  # proceed from the analyze page
-  driver.get(decoded_url)
-  time.sleep(5)
-  new_link = driver.current_url
-
-  return unquote(new_link)
 
 # submit link for testing
 def epss_submit_link(tool, link, input_selector = '', form_selector = ''):
-  driver.get(tool)
-  input_field = driver.find_element(By.CSS_SELECTOR,'input' + input_selector)
+  get_link_driver = webdriver.Chrome(options=options)
+  get_link_driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+                       "userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36'})
+
+  get_link_driver.get(tool)
+  input_field = get_link_driver.find_element(By.CSS_SELECTOR,'input' + input_selector)
   input_field.send_keys(link)  # Replace with your desired URL
-  form = driver.find_element(By.CSS_SELECTOR,'form' + form_selector)
+  form = get_link_driver.find_element(By.CSS_SELECTOR,'form' + form_selector)
   form.submit()
 
+  from urllib.parse import unquote
+
+  #load the analyze page and get url
+  new_link = get_link_driver.current_url
+  decoded_url = unquote(new_link)
+  time.sleep(10)
+  # proceed from the analyze page
+  get_link_driver.get(decoded_url)
+  time.sleep(5)
+  new_link = get_link_driver.current_url
+
+  return unquote(new_link)
+
+def epss_thread_function(link):
+  tools = ['https://pagespeed.web.dev/', 'https://tools.pingdom.com/']
+  current_link = []
+  for tool in tqdm(tools, ncols=65):
+    if epss_is_tool(link=tool,tool='pagespeed.web'):
+      # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
+      res = epss_submit_link(tool=tool, link=link)
+      res = res.split('?',1)[0]
+      current_link.append(res)
+    elif epss_is_tool(link=tool,tool='pingdom'):
+      import requests
+      #Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
+      base_url = tool + 'v1/tests/'
+      url = base_url + 'create'
+      data = {
+        'url': link
+      }
+      # call the api to receive the id
+      resp = requests.post(url,json=data)
+      resp = resp.json()
+      result_id = resp['id']
+      return_url = tool + '#' + result_id # create result url
+      current_link.append(return_url)
+  RESULT_LINKS.append(current_link)
 # run through all testing tool
 def epss_send_link_for_test(links):
-  tools = ['https://pagespeed.web.dev/', 'https://gtmetrix.com/', 'https://tools.pingdom.com/']
-  result_links = []
+  global RESULT_LINKS
+  RESULT_LINKS = []
   print("Getting results: ")
   for link in tqdm(links, ncols=65):
-      current_link = []
-      print("\nRunning test for: " + link)
-      for tool in tools:
-        if epss_is_tool(link=tool,tool='pagespeed.web'):
-          epss_submit_link(tool=tool, link=link)
-          # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
-          res = epss_get_res_link()
-          res = res.split('?',1)[0]
-          current_link.append(res)
-        elif epss_is_tool(link=tool,tool='gtmetrix'):
-          epss_submit_link(tool=tool, link=link, input_selector='.js-analyze-form-url', form_selector='.analyze-form')
-          # Desire url: https://gtmetrix.com/reports/en.wikipedia.org/aVrv18kF/
-          res = epss_get_res_link()
-          current_link.append(res)
-        elif epss_is_tool(link=tool,tool='pingdom'):
-          import requests
-          #Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
-          base_url = tool + 'v1/tests/'
-          url = base_url + 'create'
-          data = {
-            'url': link
-          }
-          # call the api to receive the id
-          resp = requests.post(url,json=data)
-          resp = resp.json()
-          result_id = resp['id']
-          return_url = tool + '#' + result_id # create result url
-          current_link.append(return_url)
-      result_links.append(current_link)
-  return result_links
+    thread = threading.Thread(target=epss_thread_function, args=(link,))
+    threads.append(thread)
+    thread.start()
+  for thread in threads:
+    thread.join()
+  return RESULT_LINKS
 
 # collect user input link
 def epss_user_input():
@@ -191,9 +198,16 @@ Main Function
 
 def epss_main():
     try:
-      links = epss_user_input()
-      links = epss_add_form_factor(links=links)
-      epss_execute_screenshot(links=links)
+      while(1):
+         links = epss_user_input()
+         print(links)
+         links = epss_add_form_factor(links=links)
+         epss_execute_screenshot(links=links)
+         print("Finish Generating Screenshot")
+         print("Press any key to run again or type 'exit' to exit...")
+         choice = input()
+         if (choice=='exit'):
+            break
     except Exception as e:
       print(e)
 
