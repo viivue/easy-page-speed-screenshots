@@ -21,6 +21,14 @@ threads = []
 Define functions
 """
 
+# check if result array belong to which site
+def epss_contains_link_to_site(link_array, site):
+    for link in link_array:
+        parsed_url = urlparse(link)
+        if parsed_url.netloc == site:
+            return True
+    return False
+
 """
 Page speed and GTmetrix run through 2 pages:
 1. Analyze Page
@@ -85,6 +93,7 @@ def epss_thread_function(link):
        worker_thread.start()
    for thread in worker_threads:
        thread.join()
+   current_link.append(link)
    RESULT_LINKS.append(current_link)
 # run through all testing tool
 def epss_send_link_for_test(links):
@@ -174,7 +183,8 @@ def epss_screenshot_thread_function(group, input_link, gps_i, pingdom_i):
                        "userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36'})
 
    for link in group:
-      file_name = epss_replace_url(input_link)
+      file_name = epss_replace_url(group[-1])
+      if link in INPUT_LINK: continue
       try:
         if epss_is_tool(link=link,tool="pagespeed"):
            parsed_url = urlparse(link)
@@ -199,6 +209,8 @@ def epss_execute_screenshot(links):
    i = 0
    print("Generating screenshot")
    screenshot_threads = []
+   global gps_i
+   global pingdom_i
    gps_i = 1
    pingdom_i = 1
    for group in tqdm(links, ncols=65):
