@@ -15,9 +15,6 @@ Define Global Variables
 options = webdriver.ChromeOptions()
 options.add_argument("--headless=new")
 options.add_argument('--log-level=3')
-driver = webdriver.Chrome(options=options)
-driver.execute_cdp_cmd('Network.setUserAgentOverride', {
-                       "userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36'})
 
 threads = []
 """
@@ -44,17 +41,12 @@ def epss_submit_link(tool, link, input_selector = '', form_selector = ''):
   form.submit()
 
   from urllib.parse import unquote
-  if epss_is_tool(link=tool,tool='pagespeed.web'):
+  time.sleep(30)
+  new_link = get_link_driver.current_url
+  print(new_link)
+  return unquote(new_link)
 
-    #load the analyze page and get url
-    new_link = get_link_driver.current_url
-    decoded_url = unquote(new_link)
-    time.sleep(10)
-    # proceed from the analyze page
-    get_link_driver.get(decoded_url)
-    time.sleep(5)
-    new_link = get_link_driver.current_url
-    return unquote(new_link)
+
 
 def submit_by_form(tool, link, current_link):
    res = epss_submit_link(tool=tool, link=link)
@@ -74,6 +66,7 @@ def get_link_by_api(tool, link, current_link):
    resp = resp.json()
    result_id = resp['id']
    return_url = tool + '#' + result_id # create result url
+   print(link, return_url)
    current_link.append(return_url)
 
 def epss_thread_function(link):
@@ -110,9 +103,9 @@ def epss_send_link_for_test(links):
 def epss_user_input():
    global INPUT_LINK
    INPUT_LINK = []
-   global OP_DIR
-   print("Enter save directory: ")
-   OP_DIR = input()
+   # global OP_DIR
+   # print("Enter save directory: ")
+   # OP_DIR = input()
    print("Enter links to test (type 'done' to finish input): ")
    while(1):
       input_link = input()
@@ -155,11 +148,12 @@ def epss_is_tool(link, tool):
 
 # Screenshot
 # Ref: https://stackoverflow.com/a/52572919/
-def epss_take_screenshot(file_name):
+def epss_take_screenshot(file_name, driver):
    original_size = driver.get_window_size()
    required_width = driver.execute_script('return document.body.parentNode.scrollWidth')
    required_height = driver.execute_script('return document.body.parentNode.scrollHeight')
    driver.set_window_size(2560, required_height)
+   OP_DIR = r'C:\Users\phong\Desktop\easy-page-speed-screenshots\easy-page-speed-screenshots\screenshots'
    driver.find_element(By.TAG_NAME, "body").screenshot(
       f'{OP_DIR}\{file_name}')  # avoids scrollbar
    driver.set_window_size(original_size['width'], original_size['height'])
@@ -173,37 +167,47 @@ def epss_gen_file_name(number, tools, file_name, form_factor = ''):
    else:
       return new_file_name + '.png'
 
+def epss_screenshot_thread_function(group, input_link, gps_i, pingdom_i):
+   print('Group', group)
+   screenshot_driver = webdriver.Chrome(options=options)
+   screenshot_driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+                       "userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36'})
+
+   for link in group:
+      file_name = epss_replace_url(input_link)
+      try:
+        if epss_is_tool(link=link,tool="pagespeed"):
+           parsed_url = urlparse(link)
+           form_factor = parse_qs(parsed_url.query)['form_factor'][0]
+           file_name = epss_gen_file_name(str(gps_i), 'gps',file_name=file_name,form_factor=form_factor)
+           gps_i = gps_i + 1
+        elif epss_is_tool(link=link,tool="pingdom"):
+           file_name = epss_gen_file_name(str(pingdom_i), 'pingdom',file_name=file_name)
+           pingdom_i = pingdom_i + 1
+        print(link)
+        screenshot_driver.get(link)
+        time.sleep(5)
+        epss_take_screenshot(file_name=file_name, driver=screenshot_driver)
+      except WebDriverException as e:
+        print(e)
+        print("Error at: ", link)
+        continue
+
 # execute screenshot for all link input
 def epss_execute_screenshot(links):
+   print(links)
    i = 0
-   gps_i = 1
-   gtmetrix_i = 1
-   pingdom_i = 1
    print("Generating screenshot")
+   screenshot_threads = []
+   gps_i = 1
+   pingdom_i = 1
    for group in tqdm(links, ncols=65):
-      print("\nGenerating screenshot for: " + INPUT_LINK[i])
-      for link in group:
-         file_name = epss_replace_url(INPUT_LINK[i])
-         try:
-           if epss_is_tool(link=link,tool="pagespeed"):
-              parsed_url = urlparse(link)
-              form_factor = parse_qs(parsed_url.query)['form_factor'][0]
-              file_name = epss_gen_file_name(str(gps_i), 'gps',file_name=file_name,form_factor=form_factor)
-              gps_i = gps_i + 1
-           elif epss_is_tool(link=link,tool="gtmetrix"):
-              file_name = epss_gen_file_name(str(gtmetrix_i), 'gtmetrix',file_name=file_name)
-              gtmetrix_i = gtmetrix_i + 1
-           elif epss_is_tool(link=link,tool="pingdom"):
-              file_name = epss_gen_file_name(str(pingdom_i), 'pingdom',file_name=file_name)
-              pingdom_i = pingdom_i + 1
-           driver.get(link)
-           time.sleep(5)
-           epss_take_screenshot(file_name=file_name)
-         except WebDriverException:
-           print(link)
-           continue
+      screenshot_thread = threading.Thread(target=epss_screenshot_thread_function, args=(group,INPUT_LINK[i], gps_i, pingdom_i,))
+      screenshot_threads.append(screenshot_thread)
+      screenshot_thread.start()
       i = i + 1
-   driver.quit()
+   for thread in screenshot_threads:
+      thread.join()
 
 """
 Main Function
@@ -213,7 +217,6 @@ def epss_main():
     try:
       while(1):
          links = epss_user_input()
-         print(links)
          links = epss_add_form_factor(links=links)
          epss_execute_screenshot(links=links)
          print("Finish Generating Screenshot")
@@ -223,5 +226,5 @@ def epss_main():
             break
     except Exception as e:
       print(e)
-
+      input()
 epss_main()
