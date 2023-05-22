@@ -28,6 +28,9 @@ Page speed and GTmetrix run through 2 pages:
 So this function run the same code twice to get the result page
 """
 
+def epss_json_field_exists():
+   json_field = 'a'
+
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
     get_link_driver = webdriver.Chrome(options=options)
@@ -78,7 +81,9 @@ def epss_get_link_pingdom(tool, link, current_link):
     except Exception as e:
         print(link + " failed")
 
-
+# todo: add function to check json field exists
+# todo: enable input api_key
+# todo: enable input option for gtmetrix
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
