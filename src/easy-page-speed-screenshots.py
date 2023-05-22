@@ -54,37 +54,92 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
     return unquote(new_link)
 
 
-def submit_by_form(tool, link, current_link):
+def epss_submit_by_form(tool, link, current_link):
     res = epss_submit_link(tool=tool, link=link)
     res = res.split("?", 1)[0]
     current_link.append(res)
 
 
-def get_link_by_api(tool, link, current_link):
+def epss_get_link_pingdom(tool, link, current_link):
     import requests
 
-    # Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
-    base_url = tool + "v1/tests/"
-    url = base_url + "create"
-    data = {"url": link}
-    # call the api to receive the id
-    resp = requests.post(url, json=data)
+    try:
+        # Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
+        base_url = tool + "v1/tests/"
+        url = base_url + "create"
+        data = {"url": link}
+        # call the api to receive the id
+        resp = requests.post(url, json=data)
+        resp = resp.json()
+        result_id = resp["id"]
+        return_url = tool + "#" + result_id  # create result url
+        print(link, return_url)
+        current_link.append(return_url)
+    except Exception as e:
+        print(link + " failed")
+
+
+def epss_get_link_gtmetrix(tool, link, current_link):
+    import requests
+    from requests.structures import CaseInsensitiveDict
+
+    base_url = tool
+    headers = CaseInsensitiveDict()
+    headers["Content-Type"] = "application/vnd.api+json"
+    url = base_url + "/api/2.0/tests"
+    data = """
+    {
+         "data": {
+            "type": "test",
+            "attributes": {
+               "url": "%s",
+               "adblock":1
+            }
+         }
+    }
+    """ % (link)
+    resp = requests.post(
+        url, auth=("<api_key>", ""), headers=headers, data=data
+    )
     resp = resp.json()
-    result_id = resp["id"]
-    return_url = tool + "#" + result_id  # create result url
-    print(link, return_url)
-    current_link.append(return_url)
+    report = ""
+    while 1:
+        test = requests.get(
+            resp["links"]["self"],
+            auth=("<api_key>", ""),
+            headers=headers,
+        )
+        test = test.json()
+        if "report_url" in test["data"]["links"]:
+            report = test["data"]["links"]["report_url"]
+            break
+    current_link.append(report)
 
 
 def epss_thread_function(link):
-    tools = ["https://pagespeed.web.dev/", "https://tools.pingdom.com/"]
+    tools = [
+        "https://pagespeed.web.dev/",
+        "https://gtmetrix.com/",
+        "https://tools.pingdom.com/",
+    ]
     current_link = []
     worker_threads = []
     for tool in tqdm(tools, ncols=65):
         if epss_is_tool(link=tool, tool="pagespeed.web"):
             # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
             worker_thread = threading.Thread(
-                target=submit_by_form,
+                target=epss_submit_by_form,
+                args=(
+                    tool,
+                    link,
+                    current_link,
+                ),
+            )
+            worker_threads.append(worker_thread)
+            worker_thread.start()
+        elif epss_is_tool(link=tool, tool="gtmetrix"):
+            worker_thread = threading.Thread(
+                target=epss_get_link_gtmetrix,
                 args=(
                     tool,
                     link,
@@ -95,7 +150,7 @@ def epss_thread_function(link):
             worker_thread.start()
         elif epss_is_tool(link=tool, tool="pingdom"):
             worker_thread = threading.Thread(
-                target=get_link_by_api,
+                target=epss_get_link_pingdom,
                 args=(
                     tool,
                     link,
@@ -203,7 +258,9 @@ def epss_gen_file_name(number, tools, file_name, form_factor=""):
 
 
 gps_i = 1
+gtmetrix_i = 1
 pingdom_i = 1
+
 
 def epss_screenshot_thread_function(group):
     print("Group", group)
@@ -228,13 +285,18 @@ def epss_screenshot_thread_function(group):
                     str(gps_i), "gps", file_name=file_name, form_factor=form_factor
                 )
                 gps_i = gps_i + 1
+            elif epss_is_tool(link=link, tool='gtmetrix'):
+                global gtmetrix_i
+                file_name = epss_gen_file_name(
+                    str(gtmetrix_i), "gtmetrix", file_name=file_name
+                )
+                gtmetrix_i = gtmetrix_i + 1
             elif epss_is_tool(link=link, tool="pingdom"):
                 global pingdom_i
                 file_name = epss_gen_file_name(
                     str(pingdom_i), "pingdom", file_name=file_name
                 )
                 pingdom_i = pingdom_i + 1
-            print(link)
             screenshot_driver.get(link)
             time.sleep(5)
             epss_take_screenshot(file_name=file_name, driver=screenshot_driver)
