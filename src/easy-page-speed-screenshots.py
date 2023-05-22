@@ -128,9 +128,9 @@ def epss_send_link_for_test(links):
 def epss_user_input():
     global INPUT_LINK
     INPUT_LINK = []
-    # global OP_DIR
-    # print("Enter save directory: ")
-    # OP_DIR = input()
+    global OP_DIR
+    print("Enter save directory: ")
+    OP_DIR = input()
     print("Enter links to test (type 'done' to finish input): ")
     while 1:
         input_link = input()
@@ -186,7 +186,6 @@ def epss_take_screenshot(file_name, driver):
         "return document.body.parentNode.scrollHeight"
     )
     driver.set_window_size(2560, required_height)
-    OP_DIR = r"C:\Users\phong\Desktop\easy-page-speed-screenshots\easy-page-speed-screenshots\screenshots"
     driver.find_element(By.TAG_NAME, "body").screenshot(
         f"{OP_DIR}\{file_name}"
     )  # avoids scrollbar
