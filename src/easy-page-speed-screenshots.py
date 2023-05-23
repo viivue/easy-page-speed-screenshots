@@ -98,7 +98,6 @@ def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
 
-    print(API_KEY)
     base_url = tool
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/vnd.api+json"
@@ -144,7 +143,7 @@ def epss_thread_function(link):
     ]
     current_link = []
     worker_threads = []
-    for tool in tqdm(tools, ncols=65):
+    for tool in tools:
         if epss_is_tool(link=tool, tool="pagespeed.web"):
             # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
             worker_thread = threading.Thread(
@@ -190,7 +189,7 @@ def epss_send_link_for_test(links):
     global RESULT_LINKS
     RESULT_LINKS = []
     print("Getting results: ")
-    for link in tqdm(links, ncols=65):
+    for link in links:
         thread = threading.Thread(target=epss_thread_function, args=(link,))
         threads.append(thread)
         thread.start()
@@ -332,7 +331,7 @@ def epss_screenshot_thread_function(group):
 def epss_execute_screenshot(links):
     print("Generating screenshot")
     screenshot_threads = []
-    for group in tqdm(links, ncols=65):
+    for group in links:
         screenshot_thread = threading.Thread(
             target=epss_screenshot_thread_function, args=(group,)
         )
