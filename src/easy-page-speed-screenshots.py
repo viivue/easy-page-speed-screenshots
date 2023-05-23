@@ -56,11 +56,12 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
             break
         except Exception as e:
             if gps_fail <= 10:
+                gps_fail = gps_fail + 1
                 continue
             else:
+                print("Run test on " + link + " on GPS failed. Skipping")
                 break    
     new_link = get_link_driver.current_url
-    print(unquote(new_link))
     return unquote(new_link)
 
 
@@ -70,12 +71,9 @@ def epss_submit_by_form(tool, link, current_link):
     current_link.append(res)
 
 
-fail_pingdom = 0
-
-
 def epss_get_link_pingdom(tool, link, current_link):
     import requests
-
+    fail_pingdom = 0
     while 1:
         try:
             # Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
@@ -90,12 +88,12 @@ def epss_get_link_pingdom(tool, link, current_link):
             current_link.append(return_url)
             break
         except Exception as e:
-            global fail_pingdom
             if fail_pingdom <= 10:
-                print("Run test on " + link + " failed. Trying again")
+                print("Run test on " + link + " on Pingdom failed. Trying again")
                 fail_pingdom = fail_pingdom + 1
                 continue
             else:
+                print("Run test on " + link + " on Pingdom failed. Skipping")
                 break
 
 
@@ -112,42 +110,53 @@ def epss_json_field_exists(field, json):
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
-
-    base_url = tool
-    headers = CaseInsensitiveDict()
-    headers["Content-Type"] = "application/vnd.api+json"
-    url = base_url + "/api/2.0/tests"
-    data = """
-    {
-         "data": {
-            "type": "test",
-            "attributes": {
-               "url": "%s",
-               "adblock":1
-            }
-         }
-    }
-    """ % (
-        link
-    )
-    resp = requests.post(url, auth=(API_KEY, ""), headers=headers, data=data)
-    resp = resp.json()
-    report = ""
+    fail_gtmetrix = 0
     while 1:
-        links = epss_json_field_exists("links", resp)
-        self_link = epss_json_field_exists("self", links)
-        test_result = requests.get(
-            self_link,
-            auth=(API_KEY, ""),
-            headers=headers,
-        )
-        test_result = test_result.json()
-        data = epss_json_field_exists("data", test_result)
-        data_links = epss_json_field_exists("links", data)
-        if "report_url" in data_links:
-            report = data_links["report_url"]
+        try:
+            base_url = tool
+            headers = CaseInsensitiveDict()
+            headers["Content-Type"] = "application/vnd.api+json"
+            url = base_url + "/api/2.0/tests"
+            data = """
+            {
+                 "data": {
+                    "type": "test",
+                    "attributes": {
+                       "url": "%s",
+                       "adblock":1
+                    }
+                 }
+            }
+            """ % (
+                link
+            )
+            resp = requests.post(url, auth=(API_KEY, ""), headers=headers, data=data)
+            resp = resp.json()
+            report = ""
+            while 1:
+                links = epss_json_field_exists("links", resp)
+                self_link = epss_json_field_exists("self", links)
+                test_result = requests.get(
+                    self_link,
+                    auth=(API_KEY, ""),
+                    headers=headers,
+                )
+                test_result = test_result.json()
+                data = epss_json_field_exists("data", test_result)
+                data_links = epss_json_field_exists("links", data)
+                if "report_url" in data_links:
+                    report = data_links["report_url"]
+                    break
+            current_link.append(report)
             break
-    current_link.append(report)
+        except Exception as e:
+            if fail_gtmetrix <= 10:
+                print("Run test on " + link + " on GTmetrix failed. Trying again")
+                fail_gtmetrix = fail_gtmetrix + 1
+                continue
+            else:
+                print("Run test on " + link + " on GTmetrix failed. Skipping")
+                break
 
 
 def epss_thread_function(link):
@@ -277,7 +286,7 @@ def epss_take_screenshot(file_name, driver):
     required_height = driver.execute_script(
         "return document.body.parentNode.scrollHeight"
     )
-    driver.set_window_size(2560, required_height)
+    driver.set_window_size(1900, required_height)
     driver.find_element(By.TAG_NAME, "body").screenshot(
         f"{OP_DIR}\{file_name}"
     )  # avoids scrollbar
