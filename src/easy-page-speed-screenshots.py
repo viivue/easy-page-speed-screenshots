@@ -28,8 +28,10 @@ Page speed and GTmetrix run through 2 pages:
 So this function run the same code twice to get the result page
 """
 
+
 def epss_json_field_exists():
-   json_field = 'a'
+    json_field = "a"
+
 
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
@@ -81,13 +83,20 @@ def epss_get_link_pingdom(tool, link, current_link):
     except Exception as e:
         print(link + " failed")
 
-# todo: add function to check json field exists
-# todo: enable input api_key
-# todo: enable input option for gtmetrix
+API_KEY = ''
+
+# check if json field exists
+def epss_json_field_exists(field, json):
+    if field in json:
+        return json[field]
+    else:
+        return False
+
+
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
-
+    print(API_KEY)
     base_url = tool
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/vnd.api+json"
@@ -102,21 +111,25 @@ def epss_get_link_gtmetrix(tool, link, current_link):
             }
          }
     }
-    """ % (link)
-    resp = requests.post(
-        url, auth=("<api_key>", ""), headers=headers, data=data
+    """ % (
+        link
     )
+    resp = requests.post(url, auth=(API_KEY, ""), headers=headers, data=data)
     resp = resp.json()
     report = ""
     while 1:
-        test = requests.get(
-            resp["links"]["self"],
-            auth=("<api_key>", ""),
+        links = epss_json_field_exists('links', resp)
+        self_link = epss_json_field_exists('self', links)
+        test_result = requests.get(
+            self_link,
+            auth=(API_KEY, ""),
             headers=headers,
         )
-        test = test.json()
-        if "report_url" in test["data"]["links"]:
-            report = test["data"]["links"]["report_url"]
+        test_result = test_result.json()
+        data = epss_json_field_exists('data', test_result)
+        data_links = epss_json_field_exists('links', data)
+        if "report_url" in data_links:
+            report = data_links["report_url"]
             break
     current_link.append(report)
 
@@ -191,6 +204,9 @@ def epss_user_input():
     global OP_DIR
     print("Enter save directory: ")
     OP_DIR = input()
+    print("Enter API Key for GTmetrix: ")
+    global API_KEY
+    API_KEY = input()
     print("Enter links to test (type 'done' to finish input): ")
     while 1:
         input_link = input()
@@ -290,7 +306,7 @@ def epss_screenshot_thread_function(group):
                     str(gps_i), "gps", file_name=file_name, form_factor=form_factor
                 )
                 gps_i = gps_i + 1
-            elif epss_is_tool(link=link, tool='gtmetrix'):
+            elif epss_is_tool(link=link, tool="gtmetrix"):
                 global gtmetrix_i
                 file_name = epss_gen_file_name(
                     str(gtmetrix_i), "gtmetrix", file_name=file_name
