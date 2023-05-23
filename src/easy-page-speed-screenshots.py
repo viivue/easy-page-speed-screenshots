@@ -28,11 +28,6 @@ Page speed and GTmetrix run through 2 pages:
 So this function run the same code twice to get the result page
 """
 
-
-def epss_json_field_exists():
-    json_field = "a"
-
-
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
     get_link_driver = webdriver.Chrome(options=options)
@@ -55,7 +50,6 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
 
     time.sleep(15)
     new_link = get_link_driver.current_url
-    print(new_link)
     return unquote(new_link)
 
 
@@ -292,7 +286,6 @@ pingdom_i = 1
 
 
 def epss_screenshot_thread_function(group):
-    print("Group", group)
     screenshot_driver = webdriver.Chrome(options=options)
     screenshot_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
