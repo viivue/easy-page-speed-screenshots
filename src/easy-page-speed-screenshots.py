@@ -64,26 +64,33 @@ def epss_submit_by_form(tool, link, current_link):
     res = res.split("?", 1)[0]
     current_link.append(res)
 
+fail_pingdom = 0
 
 def epss_get_link_pingdom(tool, link, current_link):
     import requests
 
-    try:
-        # Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
-        base_url = tool + "v1/tests/"
-        url = base_url + "create"
-        data = {"url": link}
-        # call the api to receive the id
-        resp = requests.post(url, json=data)
-        resp = resp.json()
-        result_id = resp["id"]
-        return_url = tool + "#" + result_id  # create result url
-        print(link, return_url)
-        current_link.append(return_url)
-    except Exception as e:
-        print(link + " failed")
+    while 1:
+        try:
+            # Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
+            base_url = tool + "v1/tests/"
+            url = base_url + "create"
+            data = {"url": link}
+            # call the api to receive the id
+            resp = requests.post(url, json=data)
+            resp = resp.json()
+            result_id = resp["id"]
+            return_url = tool + "#" + result_id  # create result url
+            current_link.append(return_url)
+            break
+        except Exception as e:
+            global fail_pingdom
+            if(fail_pingdom <= 10):
+                print("Run test on " + link + " failed. Trying again")
+                fail_pingdom = fail_pingdom + 1
+                continue
 
-API_KEY = ''
+
+API_KEY = ""
 
 # check if json field exists
 def epss_json_field_exists(field, json):
@@ -96,6 +103,7 @@ def epss_json_field_exists(field, json):
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
+
     print(API_KEY)
     base_url = tool
     headers = CaseInsensitiveDict()
@@ -118,16 +126,16 @@ def epss_get_link_gtmetrix(tool, link, current_link):
     resp = resp.json()
     report = ""
     while 1:
-        links = epss_json_field_exists('links', resp)
-        self_link = epss_json_field_exists('self', links)
+        links = epss_json_field_exists("links", resp)
+        self_link = epss_json_field_exists("self", links)
         test_result = requests.get(
             self_link,
             auth=(API_KEY, ""),
             headers=headers,
         )
         test_result = test_result.json()
-        data = epss_json_field_exists('data', test_result)
-        data_links = epss_json_field_exists('links', data)
+        data = epss_json_field_exists("data", test_result)
+        data_links = epss_json_field_exists("links", data)
         if "report_url" in data_links:
             report = data_links["report_url"]
             break
