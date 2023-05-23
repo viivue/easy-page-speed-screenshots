@@ -48,8 +48,14 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
 
     from urllib.parse import unquote
 
-    time.sleep(15)
+    while 1:
+        try:
+            report = get_link_driver.find_element(By.CSS_SELECTOR, "div.PePDG")
+            break
+        except Exception as e:
+            continue
     new_link = get_link_driver.current_url
+    print(unquote(new_link))
     return unquote(new_link)
 
 
@@ -58,7 +64,9 @@ def epss_submit_by_form(tool, link, current_link):
     res = res.split("?", 1)[0]
     current_link.append(res)
 
+
 fail_pingdom = 0
+
 
 def epss_get_link_pingdom(tool, link, current_link):
     import requests
@@ -78,7 +86,7 @@ def epss_get_link_pingdom(tool, link, current_link):
             break
         except Exception as e:
             global fail_pingdom
-            if(fail_pingdom <= 10):
+            if fail_pingdom <= 10:
                 print("Run test on " + link + " failed. Trying again")
                 fail_pingdom = fail_pingdom + 1
                 continue
