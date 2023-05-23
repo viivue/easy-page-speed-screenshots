@@ -48,12 +48,17 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
 
     from urllib.parse import unquote
 
+    gps_fail = 0
+
     while 1:
         try:
             report = get_link_driver.find_element(By.CSS_SELECTOR, "div.PePDG")
             break
         except Exception as e:
-            continue
+            if gps_fail <= 10:
+                continue
+            else:
+                break    
     new_link = get_link_driver.current_url
     print(unquote(new_link))
     return unquote(new_link)
@@ -90,6 +95,8 @@ def epss_get_link_pingdom(tool, link, current_link):
                 print("Run test on " + link + " failed. Trying again")
                 fail_pingdom = fail_pingdom + 1
                 continue
+            else:
+                break
 
 
 API_KEY = ""
@@ -290,7 +297,7 @@ def epss_gen_file_name(number, tools, file_name, form_factor=""):
 gps_i = 1
 gtmetrix_i = 1
 pingdom_i = 1
-
+success_link = []
 
 def epss_screenshot_thread_function(group):
     screenshot_driver = webdriver.Chrome(options=options)
@@ -329,6 +336,8 @@ def epss_screenshot_thread_function(group):
             screenshot_driver.get(link)
             time.sleep(5)
             epss_take_screenshot(file_name=file_name, driver=screenshot_driver)
+            global success_link
+            success_link.append(link)
         except WebDriverException as e:
             print(e)
             print("Error at: ", link)
@@ -360,7 +369,10 @@ def epss_main():
             links = epss_user_input()
             links = epss_add_form_factor(links=links)
             epss_execute_screenshot(links=links)
-            print("Finish Generating Screenshot")
+            print("Finish Generating Screenshot\n")
+            print("Screenshot took: ")
+            for link in success_link:
+                    print(link + "\n")
             print("Press any key to run again or type 'exit' to exit...")
             choice = input()
             if choice == "exit":
