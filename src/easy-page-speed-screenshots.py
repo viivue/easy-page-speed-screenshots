@@ -437,9 +437,9 @@ def epss_main():
             print("Result URLs of taken screenshots: ")
             for link in success_link:
                 print(link + "\n")
-            print("Press any key to exit the tool...")
+            print("To quit the tool, type 'exit'")
             choice = input()
-            if choice != "":
+            if choice != "exit":
                 break
     except Exception as e:
         print(e)
