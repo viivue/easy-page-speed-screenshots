@@ -206,7 +206,7 @@ def epss_result_thread_function(link):
 def epss_send_link_for_test(links):
     global RESULT_LINKS
     RESULT_LINKS = []
-    print("Getting results: ")
+    print("Analyze requests: ")
     threads = []
     for link in links:
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
@@ -225,22 +225,19 @@ def epss_user_input():
     global INPUT_LINK
     INPUT_LINK = []
     global OP_DIR
-    print("Enter save directory: ")
+    print("Input directory path to store screenshot result: ")
     OP_DIR = input()
-    print("Do you want to test with GTmetrix ?")
+    print("Do you want to test with GTmetrix (need an API key to proceed)?")
     print("1. Yes")
     print("2. No")
     choice = input()
     if int(choice) == 1:
         global use_gt_metrix
         use_gt_metrix = True
-        print("Enter API Key for GTmetrix: ")
+        print("Enter GTmextrix API key (required): ")
         global API_KEY
         API_KEY = input()
-    print(
-        "You can input multiple links"
-    )
-    print("Enter links to test (type 'done' to finish input): ")
+    print("Input site URLs for the page speed screenshots (use <Enter> for multiple links & type 'done' to take screenshots): ")
     while 1:
         input_link = input()
         if input_link == "done":
@@ -411,7 +408,7 @@ def epss_screenshots_thread_function(group):
 
 # execute screenshots for all link input
 def epss_execute_screenshots(links):
-    print("Generating screenshots")
+    print("Screenshots: ")
     screenshots_threads = []
     for group in links:
         screenshots_thread = threading.Thread(
@@ -437,8 +434,7 @@ def epss_main():
             links = epss_user_input()
             links = epss_add_form_factor(links=links)
             epss_execute_screenshots(links=links)
-            print("Finish Generating screenshots\n")
-            print("Screenshots took: ")
+            print("Result URLs of taken screenshots: ")
             for link in success_link:
                 print(link + "\n")
             print("Press any key to run again or type 'exit' to exit...")
