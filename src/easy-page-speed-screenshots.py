@@ -23,13 +23,7 @@ threads = []
 Define functions
 """
 
-"""
-Page speed and GTmetrix run through 2 pages:
-1. Analyze Page
-2. Result Page
-So this function run the same code twice to get the result page
-"""
-
+#check if specific content exists
 def epss_content_loaded(driver, selector, link):
     try:
         report = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
@@ -72,7 +66,7 @@ def epss_submit_by_form(tool, link, current_link):
         res = res.split("?", 1)[0]
     current_link.append(res)
 
-
+#get report of pingdom with api
 def epss_get_link_pingdom(tool, link, current_link):
     import requests
     fail_pingdom = 0
@@ -107,7 +101,7 @@ def epss_json_field_exists(field, json):
     else:
         return False
 
-
+# get report of gtmetrix with api
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
@@ -261,6 +255,7 @@ def epss_add_form_factor(links):
 
 
 # replace character in url to append to file name
+# e.g https://gtmetrix.com/ will become https-gtmetrix-com
 def epss_replace_url(url):
     # replace special characters with '-'
     url = url.replace("://", "-")
