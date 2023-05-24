@@ -287,7 +287,7 @@ def epss_take_screenshot(file_name, driver):
     required_height = driver.execute_script(
         "return document.body.parentNode.scrollHeight"
     )
-    driver.set_window_size(1900, required_height)
+    driver.set_window_size(1366, required_height)
     driver.find_element(By.TAG_NAME, "body").screenshot(
         f"{OP_DIR}\{file_name}"
     )  # avoids scrollbar
