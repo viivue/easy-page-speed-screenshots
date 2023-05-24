@@ -232,16 +232,13 @@ def epss_user_input():
     print("2. No")
     choice = input()
     if int(choice) == 1:
-        print(
-            "Note: If you are using free GTmetrix account, remember to input 2 links only"
-        )
         global use_gt_metrix
         use_gt_metrix = True
         print("Enter API Key for GTmetrix: ")
         global API_KEY
         API_KEY = input()
     print(
-        "You can input multiple links (Pingdom & GTmetrix maybe block multiple request)"
+        "You can input multiple links"
     )
     print("Enter links to test (type 'done' to finish input): ")
     while 1:
