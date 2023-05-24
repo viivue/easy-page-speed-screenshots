@@ -16,6 +16,7 @@ Define Global Variables
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless=new")
+options.add_experimental_option('excludeSwitches', ['enable-logging']) #disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
 """
@@ -211,8 +212,11 @@ def epss_send_link_for_test(links):
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
         threads.append(thread)
         thread.start()
-    for thread in threads:
-        thread.join()
+    with tqdm(threads, ncols=65) as pbar:
+        for thread in threads:
+            thread.join()
+            if not thread.is_alive():
+                pbar.update(1)
     return RESULT_LINKS
 
 
@@ -418,8 +422,11 @@ def epss_execute_screenshot(links):
         )
         screenshot_threads.append(screenshot_thread)
         screenshot_thread.start()
-    for thread in screenshot_threads:
-        thread.join()
+    with tqdm(screenshot_threads, ncols=65) as pbar:
+        for thread in screenshot_threads:
+            thread.join()
+            if not thread.is_alive():
+                pbar.update(1)
 
 
 """
