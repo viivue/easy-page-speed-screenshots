@@ -288,9 +288,9 @@ def epss_is_tool(link, tool):
     return link.find(tool) != -1
 
 
-# Screenshot
+# screenshots
 # Ref: https://stackoverflow.com/a/52572919/
-def epss_take_screenshot(file_name, driver):
+def epss_take_screenshots(file_name, driver):
     original_size = driver.get_window_size()
     required_width = driver.execute_script(
         "return document.body.parentNode.scrollWidth"
@@ -371,13 +371,13 @@ def epss_get_file_name_group(link):
             return filenames
 
 
-# function use in screenshot thread
+# function use in screenshots thread
 success_link = []
 
 
-def epss_screenshot_thread_function(group):
-    screenshot_driver = webdriver.Chrome(options=options)
-    screenshot_driver.execute_cdp_cmd(
+def epss_screenshots_thread_function(group):
+    screenshots_driver = webdriver.Chrome(options=options)
+    screenshots_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
             "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36"
@@ -392,18 +392,18 @@ def epss_screenshot_thread_function(group):
                 parsed_url = urlparse(link)
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
                 file_name = file_names[1] if form_factor == "desktop" else file_names[2]
-                screenshot_driver.get(link)
-                epss_content_loaded(screenshot_driver, "div.PePDG", link)
+                screenshots_driver.get(link)
+                epss_content_loaded(screenshots_driver, "div.PePDG", link)
             elif epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
                 file_name = file_names[3]
-                screenshot_driver.get(link)
-                epss_content_loaded(screenshot_driver, "main.page-report-content", link)
+                screenshots_driver.get(link)
+                epss_content_loaded(screenshots_driver, "main.page-report-content", link)
             elif epss_is_tool(link=link, tool="pingdom"):
                 file_name = file_names[4] if use_gt_metrix else file_names[3]
-                screenshot_driver.get(link)
-                epss_content_loaded(screenshot_driver, ".ng-star-inserted", link)
+                screenshots_driver.get(link)
+                epss_content_loaded(screenshots_driver, ".ng-star-inserted", link)
             time.sleep(5)
-            epss_take_screenshot(file_name=file_name, driver=screenshot_driver)
+            epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
             global success_link
             success_link.append(link)
         except Exception as e:
@@ -412,18 +412,18 @@ def epss_screenshot_thread_function(group):
             continue
 
 
-# execute screenshot for all link input
-def epss_execute_screenshot(links):
-    print("Generating screenshot")
-    screenshot_threads = []
+# execute screenshots for all link input
+def epss_execute_screenshots(links):
+    print("Generating screenshots")
+    screenshots_threads = []
     for group in links:
-        screenshot_thread = threading.Thread(
-            target=epss_screenshot_thread_function, args=(group,)
+        screenshots_thread = threading.Thread(
+            target=epss_screenshots_thread_function, args=(group,)
         )
-        screenshot_threads.append(screenshot_thread)
-        screenshot_thread.start()
-    with tqdm(screenshot_threads, ncols=65) as pbar:
-        for thread in screenshot_threads:
+        screenshots_threads.append(screenshots_thread)
+        screenshots_thread.start()
+    with tqdm(screenshots_threads, ncols=65) as pbar:
+        for thread in screenshots_threads:
             thread.join()
             if not thread.is_alive():
                 pbar.update(1)
@@ -439,9 +439,9 @@ def epss_main():
         while 1:
             links = epss_user_input()
             links = epss_add_form_factor(links=links)
-            epss_execute_screenshot(links=links)
-            print("Finish Generating Screenshot\n")
-            print("Screenshot took: ")
+            epss_execute_screenshots(links=links)
+            print("Finish Generating screenshots\n")
+            print("Screenshots took: ")
             for link in success_link:
                 print(link + "\n")
             print("Press any key to run again or type 'exit' to exit...")
