@@ -257,6 +257,7 @@ def epss_user_input():
         elif input_link == "":
             continue
         INPUT_LINK.append(input_link)
+    print(epss_create_file_name_array())
     res_inputs = epss_send_link_for_test(INPUT_LINK)
     return res_inputs
 
@@ -320,10 +321,38 @@ def epss_gen_file_name(number, tools, file_name, form_factor=""):
     else:
         return new_file_name + ".png"
 
+# append file name
+def epss_create_file_name_array():
+    filename_group_array = []
+    gps_i = 1
+    gtmetrix_i = 1
+    pingdom_i = 1
+    for link in INPUT_LINK:
+        filenames = []
+        filenames.append(link)
+        link = epss_replace_url(link)
+        current_date = datetime.today().strftime("%Y%m%d")
+        gps_desktop = "gps" + "-" + str(gps_i) + "-" + current_date + "-" + link + "-desktop" + ".png"
+        gps_mobile = "gps" + "-" + str(gps_i+1) + "-" + current_date + "-" + link + "-mobile" + ".png"
+        filenames.append(gps_desktop)
+        filenames.append(gps_mobile)
+        gps_i = gps_i + 2
+        if use_gt_metrix:
+            gtmetrix_name = "gtmetrix" + "-" + str(gtmetrix_i) + "-" + current_date + "-" + link + ".png"
+            gtmetrix_i = gtmetrix_i + 1
+            filenames.append(gtmetrix_name)
+        pingdom_name = "pingdom" + "-" + str(pingdom_i) + "-" + current_date + "-" + link + ".png"
+        pingdom_i = pingdom_i + 1
+        filenames.append(pingdom_name)
+        filename_group_array.append(filenames)
+    return filename_group_array
 
-gps_i = 1
-gtmetrix_i = 1
-pingdom_i = 1
+def epss_get_file_name_group(link):
+    groups = epss_create_file_name_array()
+    for filenames in groups:
+        if (link == filenames[0]):
+            return filenames
+
 success_link = []
 
 
@@ -337,41 +366,33 @@ def epss_screenshot_thread_function(group):
     )
 
     for link in group:
-        file_name = epss_replace_url(group[-1])
+        file_names = epss_get_file_name_group(group[-1])
+        print(link)
         if link in INPUT_LINK:
             continue
         try:
             if epss_is_tool(link=link, tool="pagespeed"):
                 parsed_url = urlparse(link)
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
-                global gps_i
-                file_name = epss_gen_file_name(
-                    str(gps_i), "gps", file_name=file_name, form_factor=form_factor
-                )
-                gps_i = gps_i + 1
+                if form_factor == 'desktop':
+                    file_name = file_names[1]
+                elif form_factor == 'mobile':
+                    file_name = file_names[2]
                 screenshot_driver.get(link)
                 epss_content_loaded(screenshot_driver, "div.PePDG", link)
             elif epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
-                global gtmetrix_i
-                file_name = epss_gen_file_name(
-                    str(gtmetrix_i), "gtmetrix", file_name=file_name
-                )
-                gtmetrix_i = gtmetrix_i + 1
+                file_name = file_names[3]
                 screenshot_driver.get(link)
                 epss_content_loaded(screenshot_driver, "main.page-report-content", link)
             elif epss_is_tool(link=link, tool="pingdom"):
-                global pingdom_i
-                file_name = epss_gen_file_name(
-                    str(pingdom_i), "pingdom", file_name=file_name
-                )
-                pingdom_i = pingdom_i + 1
+                file_name = file_names[4]
                 screenshot_driver.get(link)
                 epss_content_loaded(screenshot_driver, ".ng-star-inserted", link)
             time.sleep(5)
             epss_take_screenshot(file_name=file_name, driver=screenshot_driver)
             global success_link
             success_link.append(link)
-        except WebDriverException as e:
+        except Exception as e:
             print(e)
             print("Error at: ", link)
             continue
