@@ -381,7 +381,6 @@ def epss_screenshot_thread_function(group):
     )
     for link in group:
         file_names = epss_get_file_name_group(group[-1])
-        print(link)
         if link in INPUT_LINK:
             continue
         try:
