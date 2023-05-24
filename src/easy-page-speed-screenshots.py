@@ -222,6 +222,16 @@ def epss_send_link_for_test(links):
 
 # collect user input link
 def epss_user_input():
+    print("""
+    Easy Page Speed Screenshot (EPSS)
+    This tool allow automatically taking screenshot from page speed test websites.
+
+    Current websites supported:
+
+    • https://pagespeed.web.dev/
+    • https://gtmetrix.com/
+    • https://tools.pingdom.com/
+    """)
     global INPUT_LINK
     INPUT_LINK = []
     global OP_DIR
