@@ -1,6 +1,8 @@
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from tqdm import tqdm
 import time
 from urllib.parse import urlparse
@@ -28,6 +30,13 @@ Page speed and GTmetrix run through 2 pages:
 So this function run the same code twice to get the result page
 """
 
+def epss_content_loaded(driver, selector, link):
+    try:
+        report = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+    except Exception as e:
+        print("Content on " + link + " took too long to load. Skipping")
+        return    
+
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
     get_link_driver = webdriver.Chrome(options=options)
@@ -48,26 +57,19 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
 
     from urllib.parse import unquote
 
-    gps_fail = 0
-
-    while 1:
-        try:
-            report = get_link_driver.find_element(By.CSS_SELECTOR, "div.PePDG")
-            break
-        except Exception as e:
-            if gps_fail <= 10:
-                gps_fail = gps_fail + 1
-                continue
-            else:
-                print("Run test on " + link + " on GPS failed. Skipping")
-                break    
+    try:
+        report = WebDriverWait(get_link_driver, 40).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.PePDG')))
+    except Exception as e:
+        print("Running test on " + link + " on GPS took so long. Skipping")
+        return ""
     new_link = get_link_driver.current_url
     return unquote(new_link)
 
 
 def epss_submit_by_form(tool, link, current_link):
     res = epss_submit_link(tool=tool, link=link)
-    res = res.split("?", 1)[0]
+    if res != "":
+        res = res.split("?", 1)[0]
     current_link.append(res)
 
 
@@ -95,7 +97,6 @@ def epss_get_link_pingdom(tool, link, current_link):
             else:
                 print("Run test on " + link + " on Pingdom failed. Skipping")
                 break
-
 
 API_KEY = ""
 
@@ -330,19 +331,24 @@ def epss_screenshot_thread_function(group):
                     str(gps_i), "gps", file_name=file_name, form_factor=form_factor
                 )
                 gps_i = gps_i + 1
+                screenshot_driver.get(link)
+                epss_content_loaded(screenshot_driver,"div.PePDG",link)
             elif epss_is_tool(link=link, tool="gtmetrix"):
                 global gtmetrix_i
                 file_name = epss_gen_file_name(
                     str(gtmetrix_i), "gtmetrix", file_name=file_name
                 )
                 gtmetrix_i = gtmetrix_i + 1
+                screenshot_driver.get(link)
+                epss_content_loaded(screenshot_driver,"main.page-report-content",link)
             elif epss_is_tool(link=link, tool="pingdom"):
                 global pingdom_i
                 file_name = epss_gen_file_name(
                     str(pingdom_i), "pingdom", file_name=file_name
                 )
                 pingdom_i = pingdom_i + 1
-            screenshot_driver.get(link)
+                screenshot_driver.get(link)
+                epss_content_loaded(screenshot_driver,".ng-star-inserted",link)
             time.sleep(5)
             epss_take_screenshot(file_name=file_name, driver=screenshot_driver)
             global success_link
