@@ -78,7 +78,6 @@ def epss_submit_by_form(tool, link, current_link):
 def epss_get_link_pingdom(tool, link, current_link):
     import requests
 
-    fail_pingdom = 0
     while 1:
         try:
             # Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
@@ -93,13 +92,7 @@ def epss_get_link_pingdom(tool, link, current_link):
             current_link.append(return_url)
             break
         except Exception as e:
-            if fail_pingdom <= 10:
-                print("Run test on " + link + " on Pingdom failed. Trying again")
-                fail_pingdom = fail_pingdom + 1
-                continue
-            else:
-                print("Run test on " + link + " on Pingdom failed. Skipping")
-                break
+            continue
 
 
 API_KEY = ""
@@ -118,7 +111,6 @@ def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
 
-    fail_gtmetrix = 0
     while 1:
         try:
             base_url = tool
@@ -158,13 +150,7 @@ def epss_get_link_gtmetrix(tool, link, current_link):
             current_link.append(report)
             break
         except Exception as e:
-            if fail_gtmetrix <= 10:
-                print("Run test on " + link + " on GTmetrix failed. Trying again")
-                fail_gtmetrix = fail_gtmetrix + 1
-                continue
-            else:
-                print("Run test on " + link + " on GTmetrix failed. Skipping")
-                break
+            continue
 
 
 def epss_thread_function(link):
@@ -257,7 +243,6 @@ def epss_user_input():
         elif input_link == "":
             continue
         INPUT_LINK.append(input_link)
-    print(epss_create_file_name_array())
     res_inputs = epss_send_link_for_test(INPUT_LINK)
     return res_inputs
 
@@ -374,10 +359,7 @@ def epss_screenshot_thread_function(group):
             if epss_is_tool(link=link, tool="pagespeed"):
                 parsed_url = urlparse(link)
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
-                if form_factor == 'desktop':
-                    file_name = file_names[1]
-                elif form_factor == 'mobile':
-                    file_name = file_names[2]
+                file_name = file_names[1] if form_factor == 'desktop' else file_names[2]
                 screenshot_driver.get(link)
                 epss_content_loaded(screenshot_driver, "div.PePDG", link)
             elif epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
@@ -385,7 +367,7 @@ def epss_screenshot_thread_function(group):
                 screenshot_driver.get(link)
                 epss_content_loaded(screenshot_driver, "main.page-report-content", link)
             elif epss_is_tool(link=link, tool="pingdom"):
-                file_name = file_names[4]
+                file_name = file_names[4] if use_gt_metrix else file_names[3]
                 screenshot_driver.get(link)
                 epss_content_loaded(screenshot_driver, ".ng-star-inserted", link)
             time.sleep(5)
