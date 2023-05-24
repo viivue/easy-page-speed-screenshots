@@ -18,7 +18,6 @@ options = webdriver.ChromeOptions()
 options.add_argument("--headless=new")
 options.add_argument("--log-level=3")
 
-threads = []
 """
 Define functions
 """
@@ -153,7 +152,7 @@ def epss_get_link_gtmetrix(tool, link, current_link):
             continue
 
 
-def epss_thread_function(link):
+def epss_result_thread_function(link):
     tools = [
         "https://pagespeed.web.dev/",
         "https://gtmetrix.com/",
@@ -207,8 +206,9 @@ def epss_send_link_for_test(links):
     global RESULT_LINKS
     RESULT_LINKS = []
     print("Getting results: ")
+    threads = []
     for link in links:
-        thread = threading.Thread(target=epss_thread_function, args=(link,))
+        thread = threading.Thread(target=epss_result_thread_function, args=(link,))
         threads.append(thread)
         thread.start()
     for thread in threads:
