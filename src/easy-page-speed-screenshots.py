@@ -228,13 +228,17 @@ def epss_user_input():
     print("2. No")
     choice = input()
     if int(choice) == 1:
-        print("Note: If you are using free GTmetrix account, remember to input 2 links only")
+        print(
+            "Note: If you are using free GTmetrix account, remember to input 2 links only"
+        )
         global use_gt_metrix
         use_gt_metrix = True
         print("Enter API Key for GTmetrix: ")
         global API_KEY
         API_KEY = input()
-    print("You can input multiple links (Pingdom & GTmetrix maybe block multiple request)")
+    print(
+        "You can input multiple links (Pingdom & GTmetrix maybe block multiple request)"
+    )
     print("Enter links to test (type 'done' to finish input): ")
     while 1:
         input_link = input()
@@ -297,16 +301,7 @@ def epss_take_screenshot(file_name, driver):
     driver.set_window_size(original_size["width"], original_size["height"])
 
 
-# append file name
-def epss_gen_file_name(number, tools, file_name, form_factor=""):
-    current_date = datetime.today().strftime("%Y%m%d")
-    new_file_name = tools + "-" + number + "-" + current_date + "-" + file_name
-    if form_factor:
-        return new_file_name + "-" + form_factor + ".png"
-    else:
-        return new_file_name + ".png"
-
-# append file name
+# create file names from input links
 def epss_create_file_name_array():
     filename_group_array = []
     gps_i = 1
@@ -317,27 +312,62 @@ def epss_create_file_name_array():
         filenames.append(link)
         link = epss_replace_url(link)
         current_date = datetime.today().strftime("%Y%m%d")
-        gps_desktop = "gps" + "-" + str(gps_i) + "-" + current_date + "-" + link + "-desktop" + ".png"
-        gps_mobile = "gps" + "-" + str(gps_i+1) + "-" + current_date + "-" + link + "-mobile" + ".png"
+        gps_desktop = (
+            "gps"
+            + "-"
+            + str(gps_i)
+            + "-"
+            + current_date
+            + "-"
+            + link
+            + "-desktop"
+            + ".png"
+        )
+        gps_mobile = (
+            "gps"
+            + "-"
+            + str(gps_i + 1)
+            + "-"
+            + current_date
+            + "-"
+            + link
+            + "-mobile"
+            + ".png"
+        )
         filenames.append(gps_desktop)
         filenames.append(gps_mobile)
         gps_i = gps_i + 2
         if use_gt_metrix:
-            gtmetrix_name = "gtmetrix" + "-" + str(gtmetrix_i) + "-" + current_date + "-" + link + ".png"
+            gtmetrix_name = (
+                "gtmetrix"
+                + "-"
+                + str(gtmetrix_i)
+                + "-"
+                + current_date
+                + "-"
+                + link
+                + ".png"
+            )
             gtmetrix_i = gtmetrix_i + 1
             filenames.append(gtmetrix_name)
-        pingdom_name = "pingdom" + "-" + str(pingdom_i) + "-" + current_date + "-" + link + ".png"
+        pingdom_name = (
+            "pingdom" + "-" + str(pingdom_i) + "-" + current_date + "-" + link + ".png"
+        )
         pingdom_i = pingdom_i + 1
         filenames.append(pingdom_name)
         filename_group_array.append(filenames)
     return filename_group_array
 
+
+# get corresponding name group for result group
 def epss_get_file_name_group(link):
     groups = epss_create_file_name_array()
     for filenames in groups:
-        if (link == filenames[0]):
+        if link == filenames[0]:
             return filenames
 
+
+# function use in screenshot thread
 success_link = []
 
 
@@ -349,7 +379,6 @@ def epss_screenshot_thread_function(group):
             "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36"
         },
     )
-
     for link in group:
         file_names = epss_get_file_name_group(group[-1])
         print(link)
@@ -359,7 +388,7 @@ def epss_screenshot_thread_function(group):
             if epss_is_tool(link=link, tool="pagespeed"):
                 parsed_url = urlparse(link)
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
-                file_name = file_names[1] if form_factor == 'desktop' else file_names[2]
+                file_name = file_names[1] if form_factor == "desktop" else file_names[2]
                 screenshot_driver.get(link)
                 epss_content_loaded(screenshot_driver, "div.PePDG", link)
             elif epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
