@@ -225,7 +225,7 @@ def epss_user_input():
     global INPUT_LINK
     INPUT_LINK = []
     global OP_DIR
-    print("Input directory path to store screenshot result: ")
+    print("Input full directory path to store screenshot result: ")
     OP_DIR = input()
     print("Do you want to test with GTmetrix (need an API key to proceed)?")
     print("1. Yes")
@@ -437,9 +437,9 @@ def epss_main():
             print("Result URLs of taken screenshots: ")
             for link in success_link:
                 print(link + "\n")
-            print("Press any key to run again or type 'exit' to exit...")
+            print("Press any key to exit the tool...")
             choice = input()
-            if choice == "exit":
+            if choice != "":
                 break
     except Exception as e:
         print(e)
