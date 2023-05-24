@@ -23,13 +23,18 @@ threads = []
 Define functions
 """
 
-#check if specific content exists
+use_gt_metrix = False
+
+# check if specific content exists
 def epss_content_loaded(driver, selector, link):
     try:
-        report = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+        report = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+        )
     except Exception as e:
         print("Content on " + link + " took too long to load. Skipping")
-        return    
+        return
+
 
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
@@ -52,7 +57,9 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
     from urllib.parse import unquote
 
     try:
-        report = WebDriverWait(get_link_driver, 40).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.PePDG')))
+        report = WebDriverWait(get_link_driver, 40).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.PePDG"))
+        )
     except Exception as e:
         print("Running test on " + link + " on GPS took so long. Skipping")
         return ""
@@ -66,9 +73,11 @@ def epss_submit_by_form(tool, link, current_link):
         res = res.split("?", 1)[0]
     current_link.append(res)
 
-#get report of pingdom with api
+
+# get report of pingdom with api
 def epss_get_link_pingdom(tool, link, current_link):
     import requests
+
     fail_pingdom = 0
     while 1:
         try:
@@ -92,6 +101,7 @@ def epss_get_link_pingdom(tool, link, current_link):
                 print("Run test on " + link + " on Pingdom failed. Skipping")
                 break
 
+
 API_KEY = ""
 
 # check if json field exists
@@ -101,10 +111,13 @@ def epss_json_field_exists(field, json):
     else:
         return False
 
+
 # get report of gtmetrix with api
+# docs: https://gtmetrix.com/api/docs/2.0/#api-test-start
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
+
     fail_gtmetrix = 0
     while 1:
         try:
@@ -175,7 +188,7 @@ def epss_thread_function(link):
             )
             worker_threads.append(worker_thread)
             worker_thread.start()
-        elif epss_is_tool(link=tool, tool="gtmetrix"):
+        elif epss_is_tool(link=tool, tool="gtmetrix") and use_gt_metrix:
             worker_thread = threading.Thread(
                 target=epss_get_link_gtmetrix,
                 args=(
@@ -224,9 +237,18 @@ def epss_user_input():
     global OP_DIR
     print("Enter save directory: ")
     OP_DIR = input()
-    print("Enter API Key for GTmetrix: ")
-    global API_KEY
-    API_KEY = input()
+    print("Do you want to test with GTmetrix ?")
+    print("1. Yes")
+    print("2. No")
+    choice = input()
+    if int(choice) == 1:
+        print("Note: If you are using free GTmetrix account, remember to input 2 links only")
+        global use_gt_metrix
+        use_gt_metrix = True
+        print("Enter API Key for GTmetrix: ")
+        global API_KEY
+        API_KEY = input()
+    print("You can input multiple links (Pingdom & GTmetrix maybe block multiple request)")
     print("Enter links to test (type 'done' to finish input): ")
     while 1:
         input_link = input()
@@ -304,6 +326,7 @@ gtmetrix_i = 1
 pingdom_i = 1
 success_link = []
 
+
 def epss_screenshot_thread_function(group):
     screenshot_driver = webdriver.Chrome(options=options)
     screenshot_driver.execute_cdp_cmd(
@@ -327,15 +350,15 @@ def epss_screenshot_thread_function(group):
                 )
                 gps_i = gps_i + 1
                 screenshot_driver.get(link)
-                epss_content_loaded(screenshot_driver,"div.PePDG",link)
-            elif epss_is_tool(link=link, tool="gtmetrix"):
+                epss_content_loaded(screenshot_driver, "div.PePDG", link)
+            elif epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
                 global gtmetrix_i
                 file_name = epss_gen_file_name(
                     str(gtmetrix_i), "gtmetrix", file_name=file_name
                 )
                 gtmetrix_i = gtmetrix_i + 1
                 screenshot_driver.get(link)
-                epss_content_loaded(screenshot_driver,"main.page-report-content",link)
+                epss_content_loaded(screenshot_driver, "main.page-report-content", link)
             elif epss_is_tool(link=link, tool="pingdom"):
                 global pingdom_i
                 file_name = epss_gen_file_name(
@@ -343,7 +366,7 @@ def epss_screenshot_thread_function(group):
                 )
                 pingdom_i = pingdom_i + 1
                 screenshot_driver.get(link)
-                epss_content_loaded(screenshot_driver,".ng-star-inserted",link)
+                epss_content_loaded(screenshot_driver, ".ng-star-inserted", link)
             time.sleep(5)
             epss_take_screenshot(file_name=file_name, driver=screenshot_driver)
             global success_link
@@ -382,7 +405,7 @@ def epss_main():
             print("Finish Generating Screenshot\n")
             print("Screenshot took: ")
             for link in success_link:
-                    print(link + "\n")
+                print(link + "\n")
             print("Press any key to run again or type 'exit' to exit...")
             choice = input()
             if choice == "exit":
