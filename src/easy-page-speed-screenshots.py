@@ -449,7 +449,7 @@ def epss_main():
                 print(link + "\n")
             print("To quit the tool, type 'exit'")
             choice = input()
-            if choice != "exit":
+            if choice == "exit":
                 break
     except Exception as e:
         print(e)
