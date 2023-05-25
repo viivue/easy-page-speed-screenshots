@@ -432,7 +432,7 @@ def epss_main():
         epss_execute_screenshots(links=links)
         pb.stop()
         pb_frame.grid_forget()
-        tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshot")
+        tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshots")
     except Exception as e:
         print(e)
         input()
@@ -474,10 +474,10 @@ def epss_start():
 
 main = tkinter.Tk()
 
-main.title("Easy page speed screenshots")
+main.title("Easy Page Speed Screenshots")
 
 main_label = tkinter.Label(
-    main, text="Easy Page Speed Screenshot", font=("Helvetica", 18, "bold")
+    main, text="Easy Page Speed Screenshots", font=("Helvetica", 18, "bold")
 )
 main_label.grid(row=0, column=0, pady=10)
 
