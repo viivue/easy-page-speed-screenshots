@@ -3,7 +3,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from tqdm import tqdm
+from alive_progress import alive_bar
 import time
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
@@ -31,9 +31,10 @@ def epss_content_loaded(driver, selector, link):
         report = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, selector))
         )
+        return True
     except Exception as e:
-        print("Content on " + link + " took too long to load. Skipping")
-        return
+        print("Content on " + link + " took too long to load. Skipping screenshot")
+        return False
 
 
 # submit link for testing
@@ -64,6 +65,7 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
         print("Running test on " + link + " on GPS took so long. Skipping")
         return ""
     new_link = get_link_driver.current_url
+    get_link_driver.quit()
     return unquote(new_link)
 
 
@@ -212,11 +214,10 @@ def epss_send_link_for_test(links):
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
         threads.append(thread)
         thread.start()
-    with tqdm(threads, ncols=65) as pbar:
+    with alive_bar(len(threads)) as bar:
         for thread in threads:
             thread.join()
-            if not thread.is_alive():
-                pbar.update(1)
+            bar()
     return RESULT_LINKS
 
 
@@ -281,6 +282,7 @@ def epss_replace_url(url):
     url = url.replace("://", "-")
     url = url.replace("/", "-")
     url = url.replace(".", "-")
+    url = url.replace(":", "-")
     # if the url ends with '/' the url will contain '-' at the end, remove it
     if url.endswith("-"):
         url = url.removesuffix("-")
@@ -389,6 +391,7 @@ def epss_screenshots_thread_function(group):
     )
     for link in group:
         file_names = epss_get_file_name_group(group[-1])
+        can_take_screenshot = True
         if link in INPUT_LINK:
             continue
         try:
@@ -397,24 +400,24 @@ def epss_screenshots_thread_function(group):
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
                 file_name = file_names[1] if form_factor == "desktop" else file_names[2]
                 screenshots_driver.get(link)
-                epss_content_loaded(screenshots_driver, "div.PePDG", link)
+                can_take_screenshot = epss_content_loaded(screenshots_driver, "div.PePDG", link)
             elif epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
                 file_name = file_names[3]
                 screenshots_driver.get(link)
-                epss_content_loaded(screenshots_driver, "main.page-report-content", link)
+                can_take_screenshot = epss_content_loaded(screenshots_driver, "main.page-report-content", link)
             elif epss_is_tool(link=link, tool="pingdom"):
                 file_name = file_names[4] if use_gt_metrix else file_names[3]
                 screenshots_driver.get(link)
-                epss_content_loaded(screenshots_driver, "app-report.ng-star-inserted", link)
+                can_take_screenshot = epss_content_loaded(screenshots_driver, "app-report.ng-star-inserted", link)
             time.sleep(5)
-            epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
+            if can_take_screenshot:
+                epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
             global success_link
             success_link.append(link)
         except Exception as e:
             print(e)
             print("Error at: ", link)
             continue
-
 
 # execute screenshots for all link input
 def epss_execute_screenshots(links):
@@ -426,12 +429,10 @@ def epss_execute_screenshots(links):
         )
         screenshots_threads.append(screenshots_thread)
         screenshots_thread.start()
-    with tqdm(screenshots_threads, ncols=65) as pbar:
+    with alive_bar(len(screenshots_threads)) as bar:
         for thread in screenshots_threads:
             thread.join()
-            if not thread.is_alive():
-                pbar.update(1)
-
+            bar()
 
 """
 Main Function
