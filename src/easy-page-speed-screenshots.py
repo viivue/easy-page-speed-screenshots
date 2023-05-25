@@ -213,7 +213,7 @@ def epss_result_thread_function(link):
 def epss_send_link_for_test(links):
     global RESULT_LINKS
     RESULT_LINKS = []
-    print("Analyze requests: ")
+    pb_label.config(text="Analyzing requests")
     threads = []
     for link in links:
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
@@ -401,7 +401,7 @@ def epss_screenshots_thread_function(group):
 
 # execute screenshots for all link input
 def epss_execute_screenshots(links):
-    print("Screenshots: ")
+    pb_label.config(text="Screenshot")
     screenshots_threads = []
     for group in links:
         screenshots_thread = threading.Thread(
@@ -424,10 +424,11 @@ def epss_main():
         links = epss_add_form_factor(links=links)
         epss_execute_screenshots(links=links)
         pb.stop()
-        pb.grid_forget()
+        pb_frame.grid_forget()
+        result = ''
         for link in success_link:
-            result_text.insert(0, link + "\n")
-        result_text.grid(row=5,column=0)
+            result += link + "\n"
+        tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshot. Report taken:\n" + result)
     except Exception as e:
         print(e)
         input()
@@ -459,7 +460,7 @@ def epss_start():
     INPUT_LINK = [line.strip() for line in links.splitlines()]
     execute_thread = threading.Thread(target=epss_main, args=())
     execute_thread.start()
-    pb.grid(row=5,column=0)
+    pb_frame.grid(row=5,column=0,pady=5)
     pb.start()
 
 
@@ -467,8 +468,8 @@ main = tkinter.Tk()
 
 main.title("Easy page speed screenshots")
 
-main_label = tkinter.Label(main, text="Easy Page Speed Screenshot (EPSS)")
-main_label.grid(row=0, column=0)
+main_label = tkinter.Label(main, text="Easy Page Speed Screenshot",font=('Helvetica', 18, 'bold'))
+main_label.grid(row=0, column=0, pady=10)
 
 # select folder
 folder_frame = tkinter.Frame(main)
@@ -510,8 +511,11 @@ test_button = tkinter.Button(test_frame, text="Start Test", command= epss_start)
 test_button.grid(row=0, column=0, pady=10)
 
 # progress bar
-pb = ttk.Progressbar(main, orient='horizontal', mode='indeterminate', length=280)
-pb_label = tkinter.Label(main)
+pb_frame = tkinter.Frame(main)
+pb = ttk.Progressbar(pb_frame, orient='horizontal', mode='indeterminate', length=280)
+pb.grid(row=0,column=0)
+pb_label = tkinter.Label(pb_frame)
+pb_label.grid(row=1, column=0)
 # result
 result_text = tkinter.Text(main, height=20)
 
