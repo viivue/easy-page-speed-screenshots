@@ -1,5 +1,6 @@
 
-# TODO: Show result to app (or somewhere convienient to copy)  
+# TODO: Show result to app (or somewhere convienient to copy)
+# TODO: Check API Key reach limit (GTmetrix)  
 
 import tkinter
 from tkinter import ttk
@@ -120,7 +121,7 @@ def epss_json_field_exists(field, json):
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
-
+    print(API_KEY)
     while 1:
         try:
             base_url = tool
@@ -133,14 +134,14 @@ def epss_get_link_gtmetrix(tool, link, current_link):
                     "type": "test",
                     "attributes": {
                        "url": "%s",
-                       "adblock":1
+                       "adblock":0
                     }
                  }
             }
             """ % (
                 link
             )
-            resp = requests.post(url, auth=(API_KEY, ""), headers=headers, data=data)
+            resp = requests.post(url, auth=(API_KEY.lstrip(), ""), headers=headers, data=data)
             resp = resp.json()
             report = ""
             while 1:
@@ -148,7 +149,7 @@ def epss_get_link_gtmetrix(tool, link, current_link):
                 self_link = epss_json_field_exists("self", links)
                 test_result = requests.get(
                     self_link,
-                    auth=(API_KEY, ""),
+                    auth=(API_KEY.lstrip(), ""),
                     headers=headers,
                 )
                 test_result = test_result.json()
@@ -160,6 +161,7 @@ def epss_get_link_gtmetrix(tool, link, current_link):
             current_link.append(report)
             break
         except Exception as e:
+            print(e)
             continue
 
 
@@ -232,6 +234,7 @@ def epss_send_link_for_test(links):
 def epss_user_input():
     global INPUT_LINK
     global OP_DIR
+    global API_KEY
     res_inputs = epss_send_link_for_test(INPUT_LINK)
     return res_inputs
 
@@ -448,6 +451,7 @@ def epss_toggle_api_key_field():
 # browse folder path
 def epss_browse_button():
     directory = filedialog.askdirectory()
+    folder_entry.delete(0, "end")
     folder_entry.insert(0, directory)
     global OP_DIR
     OP_DIR = directory
@@ -459,6 +463,8 @@ def epss_start():
     links = links_text.get("1.0", "end-1c")
     global INPUT_LINK
     INPUT_LINK = [line.strip() for line in links.splitlines()]
+    global API_KEY
+    API_KEY = gtmetrix_entry.get()
     execute_thread = threading.Thread(target=epss_main, args=())
     execute_thread.start()
     result_text.grid_forget()
