@@ -405,7 +405,7 @@ def epss_screenshots_thread_function(group):
             elif epss_is_tool(link=link, tool="pingdom"):
                 file_name = file_names[4] if use_gt_metrix else file_names[3]
                 screenshots_driver.get(link)
-                epss_content_loaded(screenshots_driver, ".ng-star-inserted", link)
+                epss_content_loaded(screenshots_driver, "app-report.ng-star-inserted", link)
             time.sleep(5)
             epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
             global success_link
