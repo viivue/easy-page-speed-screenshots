@@ -3,7 +3,8 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from alive_progress import alive_bar
+from tqdm import tqdm
+import sys
 import time
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
@@ -16,7 +17,9 @@ Define Global Variables
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless=new")
-options.add_experimental_option('excludeSwitches', ['enable-logging']) #disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
+options.add_experimental_option(
+    "excludeSwitches", ["enable-logging"]
+)  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
 """
@@ -24,6 +27,22 @@ Define functions
 """
 
 use_gt_metrix = False
+
+running = True
+
+# running dot
+def epss_running_dot_animation():
+    while running:
+        for dot_count in range(5):
+            sys.stdout.write(".")
+            sys.stdout.flush()
+            time.sleep(0.5)
+        sys.stdout.write("\b" * 5)
+        sys.stdout.flush()  
+        sys.stdout.write(" " * 5)
+        sys.stdout.flush()
+        sys.stdout.write("\b" * 5)
+        sys.stdout.flush()
 
 # check if specific content exists
 def epss_content_loaded(driver, selector, link):
@@ -214,16 +233,22 @@ def epss_send_link_for_test(links):
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
         threads.append(thread)
         thread.start()
-    with alive_bar(len(threads)) as bar:
-        for thread in threads:
-            thread.join()
-            bar()
+    running_thread = threading.Thread(target=epss_running_dot_animation, args=())
+    running_thread.start()
+    for thread in tqdm(threads, ncols=65):
+        thread.join()
+    global running
+    running = False
+    running_thread.join()
+    running = True
+    
     return RESULT_LINKS
 
 
 # collect user input link
 def epss_user_input():
-    print("""
+    print(
+        """
 Easy Page Speed Screenshot (EPSS)
 -----
 Bulk save page speed screenshots automatically.
@@ -232,7 +257,8 @@ List of tools supported:
 • https://gtmetrix.com/
 • https://tools.pingdom.com/
 -----
-    """)
+    """
+    )
     global INPUT_LINK
     INPUT_LINK = []
     global OP_DIR
@@ -248,7 +274,9 @@ List of tools supported:
         print("Enter GTmextrix API key (required): ")
         global API_KEY
         API_KEY = input()
-    print("Input site URLs for the page speed screenshots (use <Enter> for multiple links & type 'done' to take screenshots): ")
+    print(
+        "Input site URLs for the page speed screenshots (use <Enter> for multiple links & type 'done' to take screenshots): "
+    )
     while 1:
         input_link = input()
         if input_link == "done":
@@ -400,15 +428,21 @@ def epss_screenshots_thread_function(group):
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
                 file_name = file_names[1] if form_factor == "desktop" else file_names[2]
                 screenshots_driver.get(link)
-                can_take_screenshot = epss_content_loaded(screenshots_driver, "div.PePDG", link)
+                can_take_screenshot = epss_content_loaded(
+                    screenshots_driver, "div.PePDG", link
+                )
             elif epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
                 file_name = file_names[3]
                 screenshots_driver.get(link)
-                can_take_screenshot = epss_content_loaded(screenshots_driver, "main.page-report-content", link)
+                can_take_screenshot = epss_content_loaded(
+                    screenshots_driver, "main.page-report-content", link
+                )
             elif epss_is_tool(link=link, tool="pingdom"):
                 file_name = file_names[4] if use_gt_metrix else file_names[3]
                 screenshots_driver.get(link)
-                can_take_screenshot = epss_content_loaded(screenshots_driver, "app-report.ng-star-inserted", link)
+                can_take_screenshot = epss_content_loaded(
+                    screenshots_driver, "app-report.ng-star-inserted", link
+                )
             time.sleep(5)
             if can_take_screenshot:
                 epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
@@ -418,6 +452,7 @@ def epss_screenshots_thread_function(group):
             print(e)
             print("Error at: ", link)
             continue
+
 
 # execute screenshots for all link input
 def epss_execute_screenshots(links):
@@ -429,10 +464,15 @@ def epss_execute_screenshots(links):
         )
         screenshots_threads.append(screenshots_thread)
         screenshots_thread.start()
-    with alive_bar(len(screenshots_threads)) as bar:
-        for thread in screenshots_threads:
-            thread.join()
-            bar()
+    running_thread = threading.Thread(target=epss_running_dot_animation, args=())
+    running_thread.start()
+    for thread in tqdm(screenshots_threads, ncols=65):
+        thread.join()
+    global running
+    running = False
+    running_thread.join()
+    running = True
+    
 
 """
 Main Function
