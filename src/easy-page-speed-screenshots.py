@@ -2,6 +2,7 @@
 # TODO: Show result to app (or somewhere convienient to copy)
 # TODO: Check API Key reach limit (GTmetrix)  
 
+import os
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog
@@ -10,12 +11,12 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from tqdm import tqdm
 import time
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 import threading
+import sys
 
 """
 Define Global Variables
@@ -34,6 +35,13 @@ Define functions
 
 use_gt_metrix = False
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
+
 # check if specific content exists
 def epss_content_loaded(driver, selector, link):
     try:
@@ -42,13 +50,12 @@ def epss_content_loaded(driver, selector, link):
         )
         return True
     except Exception as e:
-        print("Content on " + link + " took too long to load. Skipping screenshot")
         return False
 
 
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
-    get_link_driver = webdriver.Chrome(options=options)
+    get_link_driver = webdriver.Chrome(executable_path=resource_path('./driver/chromedriver.exe'),options=options)
     get_link_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
@@ -71,7 +78,6 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
             EC.presence_of_element_located((By.CSS_SELECTOR, "div.PePDG"))
         )
     except Exception as e:
-        print("Running test on " + link + " on GPS took so long. Skipping")
         return ""
     new_link = get_link_driver.current_url
     get_link_driver.quit()
@@ -121,7 +127,6 @@ def epss_json_field_exists(field, json):
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
-    print(API_KEY)
     while 1:
         try:
             base_url = tool
@@ -161,7 +166,6 @@ def epss_get_link_gtmetrix(tool, link, current_link):
             current_link.append(report)
             break
         except Exception as e:
-            print(e)
             continue
 
 
@@ -224,7 +228,7 @@ def epss_send_link_for_test(links):
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
         threads.append(thread)
         thread.start()
-    for thread in tqdm(threads, ncols=65):
+    for thread in threads:
         thread.join()
 
     return RESULT_LINKS
@@ -361,7 +365,7 @@ success_link = []
 
 
 def epss_screenshots_thread_function(group):
-    screenshots_driver = webdriver.Chrome(options=options)
+    screenshots_driver = webdriver.Chrome(executable_path=resource_path('./driver/chromedriver.exe'),options=options)
     screenshots_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
@@ -400,8 +404,6 @@ def epss_screenshots_thread_function(group):
             global success_link
             success_link.append(link)
         except Exception as e:
-            print(e)
-            print("Error at: ", link)
             continue
     screenshots_driver.quit()
 
@@ -416,7 +418,7 @@ def epss_execute_screenshots(links):
         )
         screenshots_threads.append(screenshots_thread)
         screenshots_thread.start()
-    for thread in tqdm(screenshots_threads, ncols=65):
+    for thread in screenshots_threads:
         thread.join()
 
 
@@ -434,7 +436,7 @@ def epss_main():
         pb_frame.grid_forget()
         tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshots")
     except Exception as e:
-        print(e)
+        tkinter.messagebox.showerror(title=e, message=e)
         input()
 
 
