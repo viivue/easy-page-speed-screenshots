@@ -1,3 +1,6 @@
+
+# TODO: Show result to app (or somewhere convienient to copy)  
+
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog
@@ -397,6 +400,7 @@ def epss_screenshots_thread_function(group):
             print(e)
             print("Error at: ", link)
             continue
+    screenshots_driver.quit()
 
 
 # execute screenshots for all link input
@@ -425,10 +429,7 @@ def epss_main():
         epss_execute_screenshots(links=links)
         pb.stop()
         pb_frame.grid_forget()
-        result = ''
-        for link in success_link:
-            result += link + "\n"
-        tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshot. Report taken:\n" + result)
+        tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshot")
     except Exception as e:
         print(e)
         input()
@@ -460,7 +461,8 @@ def epss_start():
     INPUT_LINK = [line.strip() for line in links.splitlines()]
     execute_thread = threading.Thread(target=epss_main, args=())
     execute_thread.start()
-    pb_frame.grid(row=5,column=0,pady=5)
+    result_text.grid_forget()
+    pb_frame.grid(row=5, column=0, pady=5)
     pb.start()
 
 
@@ -468,7 +470,9 @@ main = tkinter.Tk()
 
 main.title("Easy page speed screenshots")
 
-main_label = tkinter.Label(main, text="Easy Page Speed Screenshot",font=('Helvetica', 18, 'bold'))
+main_label = tkinter.Label(
+    main, text="Easy Page Speed Screenshot", font=("Helvetica", 18, "bold")
+)
 main_label.grid(row=0, column=0, pady=10)
 
 # select folder
@@ -493,30 +497,32 @@ links_text.grid(row=1, column=0, pady=5, padx=10)
 
 gtmetrix_frame = tkinter.Frame(main)
 gtmetrix_frame.grid(row=3, column=0)
-gtmetrix_checkbox = tkinter.Checkbutton(gtmetrix_frame, command=epss_toggle_api_key_field)
+gtmetrix_checkbox = tkinter.Checkbutton(
+    gtmetrix_frame, command=epss_toggle_api_key_field
+)
 gtmetrix_checkbox.grid(row=0, column=0)
 gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix")
 gtmetrix_label.grid(row=0, column=1)
 gtmetrix_api_frame = tkinter.Frame(main)
 gtmetrix_api_label = tkinter.Label(gtmetrix_api_frame, text="API Key")
-gtmetrix_api_label.grid(row=0,column=0)
+gtmetrix_api_label.grid(row=0, column=0)
 gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=50)
-gtmetrix_entry.grid(row=0,column=1)
+gtmetrix_entry.grid(row=0, column=1)
 
 
 # test button
 test_frame = tkinter.Frame(main)
 test_frame.grid(row=6, column=0)
-test_button = tkinter.Button(test_frame, text="Start Test", command= epss_start)
+test_button = tkinter.Button(test_frame, text="Start Test", command=epss_start)
 test_button.grid(row=0, column=0, pady=10)
 
 # progress bar
 pb_frame = tkinter.Frame(main)
-pb = ttk.Progressbar(pb_frame, orient='horizontal', mode='indeterminate', length=280)
-pb.grid(row=0,column=0)
+pb = ttk.Progressbar(pb_frame, orient="horizontal", mode="indeterminate", length=280)
+pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
 pb_label.grid(row=1, column=0)
 # result
-result_text = tkinter.Text(main, height=20)
+result_text = tkinter.Text(main, height=20, state="disabled")
 
 main.mainloop()
