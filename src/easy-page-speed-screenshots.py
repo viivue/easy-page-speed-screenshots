@@ -158,6 +158,11 @@ def epss_get_link_gtmetrix(tool, link, current_link):
             resp = requests.post(
                 url, auth=(API_KEY.lstrip(), ""), headers=headers, data=data
             )
+            if resp.status_code == 402:
+                tkinter.messagebox.showwarning(title="API Key", message="Your API Key has reached limit")
+                global use_gt_metrix
+                use_gt_metrix = False
+                return
             resp = resp.json()
             report = ""
             while 1:
