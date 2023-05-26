@@ -21,6 +21,7 @@ from urllib.parse import parse_qs
 from datetime import datetime
 import threading
 import sys
+
 """
 Define Global Variables
 """
@@ -456,8 +457,10 @@ def epss_main():
         epss_execute_screenshots(links=links)
         pb.stop()
         pb_frame.grid_forget()
-        tkinter.messagebox.showinfo(title="Finish", message="Result screenshots saved successfully!")
-        test_button.config(text="Start Test", state="normal")
+        tkinter.messagebox.showinfo(
+            title="Finish", message="Result screenshots saved successfully!"
+        )
+        test_button.config(text="Take screenshots", state="normal")
         gtmetrix_checkbox.config(state="normal")
         folder_button.config(state="normal")
         folder_entry.config(state="normal")
@@ -485,6 +488,7 @@ def epss_browse_button():
     global OP_DIR
     OP_DIR = directory
 
+
 execute_threads = []
 
 # start test
@@ -509,29 +513,35 @@ def epss_start():
 main = tkinter.Tk()
 
 main.title("Easy Page Speed Screenshots")
-program_directory=sys.path[0]
-main.iconbitmap(tkinter.PhotoImage(epss_resource_path('./assets/icons8-screenshot-64.ico')))
-main.geometry("730x500")
+program_directory = sys.path[0]
+main.iconbitmap(
+    tkinter.PhotoImage(epss_resource_path("./assets/icons8-screenshot-64.ico"))
+)
 main.resizable(False, False)
 
+main_frame = tkinter.Frame(main)
+main_frame.grid(row=0, column=0, padx=10, pady=10)
+
 main_label = tkinter.Label(
-    main, text="Easy Page Speed Screenshots", font=("Helvetica", 18, "bold")
+    main_frame, text="Easy Page Speed Screenshots", font=("Helvetica", 18, "bold")
 )
 main_label.grid(row=0, column=0, pady=10)
 
 # select folder
-folder_frame = tkinter.Frame(main)
+folder_frame = tkinter.Frame(main_frame)
 folder_frame.grid(row=1, column=0)
 folder_label = tkinter.Label(folder_frame, text="Choose result folder:")
 folder_label.grid(row=0, column=0)
-folder_entry = tkinter.Entry(folder_frame, width=80)
+folder_entry = tkinter.Entry(folder_frame, width=50)
 folder_entry.grid(row=0, column=1, padx=10)
-folder_button = tkinter.Button(folder_frame, text="Browse directory", command=epss_browse_button)
+folder_button = tkinter.Button(
+    folder_frame, text="Browse directory", command=epss_browse_button
+)
 folder_button.grid(row=0, column=2)
 
 # links
-links_frame = tkinter.Frame(main)
-links_frame.grid(row=2, column=0)
+links_frame = tkinter.Frame(main_frame)
+links_frame.grid(row=2, column=0,pady=15)
 links_label = tkinter.Label(links_frame, text="URLs for the page speed screenshots")
 links_label.grid(row=0, column=0)
 links_text = tkinter.Text(links_frame, height=20)
@@ -539,7 +549,7 @@ links_text.grid(row=1, column=0, pady=5, padx=10)
 
 # gtmetrix
 
-gtmetrix_frame = tkinter.Frame(main)
+gtmetrix_frame = tkinter.Frame(main_frame)
 gtmetrix_frame.grid(row=3, column=0)
 gtmetrix_checkbox = tkinter.Checkbutton(
     gtmetrix_frame, command=epss_toggle_api_key_field
@@ -547,7 +557,7 @@ gtmetrix_checkbox = tkinter.Checkbutton(
 gtmetrix_checkbox.grid(row=0, column=0)
 gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix")
 gtmetrix_label.grid(row=0, column=1)
-gtmetrix_api_frame = tkinter.Frame(main)
+gtmetrix_api_frame = tkinter.Frame(main_frame)
 gtmetrix_api_label = tkinter.Label(gtmetrix_api_frame, text="API Key")
 gtmetrix_api_label.grid(row=0, column=0)
 gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=50)
@@ -555,18 +565,19 @@ gtmetrix_entry.grid(row=0, column=1)
 
 
 # test button
-test_frame = tkinter.Frame(main)
+test_frame = tkinter.Frame(main_frame)
 test_frame.grid(row=6, column=0)
 test_button = tkinter.Button(test_frame, text="Take screenshots", command=epss_start)
 test_button.grid(row=0, column=0, pady=10)
 
+# copyright
+main_label = tkinter.Label(main_frame, text="Copyright by Viivue ©")
+main_label.grid(row=7, column=0)
 # progress bar
-pb_frame = tkinter.Frame(main)
+pb_frame = tkinter.Frame(main_frame)
 pb = ttk.Progressbar(pb_frame, orient="horizontal", mode="indeterminate", length=280)
 pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
 pb_label.grid(row=1, column=0)
-# result
-result_text = tkinter.Text(main, height=20, state="disabled")
 
 main.mainloop()
