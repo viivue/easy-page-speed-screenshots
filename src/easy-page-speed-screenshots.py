@@ -1,6 +1,5 @@
-
 # TODO: Show result to app (or somewhere convienient to copy)
-# TODO: Check API Key reach limit (GTmetrix)  
+# TODO: Check API Key reach limit (GTmetrix)
 
 import os
 import tkinter
@@ -35,12 +34,14 @@ Define functions
 
 use_gt_metrix = False
 
+
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.dirname(__file__)
     return os.path.join(base_path, relative_path)
+
 
 # check if specific content exists
 def epss_content_loaded(driver, selector, link):
@@ -55,7 +56,9 @@ def epss_content_loaded(driver, selector, link):
 
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
-    get_link_driver = webdriver.Chrome(executable_path=resource_path('./driver/chromedriver.exe'),options=options)
+    get_link_driver = webdriver.Chrome(
+        executable_path=resource_path("./driver/chromedriver.exe"), options=options
+    )
     get_link_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
@@ -127,6 +130,7 @@ def epss_json_field_exists(field, json):
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
     from requests.structures import CaseInsensitiveDict
+
     while 1:
         try:
             base_url = tool
@@ -146,7 +150,9 @@ def epss_get_link_gtmetrix(tool, link, current_link):
             """ % (
                 link
             )
-            resp = requests.post(url, auth=(API_KEY.lstrip(), ""), headers=headers, data=data)
+            resp = requests.post(
+                url, auth=(API_KEY.lstrip(), ""), headers=headers, data=data
+            )
             resp = resp.json()
             report = ""
             while 1:
@@ -266,6 +272,8 @@ def epss_replace_url(url):
     url = url.replace("/", "-")
     url = url.replace(".", "-")
     url = url.replace(":", "-")
+    url = url.replace("?", "-")
+    url = url.replace("=", "-")
     # if the url ends with '/' the url will contain '-' at the end, remove it
     if url.endswith("-"):
         url = url.removesuffix("-")
@@ -297,9 +305,10 @@ def epss_take_screenshots(file_name, driver):
 # create file names from input links
 def epss_create_file_name_array():
     filename_group_array = []
+    n = len(INPUT_LINK)
     gps_i = 1
-    gtmetrix_i = 1
-    pingdom_i = 1
+    gtmetrix_i = 2*n + 1
+    pingdom_i = 3*n + 1 if use_gt_metrix else 2*n + 1
     for link in INPUT_LINK:
         filenames = []
         filenames.append(link)
@@ -365,7 +374,9 @@ success_link = []
 
 
 def epss_screenshots_thread_function(group):
-    screenshots_driver = webdriver.Chrome(executable_path=resource_path('./driver/chromedriver.exe'),options=options)
+    screenshots_driver = webdriver.Chrome(
+        executable_path=resource_path("./driver/chromedriver.exe"), options=options
+    )
     screenshots_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
@@ -435,9 +446,9 @@ def epss_main():
         pb.stop()
         pb_frame.grid_forget()
         tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshots")
+        test_button.config(text="Start Test", state="normal")
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
-        input()
 
 
 # set use GTmetrix & toggle insert field
@@ -458,6 +469,7 @@ def epss_browse_button():
     global OP_DIR
     OP_DIR = directory
 
+
 execute_threads = []
 
 # start test
@@ -469,7 +481,8 @@ def epss_start():
     API_KEY = gtmetrix_entry.get()
     execute_thread = threading.Thread(target=epss_main, args=())
     execute_thread.start()
-    result_text.grid_forget()
+    # result_text.grid_forget()
+    test_button.config(text="Taking Screenshots", state="disabled")
     pb_frame.grid(row=5, column=0, pady=5)
     pb.start()
 
