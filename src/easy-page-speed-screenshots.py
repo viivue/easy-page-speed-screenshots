@@ -456,7 +456,7 @@ def epss_main():
         epss_execute_screenshots(links=links)
         pb.stop()
         pb_frame.grid_forget()
-        tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshots")
+        tkinter.messagebox.showinfo(title="Finish", message="Result screenshots saved successfully!")
         test_button.config(text="Start Test", state="normal")
         gtmetrix_checkbox.config(state="normal")
         folder_button.config(state="normal")
