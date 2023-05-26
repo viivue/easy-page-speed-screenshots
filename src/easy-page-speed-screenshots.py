@@ -22,6 +22,8 @@ from datetime import datetime
 import threading
 import sys
 import pyglet
+from ctypes import windll
+windll.shcore.SetProcessDpiAwareness(2)
 
 """
 Define Global Variables
@@ -522,6 +524,7 @@ main.iconbitmap(
     tkinter.PhotoImage(epss_resource_path("./assets/icons8-screenshot-64.ico"))
 )
 main.resizable(False, False)
+main.tk.call('tk', 'scaling', 1.0)
 
 main_frame = tkinter.Frame(main)
 main_frame.grid(row=0, column=0, padx=10, pady=10)
@@ -534,21 +537,21 @@ main_label.grid(row=0, column=0, pady=30)
 # select folder
 folder_frame = tkinter.Frame(main_frame)
 folder_frame.grid(row=1, column=0)
-folder_label = tkinter.Label(folder_frame, text="Choose result folder", font=("Basis Grotesque Pro", 10))
+folder_label = tkinter.Label(folder_frame, text="Choose result folder", font=("Basis Grotesque Pro", 13))
 folder_label.grid(row=0, column=0)
-folder_entry = tkinter.Entry(folder_frame, width=50, font=("Basis Grotesque Pro", 10))
+folder_entry = tkinter.Entry(folder_frame, width=50, font=("Basis Grotesque Pro", 13))
 folder_entry.grid(row=0, column=1, padx=10)
 folder_button = tkinter.Button(
-    folder_frame, text="Browse directory", command=epss_browse_button, font=("Basis Grotesque Pro", 10)
+    folder_frame, text="Browse directory", command=epss_browse_button, font=("Basis Grotesque Pro", 13)
 )
 folder_button.grid(row=0, column=2)
 
 # links
 links_frame = tkinter.Frame(main_frame)
 links_frame.grid(row=2, column=0,pady=15)
-links_label = tkinter.Label(links_frame, text="URLs for the page speed screenshots", font=("Basis Grotesque Pro", 10))
+links_label = tkinter.Label(links_frame, text="URLs for the page speed screenshots", font=("Basis Grotesque Pro", 13))
 links_label.grid(row=0, column=0)
-links_text = tkinter.Text(links_frame, height=20, font=("Basis Grotesque Pro", 10))
+links_text = tkinter.Text(links_frame, height=20, font=("Basis Grotesque Pro", 13))
 links_text.grid(row=1, column=0, pady=5, padx=10)
 
 # gtmetrix
@@ -559,19 +562,19 @@ gtmetrix_checkbox = tkinter.Checkbutton(
     gtmetrix_frame, command=epss_toggle_api_key_field
 )
 gtmetrix_checkbox.grid(row=0, column=0)
-gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=("Basis Grotesque Pro", 10))
+gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=("Basis Grotesque Pro", 13))
 gtmetrix_label.grid(row=0, column=1)
 gtmetrix_api_frame = tkinter.Frame(main_frame)
-gtmetrix_api_label = tkinter.Label(gtmetrix_api_frame, text="API Key", font=("Basis Grotesque Pro", 10))
+gtmetrix_api_label = tkinter.Label(gtmetrix_api_frame, text="API Key", font=("Basis Grotesque Pro", 13))
 gtmetrix_api_label.grid(row=0, column=0, padx=10)
-gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=50, font=("Basis Grotesque Pro", 10))
+gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=50, font=("Basis Grotesque Pro", 13))
 gtmetrix_entry.grid(row=0, column=1)
 
 
 # test button
 test_frame = tkinter.Frame(main_frame)
 test_frame.grid(row=6, column=0)
-test_button = tkinter.Button(test_frame, text="Take screenshots", font=("Basis Grotesque Pro", 10),command=epss_start)
+test_button = tkinter.Button(test_frame, text="Take screenshots", font=("Basis Grotesque Pro", 13),command=epss_start)
 test_button.grid(row=0, column=0, pady=20)
 
 # copyright
