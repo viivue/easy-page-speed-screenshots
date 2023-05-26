@@ -1,3 +1,11 @@
+"""
+Tool to bulk save page speed screenshots
+
+Author: Viivue
+Date: May 26, 2023
+Version: 1.0.0
+"""
+
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
