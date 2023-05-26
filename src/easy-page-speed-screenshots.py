@@ -160,6 +160,11 @@ def epss_get_link_gtmetrix(tool, link, current_link):
                 link
             )
             resp = requests.post(url, auth=(API_KEY, ""), headers=headers, data=data)
+            if (resp.status_code == 402):
+                print("\nYour API key has reached limit")
+                global use_gt_metrix
+                use_gt_metrix = False
+                return
             resp = resp.json()
             report = ""
             while 1:
