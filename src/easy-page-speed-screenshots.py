@@ -523,7 +523,7 @@ main.resizable(False, False)
 main.tk.call('tk', 'scaling', 1.0)
 
 main_frame = tkinter.Frame(main)
-main_frame.grid(row=0, column=0, padx=30, pady=30)
+main_frame.grid(row=0, column=0, padx=30, pady=(30,0))
 
 main_label = tkinter.Label(
     main_frame, text="Easy Page Speed Screenshots", font=("Nirmala UI", 26, "bold")
@@ -572,11 +572,11 @@ gtmetrix_entry.grid(row=0, column=1)
 test_frame = tkinter.Frame(main_frame)
 test_frame.grid(row=6, column=0)
 test_button = tkinter.Button(test_frame, text="Take screenshots", font=("Nirmala UI", 14),command=epss_start)
-test_button.grid(row=0, column=0, pady=10)
+test_button.grid(row=0, column=0, pady=(10,0))
 
 # copyright
 main_label = tkinter.Label(main_frame, text="Copyright © by ViiVue 2023", font=("Nirmala UI", 10))
-main_label.grid(row=7, column=0, pady=10)
+main_label.grid(row=7, column=0, pady=(30,0))
 # progress bar
 pb_frame = tkinter.Frame(main_frame)
 pb = ttk.Progressbar(pb_frame, orient="horizontal", mode="indeterminate", length=280)
