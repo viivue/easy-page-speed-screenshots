@@ -31,7 +31,7 @@ use_gt_metrix = False
 
 running = True
 
-def resource_path(relative_path):
+def epss_resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
     except Exception:
@@ -66,7 +66,7 @@ def epss_content_loaded(driver, selector, link):
 
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
-    get_link_driver = webdriver.Chrome(executable_path=resource_path("./driver/chromedriver.exe"),options=options)
+    get_link_driver = webdriver.Chrome(executable_path=epss_resource_path("./driver/chromedriver.exe"),options=options)
     get_link_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
@@ -426,7 +426,7 @@ success_link = []
 
 
 def epss_screenshots_thread_function(group):
-    screenshots_driver = webdriver.Chrome(executable_path=resource_path("./driver/chromedriver.exe"),options=options)
+    screenshots_driver = webdriver.Chrome(executable_path=epss_resource_path("./driver/chromedriver.exe"),options=options)
     screenshots_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
