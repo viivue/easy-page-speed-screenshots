@@ -319,6 +319,8 @@ def epss_replace_url(url):
     url = url.replace("/", "-")
     url = url.replace(".", "-")
     url = url.replace(":", "-")
+    url = url.replace("?", "-")
+    url = url.replace("=", "-")
     # if the url ends with '/' the url will contain '-' at the end, remove it
     if url.endswith("-"):
         url = url.removesuffix("-")
