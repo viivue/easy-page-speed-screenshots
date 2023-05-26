@@ -1,5 +1,10 @@
-# TODO: Show result to app (or somewhere convienient to copy)
-# TODO: Check API Key reach limit (GTmetrix)
+"""
+Tool to bulk save page speed screenshots
+
+Author: Viivue
+Date: May 26, 2023
+Version: 1.0.0
+"""
 
 import os
 import tkinter
