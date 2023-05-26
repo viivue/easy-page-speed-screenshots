@@ -159,7 +159,9 @@ def epss_get_link_gtmetrix(tool, link, current_link):
                 url, auth=(API_KEY.lstrip(), ""), headers=headers, data=data
             )
             if resp.status_code == 402:
-                tkinter.messagebox.showwarning(title="API Key", message="Your API Key has reached limit")
+                tkinter.messagebox.showwarning(
+                    title="API Key", message="Your API Key has reached limit"
+                )
                 global use_gt_metrix
                 use_gt_metrix = False
                 return
@@ -317,17 +319,17 @@ def epss_create_file_name_array():
     filename_group_array = []
     n = len(INPUT_LINK)
     gps_i = 1
-    gtmetrix_i = 2*n + 1
-    pingdom_i = 3*n + 1 if use_gt_metrix else 2*n + 1
+    gtmetrix_i = 2 * n + 1
+    pingdom_i = 3 * n + 1 if use_gt_metrix else 2 * n + 1
     for link in INPUT_LINK:
         filenames = []
         filenames.append(link)
         link = epss_replace_url(link)
         current_date = datetime.today().strftime("%Y%m%d")
         gps_desktop = (
-            "gps"
+            str(gps_i)
             + "-"
-            + str(gps_i)
+            + "gps"
             + "-"
             + current_date
             + "-"
@@ -336,9 +338,9 @@ def epss_create_file_name_array():
             + ".png"
         )
         gps_mobile = (
-            "gps"
+            str(gps_i + 1)
             + "-"
-            + str(gps_i + 1)
+            + "gps"
             + "-"
             + current_date
             + "-"
@@ -351,9 +353,9 @@ def epss_create_file_name_array():
         gps_i = gps_i + 2
         if use_gt_metrix:
             gtmetrix_name = (
-                "gtmetrix"
+                str(gtmetrix_i)
                 + "-"
-                + str(gtmetrix_i)
+                + "gtmetrix"
                 + "-"
                 + current_date
                 + "-"
@@ -363,7 +365,7 @@ def epss_create_file_name_array():
             gtmetrix_i = gtmetrix_i + 1
             filenames.append(gtmetrix_name)
         pingdom_name = (
-            "pingdom" + "-" + str(pingdom_i) + "-" + current_date + "-" + link + ".png"
+            str(pingdom_i) + "-" + "pingdom" + "-" + current_date + "-" + link + ".png"
         )
         pingdom_i = pingdom_i + 1
         filenames.append(pingdom_name)
@@ -457,6 +459,11 @@ def epss_main():
         pb_frame.grid_forget()
         tkinter.messagebox.showinfo(title="Finish", message="Finish taking screenshots")
         test_button.config(text="Start Test", state="normal")
+        gtmetrix_checkbox.config(state="normal")
+        folder_button.config(state="normal")
+        folder_entry.config(state="normal")
+        links_text.config(state="normal")
+        gtmetrix_entry.config(state="normal")
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 
@@ -479,7 +486,6 @@ def epss_browse_button():
     global OP_DIR
     OP_DIR = directory
 
-
 execute_threads = []
 
 # start test
@@ -491,8 +497,12 @@ def epss_start():
     API_KEY = gtmetrix_entry.get()
     execute_thread = threading.Thread(target=epss_main, args=())
     execute_thread.start()
-    # result_text.grid_forget()
     test_button.config(text="Taking Screenshots", state="disabled")
+    gtmetrix_checkbox.config(state="disabled")
+    folder_button.config(state="disabled")
+    folder_entry.config(state="disabled")
+    links_text.config(state="disabled")
+    gtmetrix_entry.config(state="disabled")
     pb_frame.grid(row=5, column=0, pady=5)
     pb.start()
 
@@ -500,6 +510,7 @@ def epss_start():
 main = tkinter.Tk()
 
 main.title("Easy Page Speed Screenshots")
+main.resizable(False, False)
 
 main_label = tkinter.Label(
     main, text="Easy Page Speed Screenshots", font=("Helvetica", 18, "bold")
