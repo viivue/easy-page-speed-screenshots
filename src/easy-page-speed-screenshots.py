@@ -292,7 +292,7 @@ List of tools supported:
     if int(choice) == 1:
         global use_gt_metrix
         use_gt_metrix = True
-        print("Enter GTmextrix API key (required): ")
+        print("Enter GTmetrix API key (required): ")
         global API_KEY
         API_KEY = input()
     print(
@@ -375,9 +375,9 @@ def epss_create_file_name_array():
         link = epss_replace_url(link)
         current_date = datetime.today().strftime("%Y%m%d")
         gps_desktop = (
-            "gps"
+            str(gps_i)
             + "-"
-            + str(gps_i)
+            + "gps"
             + "-"
             + current_date
             + "-"
@@ -386,9 +386,9 @@ def epss_create_file_name_array():
             + ".png"
         )
         gps_mobile = (
-            "gps"
+            str(gps_i + 1)
             + "-"
-            + str(gps_i + 1)
+            + "gps"
             + "-"
             + current_date
             + "-"
@@ -401,9 +401,9 @@ def epss_create_file_name_array():
         gps_i = gps_i + 2
         if use_gt_metrix:
             gtmetrix_name = (
-                "gtmetrix"
+                str(gtmetrix_i)
                 + "-"
-                + str(gtmetrix_i)
+                + "gtmetrix"
                 + "-"
                 + current_date
                 + "-"
@@ -413,7 +413,7 @@ def epss_create_file_name_array():
             gtmetrix_i = gtmetrix_i + 1
             filenames.append(gtmetrix_name)
         pingdom_name = (
-            "pingdom" + "-" + str(pingdom_i) + "-" + current_date + "-" + link + ".png"
+            str(pingdom_i) + "-" + "pingdom" + "-" + current_date + "-" + link + ".png"
         )
         pingdom_i = pingdom_i + 1
         filenames.append(pingdom_name)
