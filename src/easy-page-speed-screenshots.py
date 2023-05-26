@@ -21,7 +21,6 @@ from urllib.parse import parse_qs
 from datetime import datetime
 import threading
 import sys
-
 """
 Define Global Variables
 """
@@ -510,6 +509,9 @@ def epss_start():
 main = tkinter.Tk()
 
 main.title("Easy Page Speed Screenshots")
+program_directory=sys.path[0]
+main.iconbitmap(tkinter.PhotoImage(epss_resource_path('./assets/icons8-screenshot-64.ico')))
+main.geometry("730x500")
 main.resizable(False, False)
 
 main_label = tkinter.Label(
@@ -520,17 +522,17 @@ main_label.grid(row=0, column=0, pady=10)
 # select folder
 folder_frame = tkinter.Frame(main)
 folder_frame.grid(row=1, column=0)
-folder_label = tkinter.Label(folder_frame, text="Save Directory")
+folder_label = tkinter.Label(folder_frame, text="Choose result folder:")
 folder_label.grid(row=0, column=0)
 folder_entry = tkinter.Entry(folder_frame, width=80)
 folder_entry.grid(row=0, column=1, padx=10)
-folder_button = tkinter.Button(folder_frame, text="Browse", command=epss_browse_button)
+folder_button = tkinter.Button(folder_frame, text="Browse directory", command=epss_browse_button)
 folder_button.grid(row=0, column=2)
 
 # links
 links_frame = tkinter.Frame(main)
 links_frame.grid(row=2, column=0)
-links_label = tkinter.Label(links_frame, text="Links to test")
+links_label = tkinter.Label(links_frame, text="URLs for the page speed screenshots")
 links_label.grid(row=0, column=0)
 links_text = tkinter.Text(links_frame, height=20)
 links_text.grid(row=1, column=0, pady=5, padx=10)
@@ -555,7 +557,7 @@ gtmetrix_entry.grid(row=0, column=1)
 # test button
 test_frame = tkinter.Frame(main)
 test_frame.grid(row=6, column=0)
-test_button = tkinter.Button(test_frame, text="Start Test", command=epss_start)
+test_button = tkinter.Button(test_frame, text="Take screenshots", command=epss_start)
 test_button.grid(row=0, column=0, pady=10)
 
 # progress bar
