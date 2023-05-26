@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from tqdm import tqdm
 import sys
+import os
 import time
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
@@ -29,6 +30,13 @@ Define functions
 use_gt_metrix = False
 
 running = True
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
 
 # running dot
 def epss_running_dot_animation():
@@ -58,7 +66,7 @@ def epss_content_loaded(driver, selector, link):
 
 # submit link for testing
 def epss_submit_link(tool, link, input_selector="", form_selector=""):
-    get_link_driver = webdriver.Chrome(options=options)
+    get_link_driver = webdriver.Chrome(executable_path=resource_path("./driver/chromedriver.exe"),options=options)
     get_link_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
@@ -342,9 +350,10 @@ def epss_take_screenshots(file_name, driver):
 # create file names from input links
 def epss_create_file_name_array():
     filename_group_array = []
+    n = len(INPUT_LINK)
     gps_i = 1
-    gtmetrix_i = 1
-    pingdom_i = 1
+    gtmetrix_i = 2*n + 1
+    pingdom_i = 3*n + 1 if use_gt_metrix else 2*n + 1
     for link in INPUT_LINK:
         filenames = []
         filenames.append(link)
@@ -410,7 +419,7 @@ success_link = []
 
 
 def epss_screenshots_thread_function(group):
-    screenshots_driver = webdriver.Chrome(options=options)
+    screenshots_driver = webdriver.Chrome(executable_path=resource_path("./driver/chromedriver.exe"),options=options)
     screenshots_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
