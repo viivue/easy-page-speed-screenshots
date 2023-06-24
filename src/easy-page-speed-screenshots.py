@@ -517,7 +517,7 @@ main = tkinter.Tk()
 main.title("Easy Page Speed Screenshots")
 program_directory = sys.path[0]
 main.iconbitmap(
-    tkinter.PhotoImage(epss_resource_path("./assets/icons8-screenshot-64.ico"))
+    tkinter.PhotoImage(epss_resource_path("../assets/icons8-screenshot-64.ico"))
 )
 main.resizable(False, False)
 main.tk.call('tk', 'scaling', 1.0)
