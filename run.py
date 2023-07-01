@@ -4,6 +4,3 @@ This script is simply a hack to make it seem like `python -m auto_py_to_exe` was
 """
 
 from easy_page_speed_screenshots import __main__ as epss
-
-epss.__name__ = '__main__'
-epss.run()
