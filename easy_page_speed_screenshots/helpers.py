@@ -7,6 +7,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 
+from . import config
+
 # webdriver options
 options = webdriver.ChromeOptions()
 options.add_argument("--headless=new")
@@ -15,15 +17,8 @@ options.add_experimental_option(
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
-def epss_resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.dirname(__file__)
-    return os.path.join(base_path, relative_path)
-
 # check if specific content exists
-def epss_content_loaded(driver, selector, link):
+def epss_content_loaded(driver, selector):
     try:
         report = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, selector))
@@ -35,7 +30,7 @@ def epss_content_loaded(driver, selector, link):
 # get webdriver with options
 def epss_get_webdriver():
     return webdriver.Chrome(
-        executable_path=epss_resource_path("./driver/chromedriver.exe"), options=options
+        executable_path = config.ASSET_FOLDER + "/driver/chromedriver.exe", options=options
     )
 
 # submit link for testing
@@ -44,7 +39,7 @@ def epss_submit_link(tool, link, input_selector="", form_selector=""):
     get_link_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
-            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36"
+            "userAgent": config.USER_AGENT
         },
     )
 
@@ -101,62 +96,6 @@ def epss_submit_by_form(tool, link, current_link):
         res = res.split("?", 1)[0]
     current_link.append(res)
 
-# get report of gtmetrix with api
-# docs: https://gtmetrix.com/api/docs/2.0/#api-test-start
-def epss_get_link_gtmetrix(tool, link, current_link):
-    import requests
-    from requests.structures import CaseInsensitiveDict
-
-    while 1:
-        try:
-            base_url = tool
-            headers = CaseInsensitiveDict()
-            headers["Content-Type"] = "application/vnd.api+json"
-            url = base_url + "/api/2.0/tests"
-            data = """
-            {
-                 "data": {
-                    "type": "test",
-                    "attributes": {
-                       "url": "%s",
-                       "adblock":0
-                    }
-                 }
-            }
-            """ % (
-                link
-            )
-            resp = requests.post(
-                url, auth=(API_KEY.lstrip(), ""), headers=headers, data=data
-            )
-            if resp.status_code == 402:
-                tkinter.messagebox.showwarning(
-                    title="API Key", message="Your API Key has reached limit"
-                )
-                global use_gt_metrix
-                use_gt_metrix = False
-                return
-            resp = resp.json()
-            report = ""
-            while 1:
-                links = epss_json_field_exists("links", resp)
-                self_link = epss_json_field_exists("self", links)
-                test_result = requests.get(
-                    self_link,
-                    auth=(API_KEY.lstrip(), ""),
-                    headers=headers,
-                )
-                test_result = test_result.json()
-                data = epss_json_field_exists("data", test_result)
-                data_links = epss_json_field_exists("links", data)
-                if "report_url" in data_links:
-                    report = data_links["report_url"]
-                    break
-            current_link.append(report)
-            break
-        except Exception as e:
-            continue
-
 # check specific tool
 def epss_is_tool(link, tool):
     return link.find(tool) != -1
@@ -189,3 +128,19 @@ def epss_add_form_factor(links):
                 current_new_group.append(link)
         new_links.append(current_new_group)
     return new_links
+
+# screenshots
+# Ref: https://stackoverflow.com/a/52572919/
+def epss_take_screenshots(file_name, driver):
+    original_size = driver.get_window_size()
+    required_width = driver.execute_script(
+        "return document.body.parentNode.scrollWidth"
+    )
+    required_height = driver.execute_script(
+        "return document.body.parentNode.scrollHeight"
+    )
+    driver.set_window_size(1440, required_height)
+    driver.find_element(By.TAG_NAME, "body").screenshot(
+        f"{OP_DIR}\{file_name}"
+    )  # avoids scrollbar
+    driver.set_window_size(original_size["width"], original_size["height"])

@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 import threading
-import sys
 from ctypes import windll
 windll.shcore.SetProcessDpiAwareness(2)
 
@@ -15,16 +14,71 @@ from . import __version__
 from . import config
 from . import helpers
 
+use_gt_metrix = False
+success_link = []
+API_KEY = ""
+
+# get report of gtmetrix with api
+# docs: https://gtmetrix.com/api/docs/2.0/#api-test-start
+def epss_get_link_gtmetrix(tool, link, current_link):
+    import requests
+    from requests.structures import CaseInsensitiveDict
+
+    while 1:
+        try:
+            base_url = tool
+            headers = CaseInsensitiveDict()
+            headers["Content-Type"] = "application/vnd.api+json"
+            url = base_url + "/api/2.0/tests"
+            data = """
+            {
+                 "data": {
+                    "type": "test",
+                    "attributes": {
+                       "url": "%s",
+                       "adblock":0
+                    }
+                 }
+            }
+            """ % (
+                link
+            )
+            resp = requests.post(
+                url, auth=(API_KEY.lstrip(), ""), headers=headers, data=data
+            )
+            if resp.status_code == 402:
+                tkinter.messagebox.showwarning(
+                    title="API Key", message="Your API Key has reached limit"
+                )
+                global use_gt_metrix
+                use_gt_metrix = False
+                return
+            resp = resp.json()
+            report = ""
+            while 1:
+                links = helpers.epss_json_field_exists("links", resp)
+                self_link = helpers.epss_json_field_exists("self", links)
+                test_result = requests.get(
+                    self_link,
+                    auth=(API_KEY.lstrip(), ""),
+                    headers=headers,
+                )
+                test_result = test_result.json()
+                data = helpers.epss_json_field_exists("data", test_result)
+                data_links = helpers.epss_json_field_exists("links", data)
+                if "report_url" in data_links:
+                    report = data_links["report_url"]
+                    break
+            current_link.append(report)
+            break
+        except Exception as e:
+            continue
+
 def epss_result_thread_function(link):
-    tools = [
-        "https://pagespeed.web.dev/",
-        "https://gtmetrix.com/",
-        "https://tools.pingdom.com/",
-    ]
     current_link = []
     worker_threads = []
-    for tool in tools:
-        if helpers.epss_is_tool(link=tool, tool="pagespeed.web"):
+    for tool in config.TOOLS:
+        if helpers.epss_is_tool(link=tool, tool="pagespeed"):
             # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
             worker_thread = threading.Thread(
                 target=helpers.epss_submit_by_form,
@@ -34,19 +88,15 @@ def epss_result_thread_function(link):
                     current_link,
                 ),
             )
-            worker_threads.append(worker_thread)
-            worker_thread.start()
-        elif helpers.epss_is_tool(link=tool, tool="gtmetrix") and config.use_gt_metrix:
+        elif helpers.epss_is_tool(link=tool, tool="gtmetrix") and use_gt_metrix:
             worker_thread = threading.Thread(
-                target=helpers.epss_get_link_gtmetrix,
+                target=epss_get_link_gtmetrix,
                 args=(
                     tool,
                     link,
                     current_link,
                 ),
             )
-            worker_threads.append(worker_thread)
-            worker_thread.start()
         elif helpers.epss_is_tool(link=tool, tool="pingdom"):
             worker_thread = threading.Thread(
                 target=helpers.epss_get_link_pingdom,
@@ -56,13 +106,13 @@ def epss_result_thread_function(link):
                     current_link,
                 ),
             )
-            worker_threads.append(worker_thread)
-            worker_thread.start()
+        worker_threads.append(worker_thread)
+        worker_thread.setDaemon(True)
+        worker_thread.start()
     for thread in worker_threads:
         thread.join()
     current_link.append(link)
     RESULT_LINKS.append(current_link)
-
 
 # run through all testing tool
 def epss_send_link_for_test(links):
@@ -73,12 +123,26 @@ def epss_send_link_for_test(links):
     for link in links:
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
         threads.append(thread)
+        thread.setDaemon(True)
         thread.start()
     for thread in threads:
         thread.join()
 
     return RESULT_LINKS
 
+# execute screenshots for all link input
+def epss_execute_screenshots(links):
+    pb_label.config(text="Screenshot")
+    screenshots_threads = []
+    for group in links:
+        screenshots_thread = threading.Thread(
+            target=epss_screenshots_thread_function, args=(group,)
+        )
+        screenshots_threads.append(screenshots_thread)
+        screenshots_thread.setDaemon(True)
+        screenshots_thread.start()
+    for thread in screenshots_threads:
+        thread.join()
 
 # collect user input link
 def epss_user_input():
@@ -87,32 +151,14 @@ def epss_user_input():
     global API_KEY
     res_inputs = epss_send_link_for_test(INPUT_LINK)
     return res_inputs
-
-
-# screenshots
-# Ref: https://stackoverflow.com/a/52572919/
-def epss_take_screenshots(file_name, driver):
-    original_size = driver.get_window_size()
-    required_width = driver.execute_script(
-        "return document.body.parentNode.scrollWidth"
-    )
-    required_height = driver.execute_script(
-        "return document.body.parentNode.scrollHeight"
-    )
-    driver.set_window_size(1440, required_height)
-    driver.find_element(By.TAG_NAME, "body").screenshot(
-        f"{OP_DIR}\{file_name}"
-    )  # avoids scrollbar
-    driver.set_window_size(original_size["width"], original_size["height"])
-
-
+    
 # create file names from input links
 def epss_create_file_name_array():
     filename_group_array = []
     n = len(INPUT_LINK)
     gps_i = 1
     gtmetrix_i = 2 * n + 1
-    pingdom_i = 3 * n + 1 if config.use_gt_metrix else 2 * n + 1
+    pingdom_i = 3 * n + 1 if use_gt_metrix else 2 * n + 1
     for link in INPUT_LINK:
         filenames = []
         filenames.append(link)
@@ -143,7 +189,7 @@ def epss_create_file_name_array():
         filenames.append(gps_desktop)
         filenames.append(gps_mobile)
         gps_i = gps_i + 2
-        if config.use_gt_metrix:
+        if use_gt_metrix:
             gtmetrix_name = (
                 str(gtmetrix_i)
                 + "-"
@@ -164,7 +210,6 @@ def epss_create_file_name_array():
         filename_group_array.append(filenames)
     return filename_group_array
 
-
 # get corresponding name group for result group
 def epss_get_file_name_group(link):
     groups = epss_create_file_name_array()
@@ -178,7 +223,7 @@ def epss_screenshots_thread_function(group):
     screenshots_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
         {
-            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36"
+            "userAgent": config.USER_AGENT
         },
     )
     for link in group:
@@ -187,26 +232,22 @@ def epss_screenshots_thread_function(group):
         if link in INPUT_LINK:
             continue
         try:
+            html_selector = ''
             if helpers.epss_is_tool(link=link, tool="pagespeed"):
                 parsed_url = urlparse(link)
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
                 file_name = file_names[1] if form_factor == "desktop" else file_names[2]
-                screenshots_driver.get(link)
-                can_take_screenshot = helpers.epss_content_loaded(
-                    screenshots_driver, "div.PePDG", link
-                )
-            elif helpers.epss_is_tool(link=link, tool="gtmetrix") and config.use_gt_metrix:
+                html_selector = "div.PePDG"
+            elif helpers.epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
                 file_name = file_names[3]
-                screenshots_driver.get(link)
-                can_take_screenshot = helpers.epss_content_loaded(
-                    screenshots_driver, "main.page-report-content", link
-                )
+                html_selector = "main.page-report-content"
             elif helpers.epss_is_tool(link=link, tool="pingdom"):
-                file_name = file_names[4] if config.use_gt_metrix else file_names[3]
-                screenshots_driver.get(link)
-                can_take_screenshot = helpers.epss_content_loaded(
-                    screenshots_driver, "app-report.ng-star-inserted", link
-                )
+                file_name = file_names[4] if use_gt_metrix else file_names[3]
+                html_selector = "app-report.ng-star-inserted"
+            screenshots_driver.get(link)
+            can_take_screenshot = helpers.epss_content_loaded(
+                screenshots_driver, html_selector
+            )
             time.sleep(5)
             if can_take_screenshot:
                 epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
@@ -216,25 +257,7 @@ def epss_screenshots_thread_function(group):
             continue
     screenshots_driver.quit()
 
-
-# execute screenshots for all link input
-def epss_execute_screenshots(links):
-    pb_label.config(text="Screenshot")
-    screenshots_threads = []
-    for group in links:
-        screenshots_thread = threading.Thread(
-            target=epss_screenshots_thread_function, args=(group,)
-        )
-        screenshots_threads.append(screenshots_thread)
-        screenshots_thread.start()
-    for thread in screenshots_threads:
-        thread.join()
-
-
-"""
-Main Function
-"""
-
+# main function
 def epss_main():
     try:
         links = epss_user_input()
@@ -245,7 +268,7 @@ def epss_main():
         tkinter.messagebox.showinfo(
             title="Finish", message="Result screenshots saved successfully!"
         )
-        test_button.config(text="Take screenshots", state="normal")
+        test_button.config("Take screenshots", "normal")
         gtmetrix_checkbox.config(state="normal")
         folder_button.config(state="normal")
         folder_entry.config(state="normal")
@@ -254,11 +277,11 @@ def epss_main():
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 
-
 # set use GTmetrix & toggle insert field
 def epss_toggle_api_key_field():
-    config.use_gt_metrix = True if not config.use_gt_metrix else False
-    if config.use_gt_metrix:
+    global use_gt_metrix
+    use_gt_metrix = True if not use_gt_metrix else False
+    if use_gt_metrix:
         gtmetrix_api_frame.grid(row=4, column=0, padx=10, pady=15)
     else:
         gtmetrix_api_frame.grid_forget()
@@ -280,6 +303,7 @@ def epss_start():
     global API_KEY
     API_KEY = gtmetrix_entry.get()
     execute_thread = threading.Thread(target=epss_main, args=())
+    execute_thread.setDaemon(True)
     execute_thread.start()
     test_button.config(text="Taking Screenshots", state="disabled")
     gtmetrix_checkbox.config(state="disabled")
@@ -290,11 +314,11 @@ def epss_start():
     pb_frame.grid(row=5, column=0, pady=5)
     pb.start()
 
-
+# UI
 main = tkinter.Tk()
 
+# ui meta
 main.title("Easy Page Speed Screenshots")
-program_directory = sys.path[0]
 main.iconbitmap(
     tkinter.PhotoImage(config.ASSET_FOLDER + '/images/favicon.ico')
 )
@@ -331,7 +355,6 @@ links_text = tkinter.Text(links_frame, height=20, font=("Nirmala UI", 14))
 links_text.grid(row=1, column=0, pady=5)
 
 # gtmetrix
-
 gtmetrix_frame = tkinter.Frame(main_frame)
 gtmetrix_frame.grid(row=3, column=0)
 gtmetrix_checkbox = tkinter.Checkbutton(
@@ -346,7 +369,6 @@ gtmetrix_api_label.grid(row=0, column=0)
 gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=50, font=("Nirmala UI", 14))
 gtmetrix_entry.grid(row=0, column=1)
 
-
 # test button
 test_frame = tkinter.Frame(main_frame)
 test_frame.grid(row=6, column=0)
@@ -354,8 +376,9 @@ test_button = tkinter.Button(test_frame, text="Take screenshots", font=("Nirmala
 test_button.grid(row=0, column=0, pady=(10,0))
 
 # copyright
-main_label = tkinter.Label(main_frame, text="Copyright © by ViiVue 2023", font=("Nirmala UI", 10))
+main_label = tkinter.Label(main_frame, text="Copyright © ViiVue 2023", font=("Nirmala UI", 10))
 main_label.grid(row=7, column=0, pady=(30,0))
+
 # progress bar
 pb_frame = tkinter.Frame(main_frame)
 pb = ttk.Progressbar(pb_frame, orient="horizontal", mode="indeterminate", length=280)
