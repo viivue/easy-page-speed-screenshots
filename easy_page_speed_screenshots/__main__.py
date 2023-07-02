@@ -2,6 +2,11 @@ import os
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog
+from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
@@ -14,8 +19,20 @@ from . import __version__
 from . import config
 from . import helpers
 
+# webdriver options
+options = webdriver.ChromeOptions()
+options.add_argument("--headless=new")
+options.add_experimental_option(
+    "excludeSwitches", ["enable-logging"]
+)  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
+options.add_argument("--log-level=3")
+
+# variables
 use_gt_metrix = False
 success_link = []
+execute_threads = []
+
+# constants
 API_KEY = ""
 
 # get report of gtmetrix with api
@@ -107,8 +124,8 @@ def epss_result_thread_function(link):
                 ),
             )
         worker_threads.append(worker_thread)
-        worker_thread.setDaemon(True)
-        worker_thread.start()
+        if not worker_thread.is_alive():
+            worker_thread.start()
     for thread in worker_threads:
         thread.join()
     current_link.append(link)
@@ -123,26 +140,13 @@ def epss_send_link_for_test(links):
     for link in links:
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
         threads.append(thread)
-        thread.setDaemon(True)
-        thread.start()
+        if not thread.is_alive():
+            thread.start()
     for thread in threads:
         thread.join()
 
     return RESULT_LINKS
 
-# execute screenshots for all link input
-def epss_execute_screenshots(links):
-    pb_label.config(text="Screenshot")
-    screenshots_threads = []
-    for group in links:
-        screenshots_thread = threading.Thread(
-            target=epss_screenshots_thread_function, args=(group,)
-        )
-        screenshots_threads.append(screenshots_thread)
-        screenshots_thread.setDaemon(True)
-        screenshots_thread.start()
-    for thread in screenshots_threads:
-        thread.join()
 
 # collect user input link
 def epss_user_input():
@@ -151,7 +155,23 @@ def epss_user_input():
     global API_KEY
     res_inputs = epss_send_link_for_test(INPUT_LINK)
     return res_inputs
-    
+
+# screenshots
+# Ref: https://stackoverflow.com/a/52572919/
+def epss_take_screenshots(file_name, driver):
+    original_size = driver.get_window_size()
+    required_width = driver.execute_script(
+        "return document.body.parentNode.scrollWidth"
+    )
+    required_height = driver.execute_script(
+        "return document.body.parentNode.scrollHeight"
+    )
+    driver.set_window_size(1440, required_height)
+    driver.find_element(By.TAG_NAME, "body").screenshot(
+        f"{OP_DIR}\{file_name}"
+    )  # avoids scrollbar
+    driver.set_window_size(original_size["width"], original_size["height"])
+
 # create file names from input links
 def epss_create_file_name_array():
     filename_group_array = []
@@ -217,7 +237,6 @@ def epss_get_file_name_group(link):
         if link == filenames[0]:
             return filenames
 
-# run thread functions
 def epss_screenshots_thread_function(group):
     screenshots_driver = helpers.epss_get_webdriver()
     screenshots_driver.execute_cdp_cmd(
@@ -232,7 +251,6 @@ def epss_screenshots_thread_function(group):
         if link in INPUT_LINK:
             continue
         try:
-            html_selector = ''
             if helpers.epss_is_tool(link=link, tool="pagespeed"):
                 parsed_url = urlparse(link)
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
@@ -244,18 +262,34 @@ def epss_screenshots_thread_function(group):
             elif helpers.epss_is_tool(link=link, tool="pingdom"):
                 file_name = file_names[4] if use_gt_metrix else file_names[3]
                 html_selector = "app-report.ng-star-inserted"
+
             screenshots_driver.get(link)
             can_take_screenshot = helpers.epss_content_loaded(
                 screenshots_driver, html_selector
             )
-            time.sleep(5)
             if can_take_screenshot:
                 epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
+
             global success_link
             success_link.append(link)
         except Exception as e:
             continue
+
     screenshots_driver.quit()
+
+
+# execute screenshots for all link input
+def epss_execute_screenshots(links):
+    pb_label.config(text="Screenshot")
+    screenshots_threads = []
+    for group in links:
+        screenshots_thread = threading.Thread(
+            target=epss_screenshots_thread_function, args=(group,)
+        )
+        screenshots_threads.append(screenshots_thread)
+        screenshots_thread.start()
+    for thread in screenshots_threads:
+        thread.join()
 
 # main function
 def epss_main():
@@ -268,7 +302,7 @@ def epss_main():
         tkinter.messagebox.showinfo(
             title="Finish", message="Result screenshots saved successfully!"
         )
-        test_button.config("Take screenshots", "normal")
+        test_button.config(text="Take screenshots", state="normal")
         gtmetrix_checkbox.config(state="normal")
         folder_button.config(state="normal")
         folder_entry.config(state="normal")
@@ -303,7 +337,6 @@ def epss_start():
     global API_KEY
     API_KEY = gtmetrix_entry.get()
     execute_thread = threading.Thread(target=epss_main, args=())
-    execute_thread.setDaemon(True)
     execute_thread.start()
     test_button.config(text="Taking Screenshots", state="disabled")
     gtmetrix_checkbox.config(state="disabled")
@@ -317,7 +350,7 @@ def epss_start():
 # UI
 main = tkinter.Tk()
 
-# ui meta
+# UI meta
 main.title("Easy Page Speed Screenshots")
 main.iconbitmap(
     tkinter.PhotoImage(config.ASSET_FOLDER + '/images/favicon.ico')

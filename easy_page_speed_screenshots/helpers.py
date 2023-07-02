@@ -128,19 +128,3 @@ def epss_add_form_factor(links):
                 current_new_group.append(link)
         new_links.append(current_new_group)
     return new_links
-
-# screenshots
-# Ref: https://stackoverflow.com/a/52572919/
-def epss_take_screenshots(file_name, driver):
-    original_size = driver.get_window_size()
-    required_width = driver.execute_script(
-        "return document.body.parentNode.scrollWidth"
-    )
-    required_height = driver.execute_script(
-        "return document.body.parentNode.scrollHeight"
-    )
-    driver.set_window_size(1440, required_height)
-    driver.find_element(By.TAG_NAME, "body").screenshot(
-        f"{OP_DIR}\{file_name}"
-    )  # avoids scrollbar
-    driver.set_window_size(original_size["width"], original_size["height"])
