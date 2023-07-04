@@ -16,3 +16,11 @@ RESULT_LINKS = []
 # variables
 use_gt_metrix = False
 success_link = []
+
+# UI
+font = "Nirmala UI"
+body_txt = 12
+bg_color = "#f1c400"
+txt_color = "#141414"
+btn_bg_color = "#fff"
+btn_txt_color = "#141414"
