@@ -8,3 +8,11 @@ TOOLS = [
     "https://tools.pingdom.com/",
 ]
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36"
+API_KEY = ""
+OP_DIR = ""
+INPUT_LINK = ""
+RESULT_LINKS = []
+
+# variables
+use_gt_metrix = False
+success_link = []

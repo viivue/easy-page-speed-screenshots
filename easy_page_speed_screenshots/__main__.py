@@ -12,8 +12,6 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 import threading
-from ctypes import windll
-windll.shcore.SetProcessDpiAwareness(2)
 
 from . import __version__
 from . import config
@@ -27,15 +25,7 @@ options.add_experimental_option(
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
-# variables
-use_gt_metrix = False
-success_link = []
-execute_threads = []
-
-# constants
-API_KEY = ""
-
-# get report of gtmetrix with api
+# get report of gtmetrix with API
 # docs: https://gtmetrix.com/api/docs/2.0/#api-test-start
 def epss_get_link_gtmetrix(tool, link, current_link):
     import requests
@@ -61,15 +51,17 @@ def epss_get_link_gtmetrix(tool, link, current_link):
                 link
             )
             resp = requests.post(
-                url, auth=(API_KEY.lstrip(), ""), headers=headers, data=data
+                url, auth=(config.API_KEY.lstrip(), ""), headers=headers, data=data
             )
+
+            # API key limited
             if resp.status_code == 402:
                 tkinter.messagebox.showwarning(
                     title="API Key", message="Your API Key has reached limit"
                 )
-                global use_gt_metrix
-                use_gt_metrix = False
+                config.use_gt_metrix = False
                 return
+
             resp = resp.json()
             report = ""
             while 1:
@@ -77,7 +69,7 @@ def epss_get_link_gtmetrix(tool, link, current_link):
                 self_link = helpers.epss_json_field_exists("self", links)
                 test_result = requests.get(
                     self_link,
-                    auth=(API_KEY.lstrip(), ""),
+                    auth=(config.API_KEY.lstrip(), ""),
                     headers=headers,
                 )
                 test_result = test_result.json()
@@ -105,7 +97,7 @@ def epss_result_thread_function(link):
                     current_link,
                 ),
             )
-        elif helpers.epss_is_tool(link=tool, tool="gtmetrix") and use_gt_metrix:
+        elif helpers.epss_is_tool(link=tool, tool="gtmetrix") and config.use_gt_metrix:
             worker_thread = threading.Thread(
                 target=epss_get_link_gtmetrix,
                 args=(
@@ -129,12 +121,11 @@ def epss_result_thread_function(link):
     for thread in worker_threads:
         thread.join()
     current_link.append(link)
-    RESULT_LINKS.append(current_link)
+    config.RESULT_LINKS.append(current_link)
 
 # run through all testing tool
 def epss_send_link_for_test(links):
-    global RESULT_LINKS
-    RESULT_LINKS = []
+    config.RESULT_LINKS = []
     pb_label.config(text="Analyzing requests")
     threads = []
     for link in links:
@@ -145,18 +136,15 @@ def epss_send_link_for_test(links):
     for thread in threads:
         thread.join()
 
-    return RESULT_LINKS
+    return config.RESULT_LINKS
 
 
 # collect user input link
 def epss_user_input():
-    global INPUT_LINK
-    global OP_DIR
-    global API_KEY
-    res_inputs = epss_send_link_for_test(INPUT_LINK)
+    res_inputs = epss_send_link_for_test(config.INPUT_LINK)
     return res_inputs
 
-# screenshots
+# take screenshots
 # Ref: https://stackoverflow.com/a/52572919/
 def epss_take_screenshots(file_name, driver):
     original_size = driver.get_window_size()
@@ -168,18 +156,18 @@ def epss_take_screenshots(file_name, driver):
     )
     driver.set_window_size(1440, required_height)
     driver.find_element(By.TAG_NAME, "body").screenshot(
-        f"{OP_DIR}\{file_name}"
+        f"{config.OP_DIR}\{file_name}"
     )  # avoids scrollbar
     driver.set_window_size(original_size["width"], original_size["height"])
 
 # create file names from input links
 def epss_create_file_name_array():
     filename_group_array = []
-    n = len(INPUT_LINK)
+    n = len(config.INPUT_LINK)
     gps_i = 1
     gtmetrix_i = 2 * n + 1
-    pingdom_i = 3 * n + 1 if use_gt_metrix else 2 * n + 1
-    for link in INPUT_LINK:
+    pingdom_i = 3 * n + 1 if config.use_gt_metrix else 2 * n + 1
+    for link in config.INPUT_LINK:
         filenames = []
         filenames.append(link)
         link = helpers.epss_replace_url(link)
@@ -209,7 +197,7 @@ def epss_create_file_name_array():
         filenames.append(gps_desktop)
         filenames.append(gps_mobile)
         gps_i = gps_i + 2
-        if use_gt_metrix:
+        if config.use_gt_metrix:
             gtmetrix_name = (
                 str(gtmetrix_i)
                 + "-"
@@ -237,6 +225,7 @@ def epss_get_file_name_group(link):
         if link == filenames[0]:
             return filenames
 
+# thread execution
 def epss_screenshots_thread_function(group):
     screenshots_driver = helpers.epss_get_webdriver()
     screenshots_driver.execute_cdp_cmd(
@@ -248,7 +237,7 @@ def epss_screenshots_thread_function(group):
     for link in group:
         file_names = epss_get_file_name_group(group[-1])
         can_take_screenshot = True
-        if link in INPUT_LINK:
+        if link in config.INPUT_LINK:
             continue
         try:
             if helpers.epss_is_tool(link=link, tool="pagespeed"):
@@ -256,11 +245,11 @@ def epss_screenshots_thread_function(group):
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
                 file_name = file_names[1] if form_factor == "desktop" else file_names[2]
                 html_selector = "div.PePDG"
-            elif helpers.epss_is_tool(link=link, tool="gtmetrix") and use_gt_metrix:
+            elif helpers.epss_is_tool(link=link, tool="gtmetrix") and config.use_gt_metrix:
                 file_name = file_names[3]
                 html_selector = "main.page-report-content"
             elif helpers.epss_is_tool(link=link, tool="pingdom"):
-                file_name = file_names[4] if use_gt_metrix else file_names[3]
+                file_name = file_names[4] if config.use_gt_metrix else file_names[3]
                 html_selector = "app-report.ng-star-inserted"
 
             screenshots_driver.get(link)
@@ -270,8 +259,7 @@ def epss_screenshots_thread_function(group):
             if can_take_screenshot:
                 epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
 
-            global success_link
-            success_link.append(link)
+            config.success_link.append(link)
         except Exception as e:
             continue
 
@@ -290,6 +278,26 @@ def epss_execute_screenshots(links):
         screenshots_thread.start()
     for thread in screenshots_threads:
         thread.join()
+
+"""
+UI settings
+"""
+
+# set use GTmetrix & toggle insert field
+def epss_toggle_api_key_field():
+    config.use_gt_metrix = True if not config.use_gt_metrix else False
+    if config.use_gt_metrix:
+        gtmetrix_api_frame.grid(row=4, column=0, padx=10, pady=15)
+    else:
+        gtmetrix_api_frame.grid_forget()
+
+
+# browse folder path
+def epss_browse_button():
+    directory = filedialog.askdirectory()
+    folder_entry.delete(0, "end")
+    folder_entry.insert(0, directory)
+    config.OP_DIR = directory
 
 # main function
 def epss_main():
@@ -311,31 +319,11 @@ def epss_main():
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 
-# set use GTmetrix & toggle insert field
-def epss_toggle_api_key_field():
-    global use_gt_metrix
-    use_gt_metrix = True if not use_gt_metrix else False
-    if use_gt_metrix:
-        gtmetrix_api_frame.grid(row=4, column=0, padx=10, pady=15)
-    else:
-        gtmetrix_api_frame.grid_forget()
-
-
-# browse folder path
-def epss_browse_button():
-    directory = filedialog.askdirectory()
-    folder_entry.delete(0, "end")
-    folder_entry.insert(0, directory)
-    global OP_DIR
-    OP_DIR = directory
-
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
-    global INPUT_LINK
-    INPUT_LINK = [line.strip() for line in links.splitlines()]
-    global API_KEY
-    API_KEY = gtmetrix_entry.get()
+    config.INPUT_LINK = [line.strip() for line in links.splitlines()]
+    config.API_KEY = gtmetrix_entry.get()
     execute_thread = threading.Thread(target=epss_main, args=())
     execute_thread.start()
     test_button.config(text="Taking Screenshots", state="disabled")
@@ -347,7 +335,10 @@ def epss_start():
     pb_frame.grid(row=5, column=0, pady=5)
     pb.start()
 
-# UI
+"""
+UI
+"""
+
 main = tkinter.Tk()
 
 # UI meta
