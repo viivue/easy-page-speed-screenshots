@@ -312,7 +312,6 @@ def epss_main():
         test_button.config(text="Take screenshots", state="normal")
         gtmetrix_checkbox.config(state="normal")
         folder_button.config(state="normal")
-        folder_entry.config(state="normal")
         links_text.config(state="normal")
         gtmetrix_entry.config(state="normal")
     except Exception as e:
@@ -328,7 +327,6 @@ def epss_start():
     test_button.config(text="Taking Screenshots", state="disabled")
     gtmetrix_checkbox.config(state="disabled")
     folder_button.config(state="disabled")
-    folder_entry.config(state="disabled")
     links_text.config(state="disabled")
     gtmetrix_entry.config(state="disabled")
     pb_frame.grid(row=5, column=0, pady=5)
@@ -354,59 +352,73 @@ main_frame.grid(row=0, column=0, padx=20, pady=(20,0))
 main_frame.config(bg=config.bg_color)
 
 main_label = tkinter.Label(
-    main_frame, text="Easy Page Speed Screenshots", bg=config.bg_color, fg=config.txt_color, font=(config.font, 24, "bold")
+    main_frame, text="Easy Page Speed Screenshots", bg=config.bg_color, fg=config.txt_color, font=(config.font, 25, "bold")
 )
 main_label.grid(row=0, column=0, pady=20)
 main_label.config(bg=config.bg_color)
 
-# select folder
+# create all of the main containers
 folder_frame = tkinter.Frame(main_frame)
-folder_frame.grid(row=1, column=0, pady=20)
-folder_label = tkinter.Label(folder_frame, text="Choose result folder", font=(config.font, config.body_txt))
-folder_label.grid(row=0, column=0)
+links_frame = tkinter.Frame(main_frame)
+gtmetrix_frame = tkinter.Frame(main_frame)
+gtmetrix_api_frame = tkinter.Frame(main_frame)
+test_frame = tkinter.Frame(main_frame)
+pb_frame = tkinter.Frame(main_frame)
+
+# layout all of the main containers
+folder_frame.grid(row=1, sticky="ew")
+links_frame.grid(row=2, sticky="ew")
+gtmetrix_frame.grid(row=3, sticky="ew")
+test_frame.grid(row=6, sticky="ew")
+
+# select folder
+folder_label = tkinter.Label(folder_frame, text="Choose result folder", font=(config.font, config.body_txt), anchor="w")
+folder_label.grid(row=0, column=0, sticky="ew", pady=5)
 folder_label.config(bg=config.bg_color)
-folder_entry = tkinter.Entry(folder_frame, width=45, font=(config.font, config.body_txt))
-folder_entry.grid(row=1, column=0, padx=20)
-folder_button = tkinter.Button(folder_frame, text = 'Browse directory', fg = config.btn_txt_color, bg = config.btn_bg_color, bd =  2, relief='flat', font=(config.font, config.body_txt), command=epss_browse_button)
-folder_button.grid(row=1, column=1, padx=10)
-folder_frame.config(bg=config.bg_color)
+
+folder_entry = tkinter.Entry(folder_frame, font=(config.font, config.body_txt), width=config.app_width, highlightbackground=config.color_black, borderwidth=2, relief='solid')
+folder_entry.grid(row=1, column=0, sticky="ew", ipadx=7, ipady=7)
+
+button_image = tkinter.PhotoImage(file=config.ASSET_FOLDER + '/images/icon-folder.png')
+folder_button = tkinter.Button(folder_frame, image=button_image, bg = config.color_white, borderwidth=0, highlightthickness=0, relief='flat', command=epss_browse_button, height=20, width=20)
+folder_button.place(x=510, y=40)
+
+folder_frame.config(bg=config.bg_color, pady=10)
 
 # links
-links_frame = tkinter.Frame(main_frame)
-links_frame.grid(row=2, column=0)
-links_frame.grid_columnconfigure(1, weight=1)
-links_label = tkinter.Label(links_frame, text="URLs for the page speed screenshots", font=(config.font, config.body_txt))
-links_label.grid(row=0, column=0, pady=10)
+links_label = tkinter.Label(links_frame, text="URLs for the page speed screenshots", font=(config.font, config.body_txt), anchor="w")
+links_label.grid(row=0, column=0, sticky="ew", pady=3)
 links_label.config(bg=config.bg_color)
-links_text = tkinter.Text(links_frame, height=20, font=(config.font, config.body_txt))
-links_text.grid(row=1, column=0, padx=10, pady=10)
+
+links_text = tkinter.Text(links_frame, height=20, font=(config.font, config.body_txt), width=config.app_width, highlightbackground=config.color_black, borderwidth=2, relief='solid')
+links_text.grid(row=1, column=0, pady=10, ipadx=7, ipady=7)
 links_frame.config(bg=config.bg_color)
 
 # gtmetrix
-gtmetrix_frame = tkinter.Frame(main_frame)
-gtmetrix_frame.grid(row=3, column=0)
+gtmetrix_frame.config(bg=config.bg_color)
 gtmetrix_checkbox = tkinter.Checkbutton(
     gtmetrix_frame, command=epss_toggle_api_key_field
 )
 gtmetrix_checkbox.config(bg=config.bg_color)
-gtmetrix_checkbox.grid(row=0, column=0,pady=10)
-gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt))
-gtmetrix_label.grid(row=0, column=1)
+gtmetrix_checkbox.grid(row=0, column=0)
+
+gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt), anchor="w")
+gtmetrix_label.grid(row=0, column=0)
+gtmetrix_label.place(x=20, y=-1)
 gtmetrix_label.config(bg=config.bg_color)
-gtmetrix_api_frame = tkinter.Frame(main_frame)
-gtmetrix_api_label = tkinter.Label(gtmetrix_api_frame, text="API Key", font=(config.font, config.body_txt))
-gtmetrix_api_label.grid(row=0, column=0, padx=20)
+
+gtmetrix_api_label = tkinter.Label(gtmetrix_api_frame, text="API Key", font=(config.font, config.body_txt), anchor="w")
+gtmetrix_api_label.grid(row=0, column=0)
+
 gtmetrix_api_label.config(bg=config.bg_color)
 gtmetrix_api_frame.config(bg=config.bg_color)
+
 gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=50, font=(config.font, config.body_txt))
 gtmetrix_entry.grid(row=0, column=1)
-gtmetrix_frame.config(bg=config.bg_color)
 
 # test button
-test_frame = tkinter.Frame(main_frame)
-test_frame.grid(row=6, column=0)
-test_button = tkinter.Button(test_frame, text="Take screenshots", fg = config.btn_txt_color, bg = config.btn_bg_color, bd =  2, relief='flat', font=(config.font, config.body_txt),command=epss_start)
-test_button.grid(row=0, column=0, pady=(10,0))
+test_button = tkinter.Button(test_frame, text="Take screenshots", width=config.app_width, fg = config.color_white, highlightbackground=config.color_black, borderwidth=2, bg = config.btn_txt_color, relief='solid', font=(config.font, config.body_txt),command=epss_start)
+test_button.grid(row=0, column=0, ipady=7, pady=(10,0))
 test_frame.config(bg=config.bg_color)
 
 # copyright
@@ -415,7 +427,6 @@ main_label.grid(row=7, column=0, pady=(20,0))
 main_label.config(bg=config.bg_color)
 
 # progress bar
-pb_frame = tkinter.Frame(main_frame)
 pb = ttk.Progressbar(pb_frame, orient="horizontal", mode="indeterminate", length=280)
 pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
