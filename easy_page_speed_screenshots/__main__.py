@@ -395,25 +395,25 @@ links_frame.config(bg=config.primary_color)
 # gtmetrix
 gtmetrix_frame.config(bg=config.primary_color, pady=5)
 gtmetrix_checkbox = tkinter.Checkbutton(
-    gtmetrix_frame, command=epss_toggle_api_key_field
+    gtmetrix_frame, activebackground=config.primary_color, command=epss_toggle_api_key_field
 )
 gtmetrix_checkbox.config(bg=config.primary_color)
-gtmetrix_checkbox.grid(row=0, column=0)
+gtmetrix_checkbox.grid(row=0, column=0, padx=(0,7), pady=7)
 
 gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt))
 gtmetrix_label.grid(row=0, column=0)
-gtmetrix_label.place(x=20, y=-1)
+gtmetrix_label.place(x=20, y=5)
 gtmetrix_label.config(bg=config.primary_color)
 
 gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=40, font=(config.font, config.body_txt), highlightbackground=config.color_black, borderwidth=2, relief='solid')
-gtmetrix_entry.grid(row=0, column=1)
+gtmetrix_entry.grid(row=0, column=0, ipadx=7, ipady=7)
 gtmetrix_entry.insert(0, "API Key")
 
 gtmetrix_api_frame.config(bg=config.primary_color)
 
 # test button
 test_button = tkinter.Button(test_frame, text="Take screenshots", width=config.app_width, fg = config.color_white, highlightbackground=config.color_black, borderwidth=2, bg = config.txt_color, relief='solid', font=(config.font, config.body_txt),command=epss_start)
-test_button.grid(row=0, column=0, ipadx=5, ipady=7, pady=(30,0))
+test_button.grid(row=0, column=0, ipadx=5, ipady=7, pady=20)
 test_frame.config(bg=config.primary_color)
 
 # copyright
@@ -427,4 +427,17 @@ pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
 pb_label.grid(row=1, column=0)
 
+# center window
+window_height = 750
+window_width = 590
+
+screen_width = main.winfo_screenwidth()
+screen_height = main.winfo_screenheight()
+
+x_cordinate = int((screen_width/2) - (window_width/2))
+y_cordinate = int((screen_height/2) - (window_height/2))
+
+main.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+
+# run
 main.mainloop()
