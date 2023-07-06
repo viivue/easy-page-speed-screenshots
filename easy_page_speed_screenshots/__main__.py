@@ -14,6 +14,7 @@ import threading
 
 from . import __version__
 from . import config
+from . import entry
 from . import helpers
 
 # webdriver options
@@ -282,22 +283,6 @@ def epss_execute_screenshots(links):
 UI settings
 """
 
-# set use GTmetrix & toggle insert field
-def epss_toggle_api_key_field():
-    config.use_gt_metrix = True if not config.use_gt_metrix else False
-    if config.use_gt_metrix:
-        gtmetrix_api_frame.grid(row=3, column=0, padx=0, pady=0)
-    else:
-        gtmetrix_api_frame.grid_forget()
-
-
-# browse folder path
-def epss_browse_button():
-    directory = filedialog.askdirectory()
-    folder_entry.delete(0, "end")
-    folder_entry.insert(0, directory)
-    config.OP_DIR = directory
-
 # main function
 def epss_main():
     try:
@@ -372,13 +357,11 @@ gtmetrix_frame.grid(row=3, sticky="ew")
 test_frame.grid(row=6, sticky="ew")
 
 # select folder
-folder_entry = tkinter.Entry(folder_frame, font=(config.font, config.body_txt), width=config.app_width, highlightbackground=config.color_black, borderwidth=2, relief='solid')
+folder_entry = entry.EntryWithPlaceholder(folder_frame, "Choose result folder")
 folder_entry.grid(row=1, column=0, ipadx=7, ipady=7)
-folder_entry.insert(0, "Choose result folder")
-folder_entry.config(state="disabled")
 
 button_image = tkinter.PhotoImage(file=config.ASSET_FOLDER + '/images/icon-folder.png')
-folder_button = tkinter.Button(folder_frame, image=button_image, borderwidth=0, highlightthickness=0, relief='flat', command=epss_browse_button, height=20, width=20)
+folder_button = tkinter.Button(folder_frame, image=button_image, borderwidth=0, bg=config.color_white, highlightthickness=0, relief='flat', command=lambda: helpers.epss_browse_button(folder_entry), height=20, width=20)
 folder_button.place(x=510, y=8)
 
 folder_frame.config(bg=config.primary_color, pady=15)
@@ -395,7 +378,7 @@ links_frame.config(bg=config.primary_color)
 # gtmetrix
 gtmetrix_frame.config(bg=config.primary_color, pady=5)
 gtmetrix_checkbox = tkinter.Checkbutton(
-    gtmetrix_frame, activebackground=config.primary_color, command=epss_toggle_api_key_field
+    gtmetrix_frame, activebackground=config.primary_color, command=lambda: helpers.epss_toggle_api_key_field(gtmetrix_api_frame)
 )
 gtmetrix_checkbox.config(bg=config.primary_color)
 gtmetrix_checkbox.grid(row=0, column=0, padx=(0,7), pady=7)
@@ -405,9 +388,8 @@ gtmetrix_label.grid(row=0, column=0)
 gtmetrix_label.place(x=20, y=5)
 gtmetrix_label.config(bg=config.primary_color)
 
-gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=40, font=(config.font, config.body_txt), highlightbackground=config.color_black, borderwidth=2, relief='solid')
+gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, "API Key", 40)
 gtmetrix_entry.grid(row=0, column=0, ipadx=7, ipady=7)
-gtmetrix_entry.insert(0, "API Key")
 
 gtmetrix_api_frame.config(bg=config.primary_color)
 

@@ -1,4 +1,7 @@
 import os
+import tkinter
+from tkinter import ttk
+from tkinter import filedialog
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
@@ -128,3 +131,19 @@ def epss_add_form_factor(links):
                 current_new_group.append(link)
         new_links.append(current_new_group)
     return new_links
+
+# browse folder path
+def epss_browse_button(folder_entry):
+    directory = filedialog.askdirectory()
+    folder_entry.delete(0, "end")
+    folder_entry.insert(0, directory)
+    folder_entry.configure(fg=config.txt_color)
+    config.OP_DIR = directory
+
+# set use GTmetrix & toggle insert field
+def epss_toggle_api_key_field(gtmetrix_api_frame):
+    config.use_gt_metrix = True if not config.use_gt_metrix else False
+    if config.use_gt_metrix:
+        gtmetrix_api_frame.grid(row=3, column=0, padx=0, pady=0)
+    else:
+        gtmetrix_api_frame.grid_forget()
