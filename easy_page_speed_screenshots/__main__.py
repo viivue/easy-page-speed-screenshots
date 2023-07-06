@@ -404,10 +404,15 @@ main_label.grid(row=7, column=0, pady=(20,0))
 main_label.config(bg=config.primary_color)
 
 # progress bar
-pb = ttk.Progressbar(pb_frame, orient="horizontal", mode="indeterminate", length=280)
+pb_style = ttk.Style()
+pb_style.theme_use('clam')
+pb_style.configure("default.Horizontal.TProgressbar", troughcolor=config.color_black, background=config.primary_color, bordercolor=config.color_black)
+pb = ttk.Progressbar(pb_frame, style="default.Horizontal.TProgressbar", orient="horizontal", mode="indeterminate", length=550)
 pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
 pb_label.grid(row=1, column=0)
+pb_label.config(bg=config.primary_color)
+pb_frame.config(bg=config.primary_color)
 
 # center window
 window_height = 750
