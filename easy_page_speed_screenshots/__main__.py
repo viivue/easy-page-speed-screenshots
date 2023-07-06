@@ -417,7 +417,7 @@ test_button.grid(row=0, column=0, ipadx=5, ipady=7, pady=(30,0))
 test_frame.config(bg=config.primary_color)
 
 # copyright
-main_label = tkinter.Label(main_frame, text="Copyright © ViiVue 2023", font=(config.font, 10))
+main_label = tkinter.Label(main_frame, text="Copyright © ViiVue 2023", font=(config.font, 11))
 main_label.grid(row=7, column=0, pady=(20,0))
 main_label.config(bg=config.primary_color)
 
