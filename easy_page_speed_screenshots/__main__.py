@@ -345,17 +345,17 @@ main.iconbitmap(
 )
 main.resizable(False, False)
 main.tk.call('tk', 'scaling', 1.0)
-main.config(bg=config.bg_color)
+main.config(bg=config.primary_color)
 
 main_frame = tkinter.Frame(main)
 main_frame.grid(row=0, column=0, padx=20, pady=(20,0))
-main_frame.config(bg=config.bg_color)
+main_frame.config(bg=config.primary_color)
 
 main_label = tkinter.Label(
-    main_frame, text="Easy Page Speed Screenshots", bg=config.bg_color, fg=config.txt_color, font=(config.font, 25, "bold")
+    main_frame, text="Easy Page Speed Screenshots", bg=config.primary_color, fg=config.txt_color, font=(config.font, 25, "bold")
 )
 main_label.grid(row=0, column=0, pady=20)
-main_label.config(bg=config.bg_color)
+main_label.config(bg=config.primary_color)
 
 # create all of the main containers
 folder_frame = tkinter.Frame(main_frame)
@@ -381,45 +381,45 @@ button_image = tkinter.PhotoImage(file=config.ASSET_FOLDER + '/images/icon-folde
 folder_button = tkinter.Button(folder_frame, image=button_image, borderwidth=0, highlightthickness=0, relief='flat', command=epss_browse_button, height=20, width=20)
 folder_button.place(x=510, y=8)
 
-folder_frame.config(bg=config.bg_color, pady=15)
+folder_frame.config(bg=config.primary_color, pady=15)
 
 # links
 links_label = tkinter.Label(links_frame, text="URLs for the page speed screenshots", font=(config.font, config.body_txt))
 links_label.grid(row=0, column=0, sticky="ew", pady=3)
-links_label.config(bg=config.bg_color)
+links_label.config(bg=config.primary_color)
 
 links_text = tkinter.Text(links_frame, height=20, font=(config.font, config.body_txt), width=config.app_width, highlightbackground=config.color_black, borderwidth=2, relief='solid')
 links_text.grid(row=1, column=0, pady=10, ipadx=7, ipady=7)
-links_frame.config(bg=config.bg_color)
+links_frame.config(bg=config.primary_color)
 
 # gtmetrix
-gtmetrix_frame.config(bg=config.bg_color, pady=5)
+gtmetrix_frame.config(bg=config.primary_color, pady=5)
 gtmetrix_checkbox = tkinter.Checkbutton(
     gtmetrix_frame, command=epss_toggle_api_key_field
 )
-gtmetrix_checkbox.config(bg=config.bg_color)
+gtmetrix_checkbox.config(bg=config.primary_color)
 gtmetrix_checkbox.grid(row=0, column=0)
 
 gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt))
 gtmetrix_label.grid(row=0, column=0)
 gtmetrix_label.place(x=20, y=-1)
-gtmetrix_label.config(bg=config.bg_color)
+gtmetrix_label.config(bg=config.primary_color)
 
 gtmetrix_entry = tkinter.Entry(gtmetrix_api_frame, width=40, font=(config.font, config.body_txt), highlightbackground=config.color_black, borderwidth=2, relief='solid')
 gtmetrix_entry.grid(row=0, column=1)
 gtmetrix_entry.insert(0, "API Key")
 
-gtmetrix_api_frame.config(bg=config.bg_color)
+gtmetrix_api_frame.config(bg=config.primary_color)
 
 # test button
-test_button = tkinter.Button(test_frame, text="Take screenshots", width=config.app_width, fg = config.color_white, highlightbackground=config.color_black, borderwidth=2, bg = config.btn_txt_color, relief='solid', font=(config.font, config.body_txt),command=epss_start)
+test_button = tkinter.Button(test_frame, text="Take screenshots", width=config.app_width, fg = config.color_white, highlightbackground=config.color_black, borderwidth=2, bg = config.txt_color, relief='solid', font=(config.font, config.body_txt),command=epss_start)
 test_button.grid(row=0, column=0, ipadx=5, ipady=7, pady=(30,0))
-test_frame.config(bg=config.bg_color)
+test_frame.config(bg=config.primary_color)
 
 # copyright
 main_label = tkinter.Label(main_frame, text="Copyright © ViiVue 2023", font=(config.font, 10))
 main_label.grid(row=7, column=0, pady=(20,0))
-main_label.config(bg=config.bg_color)
+main_label.config(bg=config.primary_color)
 
 # progress bar
 pb = ttk.Progressbar(pb_frame, orient="horizontal", mode="indeterminate", length=280)

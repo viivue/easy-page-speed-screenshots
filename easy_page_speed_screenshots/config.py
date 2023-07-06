@@ -20,11 +20,9 @@ success_link = []
 # UI
 font = "Nirmala UI"
 body_txt = 13
-bg_color = "#f1c400"
 txt_color = "#141414"
-btn_txt_color = "#141414"
 color_white = "#fff"
 color_black = "#000"
-color_yellow = "#f1c400"
+primary_color = "#f1c400"
 
 app_width = 75
