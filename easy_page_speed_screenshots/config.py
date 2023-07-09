@@ -13,8 +13,9 @@ URLS = [
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.4103.97 Safari/537.36"
 API_KEY = ""
 OP_DIR = ""
-INPUT_LINK = ""
+INPUT_LINKS = ""
 RESULT_LINKS = []
+IMG_EXT = '.png'
 
 # variables
 use_gt_metrix = False

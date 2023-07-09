@@ -34,7 +34,8 @@ def epss_get_report_links(st_url, site_url, result_links):
     else:
         helpers.epss_get_links_pingdom(site_url, result_links) # Pingdom
 
-def epss_result_thread_function(site_url):
+# report thread
+def epss_report_thread(site_url):
     result_links = []
     worker_threads = []
     for st_url in config.URLS:
@@ -51,12 +52,12 @@ def epss_result_thread_function(site_url):
     config.RESULT_LINKS.append(result_links)
 
 # collect user input link
-def epss_user_input():
+def epss_get_input_links():
     config.RESULT_LINKS = []
     pb_label.config(text="Analyzing requests")
     threads = []
-    for link in config.INPUT_LINK:
-        thread = threading.Thread(target=epss_result_thread_function, args=(link,))
+    for link in config.INPUT_LINKS:
+        thread = threading.Thread(target=epss_report_thread, args=(link,))
         threads.append(thread)
         if not thread.is_alive():
             thread.start()
@@ -82,72 +83,45 @@ def epss_take_screenshots(file_name, driver):
     driver.set_window_size(original_size["width"], original_size["height"])
 
 # create file names from input links
-def epss_create_file_name_array():
-    filename_group_array = []
-    n = len(config.INPUT_LINK)
+def epss_create_file_name_groups():
+    filename_groups = []
+    n = len(config.INPUT_LINKS)
     gps_i = 1
     gtmetrix_i = 2 * n + 1
     pingdom_i = 3 * n + 1 if config.use_gt_metrix else 2 * n + 1
-    for link in config.INPUT_LINK:
+    for link in config.INPUT_LINKS:
         filenames = []
         filenames.append(link)
-        link = helpers.epss_replace_url(link)
+        slug = helpers.epss_slugify_url(link)
         current_date = datetime.today().strftime("%Y%m%d")
-        gps_desktop = (
-            str(gps_i)
-            + "-"
-            + "gps"
-            + "-"
-            + current_date
-            + "-"
-            + link
-            + "-desktop"
-            + ".png"
-        )
-        gps_mobile = (
-            str(gps_i + 1)
-            + "-"
-            + "gps"
-            + "-"
-            + current_date
-            + "-"
-            + link
-            + "-mobile"
-            + ".png"
-        )
+
+        gps_desktop = (str(gps_i) + "-" + "gps" + "-" + current_date + "-" + slug + "-desktop" + config.IMG_EXT)
+        gps_mobile = (str(gps_i + 1) + "-" + "gps" + "-" + current_date + "-" + slug + "-mobile" + config.IMG_EXT)
         filenames.append(gps_desktop)
         filenames.append(gps_mobile)
         gps_i = gps_i + 2
+
         if config.use_gt_metrix:
-            gtmetrix_name = (
-                str(gtmetrix_i)
-                + "-"
-                + "gtmetrix"
-                + "-"
-                + current_date
-                + "-"
-                + link
-                + ".png"
-            )
+            gtmetrix_name = (str(gtmetrix_i) + "-" + "gtmetrix" + "-" + current_date + "-" + slug + config.IMG_EXT)
             gtmetrix_i = gtmetrix_i + 1
             filenames.append(gtmetrix_name)
-        pingdom_name = (
-            str(pingdom_i) + "-" + "pingdom" + "-" + current_date + "-" + link + ".png"
-        )
+
+        pingdom_name = (str(pingdom_i) + "-" + "pingdom" + "-" + current_date + "-" + slug + config.IMG_EXT)
         pingdom_i = pingdom_i + 1
         filenames.append(pingdom_name)
-        filename_group_array.append(filenames)
-    return filename_group_array
+        
+        filename_groups.append(filenames)
+    return filename_groups
 
 # get corresponding name group for result group
 def epss_get_file_name_group(link):
-    groups = epss_create_file_name_array()
+    groups = epss_create_file_name_groups()
     for filenames in groups:
         if link == filenames[0]:
             return filenames
 
 # thread execution
-def epss_screenshots_thread_function(group):
+def epss_screenshots_thread(group):
     screenshots_driver = helpers.epss_get_webdriver()
     screenshots_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
@@ -158,7 +132,7 @@ def epss_screenshots_thread_function(group):
     for link in group:
         file_names = epss_get_file_name_group(group[-1])
         can_take_screenshot = True
-        if link in config.INPUT_LINK:
+        if link in config.INPUT_LINKS:
             continue
         try:
             if helpers.epss_is_tool(link=link, tool="pagespeed"):
@@ -197,7 +171,7 @@ def epss_execute_screenshots(links):
     screenshots_threads = []
     for group in links:
         screenshots_thread = threading.Thread(
-            target=epss_screenshots_thread_function, args=(group,)
+            target=epss_screenshots_thread, args=(group,)
         )
         screenshots_threads.append(screenshots_thread)
         screenshots_thread.start()
@@ -211,7 +185,7 @@ UI settings
 # main function
 def epss_main():
     try:
-        links = epss_user_input()
+        links = epss_get_input_links()
         links = helpers.epss_add_form_factor(links=links)
         epss_execute_screenshots(links=links)
         pb.stop()
@@ -230,7 +204,7 @@ def epss_main():
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
-    config.INPUT_LINK = [line.strip() for line in links.splitlines()]
+    config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
     config.API_KEY = gtmetrix_entry.get()
     execute_thread = threading.Thread(target=epss_main, args=())
     execute_thread.start()

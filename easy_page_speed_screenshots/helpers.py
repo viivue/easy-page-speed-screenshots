@@ -22,6 +22,10 @@ options.add_experimental_option(
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
+"""
+General
+"""
+
 # check if specific content exists
 def epss_content_loaded(driver, selector):
     try:
@@ -51,7 +55,7 @@ def epss_is_tool(link, tool):
 
 # replace character in url to append to file name
 # e.g https://gtmetrix.com/ will become https-gtmetrix-com
-def epss_replace_url(url):
+def epss_slugify_url(url):
     # replace special characters with '-'
     url = url.replace("://", "-")
     url = url.replace("/", "-")
@@ -64,19 +68,23 @@ def epss_replace_url(url):
         url = url.removesuffix("-")
     return url
 
-# append form_factor if url is pagespeed
+# append form_factor param for Google Page Speed
 def epss_add_form_factor(links):
     new_links = []
     for group in links:
         current_new_group = []
         for link in group:
-            if link.find("pagespeed.web.dev") != -1:
+            if epss_is_tool(link=link, tool="pagespeed"):
                 current_new_group.append(link + "?form_factor=desktop")
                 current_new_group.append(link + "?form_factor=mobile")
             else:
                 current_new_group.append(link)
         new_links.append(current_new_group)
     return new_links
+
+"""
+UI
+"""
 
 # browse folder path
 def epss_browse_button(folder_entry):
@@ -93,6 +101,10 @@ def epss_toggle_api_key_field(gtmetrix_api_frame):
         gtmetrix_api_frame.grid(row=3, column=0, padx=0, pady=0)
     else:
         gtmetrix_api_frame.grid_forget()
+
+"""
+Handle report links
+"""
 
 # get report from Google Page Speed
 def epss_get_links_gps(site_url, result_links):
