@@ -25,110 +25,37 @@ options.add_experimental_option(
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
-# get report of gtmetrix with API
-# docs: https://gtmetrix.com/api/docs/2.0/#api-test-start
-def epss_get_link_gtmetrix(tool, link, current_link):
-    import requests
-    from requests.structures import CaseInsensitiveDict
+# get report links by type
+def epss_get_report_links(st_url, site_url, result_links):
+    if helpers.epss_is_tool(link=st_url, tool="pagespeed"):
+        helpers.epss_get_links_gps(site_url, result_links) # Google Page Speed
+    elif helpers.epss_is_tool(link=st_url, tool="gtmetrix") and config.use_gt_metrix:
+        helpers.epss_get_links_gtmetrix(site_url, result_links) # GTMetrix
+    else:
+        helpers.epss_get_links_pingdom(site_url, result_links) # Pingdom
 
-    while 1:
-        try:
-            base_url = tool
-            headers = CaseInsensitiveDict()
-            headers["Content-Type"] = "application/vnd.api+json"
-            url = base_url + "/api/2.0/tests"
-            data = """
-            {
-                 "data": {
-                    "type": "test",
-                    "attributes": {
-                       "url": "%s",
-                       "adblock":0
-                    }
-                 }
-            }
-            """ % (
-                link
-            )
-            resp = requests.post(
-                url, auth=(config.API_KEY.lstrip(), ""), headers=headers, data=data
-            )
-
-            # API key limited
-            if resp.status_code == 402:
-                tkinter.messagebox.showwarning(
-                    title="API Key", message="Your API Key has reached limit"
-                )
-                config.use_gt_metrix = False
-                return
-
-            resp = resp.json()
-            report = ""
-            while 1:
-                links = helpers.epss_json_field_exists("links", resp)
-                self_link = helpers.epss_json_field_exists("self", links)
-                test_result = requests.get(
-                    self_link,
-                    auth=(config.API_KEY.lstrip(), ""),
-                    headers=headers,
-                )
-                test_result = test_result.json()
-                data = helpers.epss_json_field_exists("data", test_result)
-                data_links = helpers.epss_json_field_exists("links", data)
-                if "report_url" in data_links:
-                    report = data_links["report_url"]
-                    break
-            current_link.append(report)
-            break
-        except Exception as e:
-            continue
-
-def epss_result_thread_function(link):
-    current_link = []
+def epss_result_thread_function(site_url):
+    result_links = []
     worker_threads = []
-    for tool in config.TOOLS:
-        if helpers.epss_is_tool(link=tool, tool="pagespeed"):
-            # Desire url: https://pagespeed.web.dev/analysis/https-en-wikipedia-org-wiki-Main_Page/5ohv3rfffg (without ?form_factor=mobile)
-            worker_thread = threading.Thread(
-                target=helpers.epss_submit_by_form,
-                args=(
-                    tool,
-                    link,
-                    current_link,
-                ),
-            )
-        elif helpers.epss_is_tool(link=tool, tool="gtmetrix") and config.use_gt_metrix:
-            worker_thread = threading.Thread(
-                target=epss_get_link_gtmetrix,
-                args=(
-                    tool,
-                    link,
-                    current_link,
-                ),
-            )
-        elif helpers.epss_is_tool(link=tool, tool="pingdom"):
-            worker_thread = threading.Thread(
-                target=helpers.epss_get_link_pingdom,
-                args=(
-                    tool,
-                    link,
-                    current_link,
-                ),
-            )
+    for st_url in config.URLS:
+        worker_thread = threading.Thread(
+            target=epss_get_report_links,
+            args=(st_url,site_url,result_links),
+        )
         worker_threads.append(worker_thread)
         if not worker_thread.is_alive():
             worker_thread.start()
     for thread in worker_threads:
         thread.join()
-    current_link.append(link)
-    config.RESULT_LINKS.append(current_link)
+    result_links.append(site_url)
+    config.RESULT_LINKS.append(result_links)
 
-# run through all testing tool
-def epss_send_link_for_test(links):
+# collect user input link
+def epss_user_input():
     config.RESULT_LINKS = []
     pb_label.config(text="Analyzing requests")
     threads = []
-    for link in links:
+    for link in config.INPUT_LINK:
         thread = threading.Thread(target=epss_result_thread_function, args=(link,))
         threads.append(thread)
         if not thread.is_alive():
@@ -137,12 +64,6 @@ def epss_send_link_for_test(links):
         thread.join()
 
     return config.RESULT_LINKS
-
-
-# collect user input link
-def epss_user_input():
-    res_inputs = epss_send_link_for_test(config.INPUT_LINK)
-    return res_inputs
 
 # take screenshots
 # Ref: https://stackoverflow.com/a/52572919/
@@ -256,6 +177,10 @@ def epss_screenshots_thread_function(group):
             can_take_screenshot = helpers.epss_content_loaded(
                 screenshots_driver, html_selector
             )
+
+            if can_take_screenshot and helpers.epss_is_tool(link=link, tool="pagespeed"):
+                time.sleep(5) # make sure the report circle is finished
+
             if can_take_screenshot:
                 epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
 
@@ -415,16 +340,13 @@ pb_label.config(bg=config.primary_color)
 pb_frame.config(bg=config.primary_color)
 
 # center window
-window_height = 750
-window_width = 590
-
 screen_width = main.winfo_screenwidth()
 screen_height = main.winfo_screenheight()
 
-x_cordinate = int((screen_width/2) - (window_width/2))
-y_cordinate = int((screen_height/2) - (window_height/2))
+x_cordinate = int((screen_width/2) - (config.window_width/2))
+y_cordinate = int((screen_height/2) - (config.window_height/2))
 
-main.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+main.geometry("{}x{}+{}+{}".format(config.window_width, config.window_height, x_cordinate, y_cordinate))
 
 # run
 main.mainloop()

@@ -1,5 +1,7 @@
 import os
 import tkinter
+import requests
+
 from tkinter import ttk
 from tkinter import filedialog
 from selenium import webdriver
@@ -36,68 +38,12 @@ def epss_get_webdriver():
         executable_path = config.ASSET_FOLDER + "/driver/chromedriver.exe", options=options
     )
 
-# submit link for testing
-def epss_submit_link(tool, link, input_selector="", form_selector=""):
-    get_link_driver = epss_get_webdriver()
-    get_link_driver.execute_cdp_cmd(
-        "Network.setUserAgentOverride",
-        {
-            "userAgent": config.USER_AGENT
-        },
-    )
-
-    get_link_driver.get(tool)
-    input_field = get_link_driver.find_element(
-        By.CSS_SELECTOR, "input" + input_selector
-    )
-    input_field.send_keys(link)  # Replace with your desired URL
-    form = get_link_driver.find_element(By.CSS_SELECTOR, "form" + form_selector)
-    form.submit()
-
-    from urllib.parse import unquote
-
-    try:
-        report = WebDriverWait(get_link_driver, 40).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div.PePDG"))
-        )
-    except Exception as e:
-        return ""
-    new_link = get_link_driver.current_url
-    get_link_driver.quit()
-    return unquote(new_link)
-
 # check if json field exists
 def epss_json_field_exists(field, json):
     if field in json:
         return json[field]
     else:
         return False
-
-# get report of pingdom with api
-def epss_get_link_pingdom(tool, link, current_link):
-    import requests
-
-    while 1:
-        try:
-            # Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
-            base_url = tool + "v1/tests/"
-            url = base_url + "create"
-            data = {"url": link}
-            # call the api to receive the id
-            resp = requests.post(url, json=data)
-            resp = resp.json()
-            result_id = resp["id"]
-            return_url = tool + "#" + result_id  # create result url
-            current_link.append(return_url)
-            break
-        except Exception as e:
-            continue
-
-def epss_submit_by_form(tool, link, current_link):
-    res = epss_submit_link(tool=tool, link=link)
-    if res != "":
-        res = res.split("?", 1)[0]
-    current_link.append(res)
 
 # check specific tool
 def epss_is_tool(link, tool):
@@ -147,3 +93,115 @@ def epss_toggle_api_key_field(gtmetrix_api_frame):
         gtmetrix_api_frame.grid(row=3, column=0, padx=0, pady=0)
     else:
         gtmetrix_api_frame.grid_forget()
+
+# get report from Google Page Speed
+def epss_get_links_gps(site_url, result_links):
+    res = ""
+    get_link_driver = epss_get_webdriver()
+    get_link_driver.execute_cdp_cmd(
+        "Network.setUserAgentOverride",
+        {
+            "userAgent": config.USER_AGENT
+        },
+    )
+
+    get_link_driver.get(config.PS_URL)
+    input_field = get_link_driver.find_element(
+        By.CSS_SELECTOR, "input"
+    )
+    input_field.send_keys(site_url)  # Replace with your desired URL
+    form = get_link_driver.find_element(By.CSS_SELECTOR, "form")
+    form.submit()
+
+    from urllib.parse import unquote
+
+    try:
+        report = WebDriverWait(get_link_driver, 40).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.PePDG"))
+        )
+    except Exception as e:
+        return ""
+
+    new_link = get_link_driver.current_url
+    get_link_driver.quit()
+    res = unquote(new_link)
+
+    if res != "":
+        res = res.split("?", 1)[0]
+
+    result_links.append(res)
+
+# get report from Pingdom
+def epss_get_links_pingdom(site_url, result_links):
+    while 1:
+        try:
+            # Desire url: https://tools.pingdom.com/#62079906f1c00000 with 62079906f1c00000 as id
+            base_url = config.PD_URL + "v1/tests/"
+            url = base_url + "create"
+            data = {"url": site_url}
+            # call the api to receive the id
+            resp = requests.post(url, json=data)
+            resp = resp.json()
+            result_id = resp["id"]
+            return_url = config.PD_URL + "#" + result_id  # create result url
+            result_links.append(return_url)
+            break
+        except Exception as e:
+            continue
+
+# get report from GTMetrix with API
+# docs: https://gtmetrix.com/api/docs/2.0/#api-test-start
+def epss_get_links_gtmetrix(site_url, result_links):
+    from requests.structures import CaseInsensitiveDict
+
+    while 1:
+        try:
+            base_url = config.GM_URL
+            headers = CaseInsensitiveDict()
+            headers["Content-Type"] = "application/vnd.api+json"
+            url = base_url + "/api/2.0/tests"
+            data = """
+            {
+                 "data": {
+                    "type": "test",
+                    "attributes": {
+                       "url": "%s",
+                       "adblock":0
+                    }
+                 }
+            }
+            """ % (
+                site_url
+            )
+            resp = requests.post(
+                url, auth=(config.API_KEY.lstrip(), ""), headers=headers, data=data
+            )
+
+            # API key limited
+            if resp.status_code == 402:
+                tkinter.messagebox.showwarning(
+                    title="API Key", message="Your API Key has reached limit"
+                )
+                config.use_gt_metrix = False
+                return
+
+            resp = resp.json()
+            report = ""
+            while 1:
+                links = epss_json_field_exists("links", resp)
+                self_link = epss_json_field_exists("self", links)
+                test_result = requests.get(
+                    self_link,
+                    auth=(config.API_KEY.lstrip(), ""),
+                    headers=headers,
+                )
+                test_result = test_result.json()
+                data = epss_json_field_exists("data", test_result)
+                data_links = epss_json_field_exists("links", data)
+                if "report_url" in data_links:
+                    report = data_links["report_url"]
+                    break
+            result_links.append(report)
+            break
+        except Exception as e:
+            continue
