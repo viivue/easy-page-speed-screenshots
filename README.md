@@ -7,14 +7,15 @@
 - Run the `.exe` file
 
 ### 2. Python
+- Download & Install [the latest Python version](https://www.python.org/downloads/).
 - Clone GitHub repo:
 ```
 git clone https://github.com/viivue/easy-page-speed-screenshots.git
 ```
 - Run `cmd`
 ```
-cd easy-page-speed-screenshots/src
-python easy-page-speed-screenshots.py
+pip freeze > requirements.txt
+python run.py
 ```
 
 ## Usage
