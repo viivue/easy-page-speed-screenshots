@@ -201,7 +201,6 @@ def epss_main():
         links_text.config(state="normal")
         gtmetrix_entry.config(state="normal")
         test_frame.grid(row=6, sticky="ew")
-        main_label.grid(row=7, column=0, pady=(20,0))
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 
@@ -219,10 +218,9 @@ def epss_start():
         folder_button.config(state="disabled")
         links_text.config(state="disabled")
         gtmetrix_entry.config(state="disabled")
-        pb_frame.grid(row=5, column=0)
+        pb_frame.grid(row=6, sticky="ew", ipadx=5, ipady=7, pady=19)
         pb.start()
         test_frame.grid_forget()
-        main_label.grid(row=6, column=0, pady=(60,0))
     else:
         message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
         title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
