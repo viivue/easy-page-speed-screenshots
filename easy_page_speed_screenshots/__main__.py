@@ -1,4 +1,5 @@
 import tkinter
+import tkinter.messagebox
 from tkinter import ttk
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
