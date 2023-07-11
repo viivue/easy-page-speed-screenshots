@@ -209,7 +209,7 @@ def epss_main():
         pb.stop()
         pb_frame.grid_forget()
         tkinter.messagebox.showinfo(
-            title="Finish", message="Result screenshots saved successfully!"
+            title=config.finish_title, message=config.finish_message
         )
         test_button.config(text="Take screenshots", state="normal")
         gtmetrix_checkbox.config(state="normal")
@@ -228,10 +228,10 @@ def epss_start():
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
         for link in config.INPUT_LINKS:
             if not validators.url(link):
-                tkinter.messagebox.showwarning("Invalid Input", "Some link is invalid, these link will be excluded")
+                tkinter.messagebox.showwarning(config.invalid_input_title, config.invalid_input_message)
         config.API_KEY = gtmetrix_entry.get()
         if not bool(config.API_KEY) or config.API_KEY == "API Key":
-            tkinter.messagebox.showwarning("Empty API Key", "Empty API Key, GTMetrix will be ignored")
+            tkinter.messagebox.showwarning(config.empty_api_title, config.empty_api_message)
             config.use_gt_metrix = False
         execute_thread = threading.Thread(target=epss_main, args=())
         execute_thread.daemon = True
