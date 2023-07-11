@@ -1,6 +1,5 @@
 import tkinter
 from tkinter import ttk
-from tkinter import filedialog
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
@@ -24,6 +23,8 @@ options.add_experimental_option(
     "excludeSwitches", ["enable-logging"]
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
+
+event = threading.Event() # stop thread variable # ref: https://superfastpython.com/stop-a-thread-in-python/
 
 # get report links by type
 def epss_get_report_links(st_url, site_url, result_links):
@@ -129,6 +130,7 @@ def epss_screenshots_thread(group):
             "userAgent": config.USER_AGENT
         },
     )
+    config.CHROME_DRIVERS.append(screenshots_driver)
     for link in group:
         file_names = epss_get_file_name_group(group[-1])
         can_take_screenshot = True
@@ -204,17 +206,23 @@ def epss_main():
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
-    config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
-    config.API_KEY = gtmetrix_entry.get()
-    execute_thread = threading.Thread(target=epss_main, args=())
-    execute_thread.start()
-    test_button.config(text="Taking Screenshots", state="disabled")
-    gtmetrix_checkbox.config(state="disabled")
-    folder_button.config(state="disabled")
-    links_text.config(state="disabled")
-    gtmetrix_entry.config(state="disabled")
-    pb_frame.grid(row=5, column=0, pady=5)
-    pb.start()
+    if bool(links) and bool(config.OP_DIR):
+        config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
+        config.API_KEY = gtmetrix_entry.get()
+        execute_thread = threading.Thread(target=epss_main, args=())
+        execute_thread.daemon = True
+        execute_thread.start()
+        test_button.config(text="Taking Screenshots", state="disabled")
+        gtmetrix_checkbox.config(state="disabled")
+        folder_button.config(state="disabled")
+        links_text.config(state="disabled")
+        gtmetrix_entry.config(state="disabled")
+        pb_frame.grid(row=5, column=0)
+        pb.start()
+    else:
+        message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
+        title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
+        tkinter.messagebox.showerror(title=title, message=message)
 
 """
 UI
@@ -322,5 +330,18 @@ y_cordinate = int((screen_height/2) - (config.window_height/2))
 
 main.geometry("{}x{}+{}+{}".format(config.window_width, config.window_height, x_cordinate, y_cordinate))
 
+# close window handling
+def epss_on_closing():
+    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+        # close chromedriver if quit at random point
+
+        for driver in config.CHROME_DRIVERS: 
+            if driver.service.is_connectable():
+                driver.quit()
+
+        # quit the interface
+        main.destroy()
+
 # run
+main.protocol("WM_DELETE_WINDOW", epss_on_closing)
 main.mainloop()
