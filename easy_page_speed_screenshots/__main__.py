@@ -224,7 +224,7 @@ def epss_start():
     links = links_text.get("1.0", "end-1c")
     if os.path.exists(folder_entry.get()):
         config.OP_DIR = folder_entry.get()
-    if bool(links) and bool(config.OP_DIR):
+    if bool(links) and os.path.exists(folder_entry.get()):
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
         for link in config.INPUT_LINKS:
             if not validators.url(link):
