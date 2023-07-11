@@ -243,12 +243,14 @@ def epss_start():
         pb_frame.grid(row=5, column=0, pady=5)
         pb.start()
     else:
-        message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
-        title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
-        if bool(config.OP_DIR) and folder_entry.get() == "Choose result folder" or not bool(folder_entry.get()):
-            message = "Please choose folder"
+        message = config.please_choose_folder if not bool(config.OP_DIR) else config.please_input_links
+        title = config.no_links_title
         if not os.path.exists(folder_entry.get()):
-            message = "Please enter a valid folder"
+            message = config.please_valid_folder
+            title = config.invalid_folder_title
+        if folder_entry.get() == "Choose result folder" or not bool(folder_entry.get()):
+            message = config.please_choose_folder
+            title = config.no_folder_title
         tkinter.messagebox.showerror(title=title, message=message)
 
 """

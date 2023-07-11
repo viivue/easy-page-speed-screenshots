@@ -35,3 +35,11 @@ app_width = 75
 
 window_height = 750
 window_width = 590
+
+# Error Text
+please_valid_folder = "Please enter a valid folder"
+invalid_folder_title = "Invalid folder path"
+no_folder_title = "No folder selected"
+please_choose_folder = "Please choose folder"
+no_links_title = "No links inputted"
+please_input_links = "Please input links"
