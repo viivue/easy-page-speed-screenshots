@@ -117,6 +117,8 @@ def epss_get_links_gps(site_url, result_links):
         },
     )
 
+    config.CHROME_DRIVERS.append(get_link_driver)
+
     get_link_driver.get(config.PS_URL)
     input_field = get_link_driver.find_element(
         By.CSS_SELECTOR, "input"
@@ -142,6 +144,7 @@ def epss_get_links_gps(site_url, result_links):
         res = res.split("?", 1)[0]
 
     result_links.append(res)
+    get_link_driver.quit()
 
 # get report from Pingdom
 def epss_get_links_pingdom(site_url, result_links):

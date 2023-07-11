@@ -16,6 +16,7 @@ OP_DIR = ""
 INPUT_LINKS = ""
 RESULT_LINKS = []
 IMG_EXT = '.png'
+CHROME_DRIVERS = []
 
 # variables
 use_gt_metrix = False
