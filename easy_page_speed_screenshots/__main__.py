@@ -13,6 +13,7 @@ from urllib.parse import parse_qs
 from datetime import datetime
 import threading
 import validators
+import os.path
 
 from . import __version__
 from . import config
@@ -221,6 +222,8 @@ def epss_main():
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
+    if os.path.exists(folder_entry.get()):
+        config.OP_DIR = folder_entry.get()
     if bool(links) and bool(config.OP_DIR):
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
         for link in config.INPUT_LINKS:
@@ -244,6 +247,8 @@ def epss_start():
         title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
         if bool(config.OP_DIR) and folder_entry.get() == "Choose result folder" or not bool(folder_entry.get()):
             message = "Please choose folder"
+        if not os.path.exists(folder_entry.get()):
+            message = "Please enter a valid folder"
         tkinter.messagebox.showerror(title=title, message=message)
 
 """
