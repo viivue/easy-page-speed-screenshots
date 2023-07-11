@@ -24,8 +24,6 @@ options.add_experimental_option(
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
-event = threading.Event() # stop thread variable # ref: https://superfastpython.com/stop-a-thread-in-python/
-
 # get report links by type
 def epss_get_report_links(st_url, site_url, result_links):
     if helpers.epss_is_tool(link=st_url, tool="pagespeed"):
