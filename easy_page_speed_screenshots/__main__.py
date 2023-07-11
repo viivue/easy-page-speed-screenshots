@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 import threading
+import validators
 
 from . import __version__
 from . import config
@@ -57,6 +58,9 @@ def epss_get_input_links():
     pb_label.config(text="Analyzing requests")
     threads = []
     for link in config.INPUT_LINKS:
+        if not validators.url(link):
+            print(link)
+            continue
         thread = threading.Thread(target=epss_report_thread, args=(link,))
         threads.append(thread)
         if not thread.is_alive():
@@ -208,6 +212,7 @@ def epss_start():
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
         config.API_KEY = gtmetrix_entry.get()
         execute_thread = threading.Thread(target=epss_main, args=())
+        execute_thread.daemon = True
         execute_thread.start()
         test_button.config(text="Taking Screenshots", state="disabled")
         gtmetrix_checkbox.config(state="disabled")
@@ -219,6 +224,8 @@ def epss_start():
     else:
         message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
         title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
+        if bool(folder_entry) and not bool(config.OP_DIR):
+            message = "Please click choose folder button"
         tkinter.messagebox.showerror(title=title, message=message)
 
 """

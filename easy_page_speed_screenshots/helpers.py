@@ -26,6 +26,12 @@ options.add_argument("--log-level=3")
 General
 """
 
+# close chromedriver if not quit
+def epss_close_drivers():
+    for driver in config.CHROME_DRIVERS: 
+        if driver.service.is_connectable():
+            driver.quit()
+
 # check if specific content exists
 def epss_content_loaded(driver, selector):
     try:
@@ -142,6 +148,7 @@ def epss_get_links_gps(site_url, result_links):
         res = res.split("?", 1)[0]
 
     result_links.append(res)
+    get_link_driver.quit()
 
 # get report from Pingdom
 def epss_get_links_pingdom(site_url, result_links):
