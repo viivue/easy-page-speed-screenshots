@@ -133,6 +133,7 @@ def epss_screenshots_thread(group):
             "userAgent": config.USER_AGENT
         },
     )
+    config.CHROME_DRIVERS.append(screenshots_driver)
     for link in group:
         file_names = epss_get_file_name_group(group[-1])
         can_take_screenshot = True
@@ -334,5 +335,17 @@ y_cordinate = int((screen_height/2) - (config.window_height/2))
 
 main.geometry("{}x{}+{}+{}".format(config.window_width, config.window_height, x_cordinate, y_cordinate))
 
+def epss_on_closing():
+    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+        # close chromedriver if quit at random point
+
+        for driver in config.CHROME_DRIVERS: 
+            if driver.service.is_connectable():
+                driver.quit()
+
+        # quit the interface
+        main.destroy()
+
 # run
+main.protocol("WM_DELETE_WINDOW", epss_on_closing)
 main.mainloop()

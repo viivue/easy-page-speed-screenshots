@@ -123,6 +123,8 @@ def epss_get_links_gps(site_url, result_links):
         },
     )
 
+    config.CHROME_DRIVERS.append(get_link_driver)
+
     get_link_driver.get(config.PS_URL)
     input_field = get_link_driver.find_element(
         By.CSS_SELECTOR, "input"
