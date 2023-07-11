@@ -25,6 +25,18 @@ options.add_experimental_option(
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
+# close window handling
+def epss_on_closing():
+    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+        # close chromedriver if quit at random point
+
+        for driver in config.CHROME_DRIVERS: 
+            if driver.service.is_connectable():
+                driver.quit()
+
+        # quit the interface
+        main.destroy()
+
 # get report links by type
 def epss_get_report_links(st_url, site_url, result_links):
     if helpers.epss_is_tool(link=st_url, tool="pagespeed"):
@@ -328,18 +340,6 @@ x_cordinate = int((screen_width/2) - (config.window_width/2))
 y_cordinate = int((screen_height/2) - (config.window_height/2))
 
 main.geometry("{}x{}+{}+{}".format(config.window_width, config.window_height, x_cordinate, y_cordinate))
-
-# close window handling
-def epss_on_closing():
-    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
-        # close chromedriver if quit at random point
-
-        for driver in config.CHROME_DRIVERS: 
-            if driver.service.is_connectable():
-                driver.quit()
-
-        # quit the interface
-        main.destroy()
 
 # run
 main.protocol("WM_DELETE_WINDOW", epss_on_closing)
