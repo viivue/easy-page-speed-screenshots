@@ -175,6 +175,8 @@ def epss_get_links_pingdom(site_url, result_links):
 def epss_get_links_gtmetrix(site_url, result_links):
     from requests.structures import CaseInsensitiveDict
 
+    if not bool(config.use_gt_metrix):
+        return
     while 1:
         try:
             base_url = config.GM_URL

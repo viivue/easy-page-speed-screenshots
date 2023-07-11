@@ -27,6 +27,18 @@ options.add_experimental_option(
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
+# close window handling
+def epss_on_closing():
+    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+        # close chromedriver if quit at random point
+
+        for driver in config.CHROME_DRIVERS: 
+            if driver.service.is_connectable():
+                driver.quit()
+
+        # quit the interface
+        main.destroy()
+
 # get report links by type
 def epss_get_report_links(st_url, site_url, result_links):
     if helpers.epss_is_tool(link=st_url, tool="pagespeed"):
@@ -60,7 +72,6 @@ def epss_get_input_links():
     threads = []
     for link in config.INPUT_LINKS:
         if not validators.url(link):
-            print(link)
             continue
         thread = threading.Thread(target=epss_report_thread, args=(link,))
         threads.append(thread)
@@ -212,7 +223,12 @@ def epss_start():
     links = links_text.get("1.0", "end-1c")
     if bool(links) and bool(config.OP_DIR):
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
+        for link in config.INPUT_LINKS:
+            if not validators.url(link):
+                tkinter.messagebox.showwarning("Invalid Input", "Some link is invalid, these link will be excluded")
         config.API_KEY = gtmetrix_entry.get()
+        if not bool(config.API_KEY) or config.API_KEY == "API Key":
+            config.use_gt_metrix = False
         execute_thread = threading.Thread(target=epss_main, args=())
         execute_thread.daemon = True
         execute_thread.start()
@@ -335,17 +351,6 @@ x_cordinate = int((screen_width/2) - (config.window_width/2))
 y_cordinate = int((screen_height/2) - (config.window_height/2))
 
 main.geometry("{}x{}+{}+{}".format(config.window_width, config.window_height, x_cordinate, y_cordinate))
-
-def epss_on_closing():
-    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
-        # close chromedriver if quit at random point
-
-        for driver in config.CHROME_DRIVERS: 
-            if driver.service.is_connectable():
-                driver.quit()
-
-        # quit the interface
-        main.destroy()
 
 # run
 main.protocol("WM_DELETE_WINDOW", epss_on_closing)
