@@ -231,6 +231,7 @@ def epss_start():
                 tkinter.messagebox.showwarning("Invalid Input", "Some link is invalid, these link will be excluded")
         config.API_KEY = gtmetrix_entry.get()
         if not bool(config.API_KEY) or config.API_KEY == "API Key":
+            tkinter.messagebox.showwarning("Empty API Key", "Empty API Key, GTMetrix will be ignored")
             config.use_gt_metrix = False
         execute_thread = threading.Thread(target=epss_main, args=())
         execute_thread.daemon = True
