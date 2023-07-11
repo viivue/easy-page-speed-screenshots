@@ -204,17 +204,21 @@ def epss_main():
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
-    config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
-    config.API_KEY = gtmetrix_entry.get()
-    execute_thread = threading.Thread(target=epss_main, args=())
-    execute_thread.start()
-    test_button.config(text="Taking Screenshots", state="disabled")
-    gtmetrix_checkbox.config(state="disabled")
-    folder_button.config(state="disabled")
-    links_text.config(state="disabled")
-    gtmetrix_entry.config(state="disabled")
-    pb_frame.grid(row=5, column=0, pady=5)
-    pb.start()
+    if bool(links) and bool(config.OP_DIR):
+        config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
+        config.API_KEY = gtmetrix_entry.get()
+        execute_thread = threading.Thread(target=epss_main, args=())
+        execute_thread.start()
+        test_button.config(text="Taking Screenshots", state="disabled")
+        gtmetrix_checkbox.config(state="disabled")
+        folder_button.config(state="disabled")
+        links_text.config(state="disabled")
+        gtmetrix_entry.config(state="disabled")
+        pb_frame.grid(row=5, column=0, pady=5)
+        pb.start()
+    else:
+        message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
+        tkinter.messagebox.showerror(title="Empty", message=message)
 
 """
 UI
