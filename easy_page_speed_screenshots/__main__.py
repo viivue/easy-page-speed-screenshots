@@ -222,9 +222,8 @@ def epss_main():
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
-    if os.path.exists(folder_entry.get()):
-        config.OP_DIR = folder_entry.get()
     if bool(links) and os.path.exists(folder_entry.get()):
+        config.OP_DIR = folder_entry.get()
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
         for link in config.INPUT_LINKS:
             if not validators.url(link):
@@ -244,7 +243,7 @@ def epss_start():
         pb_frame.grid(row=5, column=0, pady=5)
         pb.start()
     else:
-        message = config.please_choose_folder if not bool(config.OP_DIR) else config.please_input_links
+        message = config.please_input_links
         title = config.no_links_title
         if not os.path.exists(folder_entry.get()):
             message = config.please_valid_folder
