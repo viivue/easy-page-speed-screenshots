@@ -12,6 +12,8 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 import threading
+import os.path
+import validators
 
 from . import __version__
 from . import config
@@ -207,9 +209,17 @@ def epss_main():
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
-    if bool(links) and bool(config.OP_DIR):
+    if os.path.exists(folder_entry.get()):
+        config.OP_DIR = folder_entry.get()
+    if bool(links) and os.path.exists(folder_entry.get()):
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
+        for link in config.INPUT_LINKS:
+            if not validators.url(link):
+                tkinter.messagebox.showwarning(config.invalid_input_title, config.invalid_input_message)
         config.API_KEY = gtmetrix_entry.get()
+        if config.use_gt_metrix and (not bool(config.API_KEY) or config.API_KEY == "API Key"):
+            tkinter.messagebox.showwarning(config.empty_api_title, config.empty_api_message)
+            config.use_gt_metrix = False
         execute_thread = threading.Thread(target=epss_main, args=())
         execute_thread.daemon = True
         execute_thread.start()
@@ -218,13 +228,31 @@ def epss_start():
         folder_button.config(state="disabled")
         links_text.config(state="disabled")
         gtmetrix_entry.config(state="disabled")
-        pb_frame.grid(row=6, sticky="ew", ipadx=5, ipady=7, pady=19)
+        pb_frame.grid(row=6, sticky="ew", ipady=7, pady=20)
+        main_label.grid(pady=(14,0))
         pb.start()
-        test_frame.grid_forget()
     else:
-        message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
-        title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
+        message = config.please_choose_folder if not bool(config.OP_DIR) else config.please_input_links
+        title = config.no_links_title
+        if not os.path.exists(folder_entry.get()):
+            message = config.please_valid_folder
+            title = config.invalid_folder_title
+        if folder_entry.get() == "Choose result folder" or not bool(folder_entry.get()):
+            message = config.please_choose_folder
+            title = config.no_folder_title
         tkinter.messagebox.showerror(title=title, message=message)
+
+# close window handling
+def epss_on_closing():
+    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+        # close chromedriver if quit at random point
+        for driver in config.CHROME_DRIVERS:
+            if driver.service.is_connectable():
+                driver.quit()
+
+        # quit the interface
+        main.destroy()
+
 """
 UI
 """
@@ -315,7 +343,7 @@ main_label.config(bg=config.primary_color)
 pb_style = ttk.Style()
 pb_style.theme_use('clam')
 pb_style.configure("default.Horizontal.TProgressbar", troughcolor=config.color_black, background=config.primary_color, bordercolor=config.color_black)
-pb = ttk.Progressbar(pb_frame, style="default.Horizontal.TProgressbar", orient="horizontal", mode="indeterminate", length=550)
+pb = ttk.Progressbar(pb_frame, style="default.Horizontal.TProgressbar", orient="horizontal", mode="indeterminate", length=545)
 pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
 pb_label.grid(row=1, column=0)
