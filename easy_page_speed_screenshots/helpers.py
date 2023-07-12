@@ -211,7 +211,7 @@ def epss_get_links_gtmetrix(site_url, result_links):
 
             if resp.status_code == 401:
                 tkinter.messagebox.showwarning(
-                    title=config.txt_gt_api_warn_title, message="Invalid API Key"
+                    title=config.txt_gt_api_warn_title, message=config.txt_gt_api_warn_title
                 )
                 config.use_gt_metrix = False
                 return
