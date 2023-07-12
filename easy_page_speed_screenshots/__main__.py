@@ -11,6 +11,8 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 import threading
+import os.path
+import validators
 
 from . import __version__
 from . import config
@@ -199,15 +201,24 @@ def epss_main():
         folder_button.config(state="normal")
         links_text.config(state="normal")
         gtmetrix_entry.config(state="normal")
+        test_frame.grid(row=6, sticky="ew")
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
-    if bool(links) and bool(config.OP_DIR):
+    if os.path.exists(folder_entry.get()):
+        config.OP_DIR = folder_entry.get()
+    if bool(links) and os.path.exists(folder_entry.get()):
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
+        for link in config.INPUT_LINKS:
+            if not validators.url(link):
+                tkinter.messagebox.showwarning(config.invalid_input_title, config.invalid_input_message)
         config.API_KEY = gtmetrix_entry.get()
+        if config.use_gt_metrix and (not bool(config.API_KEY) or config.API_KEY == "API Key"):
+            tkinter.messagebox.showwarning(config.empty_api_title, config.empty_api_message)
+            config.use_gt_metrix = False
         execute_thread = threading.Thread(target=epss_main, args=())
         execute_thread.daemon = True
         execute_thread.start()
@@ -216,19 +227,25 @@ def epss_start():
         folder_button.config(state="disabled")
         links_text.config(state="disabled")
         gtmetrix_entry.config(state="disabled")
-        pb_frame.grid(row=5, column=0)
+        pb_frame.grid(row=6, sticky="ew", ipady=7, pady=20)
+        main_label.grid(pady=(14,0))
         pb.start()
     else:
-        message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
-        title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
+        message = config.please_choose_folder if not bool(config.OP_DIR) else config.please_input_links
+        title = config.no_links_title
+        if not os.path.exists(folder_entry.get()):
+            message = config.please_valid_folder
+            title = config.invalid_folder_title
+        if folder_entry.get() == "Choose result folder" or not bool(folder_entry.get()):
+            message = config.please_choose_folder
+            title = config.no_folder_title
         tkinter.messagebox.showerror(title=title, message=message)
 
 # close window handling
 def epss_on_closing():
     if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
         # close chromedriver if quit at random point
-
-        for driver in config.CHROME_DRIVERS: 
+        for driver in config.CHROME_DRIVERS:
             if driver.service.is_connectable():
                 driver.quit()
 
@@ -264,7 +281,7 @@ main_label.config(bg=config.primary_color)
 folder_frame = tkinter.Frame(main_frame)
 links_frame = tkinter.Frame(main_frame)
 gtmetrix_frame = tkinter.Frame(main_frame)
-gtmetrix_api_frame = tkinter.Frame(main_frame)
+gtmetrix_api_frame = tkinter.Frame(gtmetrix_frame)
 test_frame = tkinter.Frame(main_frame)
 pb_frame = tkinter.Frame(main_frame)
 
@@ -299,15 +316,14 @@ gtmetrix_checkbox = tkinter.Checkbutton(
     gtmetrix_frame, activebackground=config.primary_color, command=lambda: helpers.epss_toggle_api_key_field(gtmetrix_api_frame)
 )
 gtmetrix_checkbox.config(bg=config.primary_color)
-gtmetrix_checkbox.grid(row=0, column=0, padx=(0,7), pady=7)
+gtmetrix_checkbox.grid(row=0, column=0, pady=7)
 
 gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt))
-gtmetrix_label.grid(row=0, column=0)
-gtmetrix_label.place(x=20, y=5)
+gtmetrix_label.grid(row=0, column=1)
 gtmetrix_label.config(bg=config.primary_color)
 
-gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, "API Key", 40)
-gtmetrix_entry.grid(row=0, column=0, ipadx=7, ipady=7)
+gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, "API Key", 60)
+gtmetrix_entry.grid(row=0, column=0, ipadx=3, ipady=5)
 
 gtmetrix_api_frame.config(bg=config.primary_color)
 
@@ -325,7 +341,7 @@ main_label.config(bg=config.primary_color)
 pb_style = ttk.Style()
 pb_style.theme_use('clam')
 pb_style.configure("default.Horizontal.TProgressbar", troughcolor=config.color_black, background=config.primary_color, bordercolor=config.color_black)
-pb = ttk.Progressbar(pb_frame, style="default.Horizontal.TProgressbar", orient="horizontal", mode="indeterminate", length=550)
+pb = ttk.Progressbar(pb_frame, style="default.Horizontal.TProgressbar", orient="horizontal", mode="indeterminate", length=545)
 pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
 pb_label.grid(row=1, column=0)
@@ -340,6 +356,17 @@ x_cordinate = int((screen_width/2) - (config.window_width/2))
 y_cordinate = int((screen_height/2) - (config.window_height/2))
 
 main.geometry("{}x{}+{}+{}".format(config.window_width, config.window_height, x_cordinate, y_cordinate))
+
+def epss_on_closing():
+    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+        # close chromedriver if quit at random point
+
+        for driver in config.CHROME_DRIVERS: 
+            if driver.service.is_connectable():
+                driver.quit()
+
+        # quit the interface
+        main.destroy()
 
 # run
 main.protocol("WM_DELETE_WINDOW", epss_on_closing)
