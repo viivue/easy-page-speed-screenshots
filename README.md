@@ -14,7 +14,7 @@ git clone https://github.com/viivue/easy-page-speed-screenshots.git
 ```
 - Run `cmd`
 ```
-pip freeze > requirements.txt
+pip install -r requirements.txt
 python run.py
 ```
 
