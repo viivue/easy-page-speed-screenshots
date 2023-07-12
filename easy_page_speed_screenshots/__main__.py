@@ -216,6 +216,7 @@ def epss_main():
         folder_button.config(state="normal")
         links_text.config(state="normal")
         gtmetrix_entry.config(state="normal")
+        test_frame.grid(row=6, sticky="ew")
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 
@@ -244,7 +245,8 @@ def epss_start():
         folder_button.config(state="disabled")
         links_text.config(state="disabled")
         gtmetrix_entry.config(state="disabled")
-        pb_frame.grid(row=5, column=0, pady=5)
+        pb_frame.grid(row=6, sticky="ew", ipady=7, pady=20)
+        main_label.grid(pady=(14,0))
         pb.start()
     else:
         message = config.please_input_links
@@ -261,8 +263,7 @@ def epss_start():
 def epss_on_closing():
     if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
         # close chromedriver if quit at random point
-
-        for driver in config.CHROME_DRIVERS: 
+        for driver in config.CHROME_DRIVERS:
             if driver.service.is_connectable():
                 driver.quit()
 
@@ -298,7 +299,7 @@ main_label.config(bg=config.primary_color)
 folder_frame = tkinter.Frame(main_frame)
 links_frame = tkinter.Frame(main_frame)
 gtmetrix_frame = tkinter.Frame(main_frame)
-gtmetrix_api_frame = tkinter.Frame(main_frame)
+gtmetrix_api_frame = tkinter.Frame(gtmetrix_frame)
 test_frame = tkinter.Frame(main_frame)
 pb_frame = tkinter.Frame(main_frame)
 
@@ -333,15 +334,14 @@ gtmetrix_checkbox = tkinter.Checkbutton(
     gtmetrix_frame, activebackground=config.primary_color, command=lambda: helpers.epss_toggle_api_key_field(gtmetrix_api_frame)
 )
 gtmetrix_checkbox.config(bg=config.primary_color)
-gtmetrix_checkbox.grid(row=0, column=0, padx=(0,7), pady=7)
+gtmetrix_checkbox.grid(row=0, column=0, pady=7)
 
 gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt))
-gtmetrix_label.grid(row=0, column=0)
-gtmetrix_label.place(x=20, y=5)
+gtmetrix_label.grid(row=0, column=1)
 gtmetrix_label.config(bg=config.primary_color)
 
-gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, "API Key", 40)
-gtmetrix_entry.grid(row=0, column=0, ipadx=7, ipady=7)
+gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, "API Key", 60)
+gtmetrix_entry.grid(row=0, column=0, ipadx=3, ipady=5)
 
 gtmetrix_api_frame.config(bg=config.primary_color)
 
@@ -359,7 +359,7 @@ main_label.config(bg=config.primary_color)
 pb_style = ttk.Style()
 pb_style.theme_use('clam')
 pb_style.configure("default.Horizontal.TProgressbar", troughcolor=config.color_black, background=config.primary_color, bordercolor=config.color_black)
-pb = ttk.Progressbar(pb_frame, style="default.Horizontal.TProgressbar", orient="horizontal", mode="indeterminate", length=550)
+pb = ttk.Progressbar(pb_frame, style="default.Horizontal.TProgressbar", orient="horizontal", mode="indeterminate", length=545)
 pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
 pb_label.grid(row=1, column=0)
@@ -374,6 +374,17 @@ x_cordinate = int((screen_width/2) - (config.window_width/2))
 y_cordinate = int((screen_height/2) - (config.window_height/2))
 
 main.geometry("{}x{}+{}+{}".format(config.window_width, config.window_height, x_cordinate, y_cordinate))
+
+def epss_on_closing():
+    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+        # close chromedriver if quit at random point
+
+        for driver in config.CHROME_DRIVERS: 
+            if driver.service.is_connectable():
+                driver.quit()
+
+        # quit the interface
+        main.destroy()
 
 # run
 main.protocol("WM_DELETE_WINDOW", epss_on_closing)

@@ -105,7 +105,7 @@ def epss_browse_button(folder_entry):
 def epss_toggle_api_key_field(gtmetrix_api_frame):
     config.use_gt_metrix = True if not config.use_gt_metrix else False
     if config.use_gt_metrix:
-        gtmetrix_api_frame.grid(row=3, column=0, padx=0, pady=0)
+        gtmetrix_api_frame.grid(row=0, column=2, padx=0, pady=0, columnspan=2)
     else:
         gtmetrix_api_frame.grid_forget()
 
