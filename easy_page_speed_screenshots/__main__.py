@@ -226,11 +226,19 @@ def epss_start():
     if bool(links) and os.path.exists(folder_entry.get()):
         config.OP_DIR = folder_entry.get()
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
+        has_valid = False
         for link in config.INPUT_LINKS:
-            if not validators.url(link):
-                tkinter.messagebox.showwarning(
-                    config.txt_invalid_input_title, config.txt_invalid_input_message
-                )
+            if validators.url(link):
+                has_valid = True
+        if has_valid:
+            tkinter.messagebox.showwarning(
+                config.txt_invalid_input_title, config.txt_invalid_inputs_message
+            )
+        else:
+            tkinter.messagebox.showerror(
+                config.txt_invalid_input_title, config.txt_invalid_input_message
+            )
+            return
         if config.use_gt_metrix:
             config.API_KEY = gtmetrix_entry.get()
             if not bool(config.API_KEY) or config.API_KEY == config.txt_placeholder_apikey:
@@ -370,7 +378,7 @@ gtmetrix_checkbox = tkinter.Checkbutton(
     command=lambda: helpers.epss_toggle_api_key_field(gtmetrix_api_frame),
 )
 gtmetrix_checkbox.config(bg=config.primary_color)
-gtmetrix_checkbox.grid(row=0, column=0, padx=(0, 7), pady=7)
+gtmetrix_checkbox.grid(row=0, column=0, pady=7)
 
 gtmetrix_label = tkinter.Label(
     gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt)
