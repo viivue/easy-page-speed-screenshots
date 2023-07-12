@@ -379,7 +379,7 @@ gtmetrix_label.grid(row=0, column=1)
 gtmetrix_label.config(bg=config.primary_color)
 
 gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, config.txt_placeholder_apikey, 40)
-gtmetrix_entry.grid(row=0, column=0, ipadx=7, ipady=7)
+gtmetrix_entry.grid(row=0, column=0, ipadx=7, ipady=5)
 
 gtmetrix_api_frame.config(bg=config.primary_color)
 
