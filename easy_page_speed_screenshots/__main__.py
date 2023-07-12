@@ -173,6 +173,7 @@ def epss_screenshots_thread(group):
                 time.sleep(5) # make sure the report circle is finished
 
             if can_take_screenshot:
+                time.sleep(2)
                 epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
 
             config.success_link.append(link)
