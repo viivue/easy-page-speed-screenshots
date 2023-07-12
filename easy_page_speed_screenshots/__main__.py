@@ -116,56 +116,18 @@ def epss_create_file_name_groups():
         slug = helpers.epss_slugify_url(link)
         current_date = datetime.today().strftime("%Y%m%d")
 
-        gps_desktop = (
-            str(gps_i)
-            + "-"
-            + "gps"
-            + "-"
-            + current_date
-            + "-"
-            + slug
-            + "-desktop"
-            + config.IMG_EXT
-        )
-        gps_mobile = (
-            str(gps_i + 1)
-            + "-"
-            + "gps"
-            + "-"
-            + current_date
-            + "-"
-            + slug
-            + "-mobile"
-            + config.IMG_EXT
-        )
+        gps_desktop = (str(gps_i) + "-" + "gps" + "-" + current_date + "-" + slug + "-desktop" + config.IMG_EXT)
+        gps_mobile = (str(gps_i + 1) + "-" + "gps" + "-" + current_date + "-" + slug + "-mobile" + config.IMG_EXT)
         filenames.append(gps_desktop)
         filenames.append(gps_mobile)
         gps_i = gps_i + 2
 
         if config.use_gt_metrix:
-            gtmetrix_name = (
-                str(gtmetrix_i)
-                + "-"
-                + "gtmetrix"
-                + "-"
-                + current_date
-                + "-"
-                + slug
-                + config.IMG_EXT
-            )
+            gtmetrix_name = (str(gtmetrix_i) + "-" + "gtmetrix" + "-" + current_date + "-" + slug + config.IMG_EXT)
             gtmetrix_i = gtmetrix_i + 1
             filenames.append(gtmetrix_name)
 
-        pingdom_name = (
-            str(pingdom_i)
-            + "-"
-            + "pingdom"
-            + "-"
-            + current_date
-            + "-"
-            + slug
-            + config.IMG_EXT
-        )
+        pingdom_name = (str(pingdom_i) + "-" + "pingdom" + "-" + current_date + "-" + slug + config.IMG_EXT)
         pingdom_i = pingdom_i + 1
         filenames.append(pingdom_name)
 
