@@ -1,7 +1,7 @@
 import os
 
 # constant
-ASSET_FOLDER = os.path.join(os.path.dirname(__file__), '../assets')
+ASSET_FOLDER = os.path.join(os.path.dirname(__file__), "../assets")
 PS_URL = "https://pagespeed.web.dev/"
 GM_URL = "https://gtmetrix.com/"
 PD_URL = "https://tools.pingdom.com/"
@@ -15,7 +15,7 @@ API_KEY = ""
 OP_DIR = ""
 INPUT_LINKS = ""
 RESULT_LINKS = []
-IMG_EXT = '.png'
+IMG_EXT = ".png"
 CHROME_DRIVERS = []
 
 # variables
@@ -50,3 +50,6 @@ txt_invalid_input_title = "Invalid Input"
 txt_invalid_input_message = "Some link is invalid, these link will be excluded"
 txt_finish_title = "Finish"
 txt_finish_message = "Result screenshots saved successfully!"
+txt_placeholder_folder = "Choose result folder"
+txt_placeholder_apikey = "API Key"
+

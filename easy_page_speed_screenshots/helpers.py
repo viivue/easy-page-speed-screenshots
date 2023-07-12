@@ -29,9 +29,10 @@ General
 
 # close chromedriver if not quit
 def epss_close_drivers():
-    for driver in config.CHROME_DRIVERS: 
+    for driver in config.CHROME_DRIVERS:
         if driver.service.is_connectable():
             driver.quit()
+
 
 # check if specific content exists
 def epss_content_loaded(driver, selector):
@@ -43,11 +44,14 @@ def epss_content_loaded(driver, selector):
     except Exception as e:
         return False
 
+
 # get webdriver with options
 def epss_get_webdriver():
     return webdriver.Chrome(
-        executable_path = config.ASSET_FOLDER + "/driver/chromedriver.exe", options=options
+        executable_path=config.ASSET_FOLDER + "/driver/chromedriver.exe",
+        options=options,
     )
+
 
 # check if json field exists
 def epss_json_field_exists(field, json):
@@ -56,9 +60,11 @@ def epss_json_field_exists(field, json):
     else:
         return False
 
+
 # check specific tool
 def epss_is_tool(link, tool):
     return link.find(tool) != -1
+
 
 # replace character in url to append to file name
 # e.g https://gtmetrix.com/ will become https-gtmetrix-com
@@ -75,6 +81,7 @@ def epss_slugify_url(url):
         url = url.removesuffix("-")
     return url
 
+
 # append form_factor param for Google Page Speed
 def epss_add_form_factor(links):
     new_links = []
@@ -89,6 +96,7 @@ def epss_add_form_factor(links):
         new_links.append(current_new_group)
     return new_links
 
+
 """
 UI
 """
@@ -101,6 +109,7 @@ def epss_browse_button(folder_entry):
     folder_entry.configure(fg=config.txt_color)
     config.OP_DIR = directory
 
+
 # set use GTmetrix & toggle insert field
 def epss_toggle_api_key_field(gtmetrix_api_frame):
     config.use_gt_metrix = True if not config.use_gt_metrix else False
@@ -108,6 +117,7 @@ def epss_toggle_api_key_field(gtmetrix_api_frame):
         gtmetrix_api_frame.grid(row=0, column=2, padx=0, pady=0, columnspan=2)
     else:
         gtmetrix_api_frame.grid_forget()
+
 
 """
 Handle report links
@@ -119,17 +129,13 @@ def epss_get_links_gps(site_url, result_links):
     get_link_driver = epss_get_webdriver()
     get_link_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
-        {
-            "userAgent": config.USER_AGENT
-        },
+        {"userAgent": config.USER_AGENT},
     )
 
     config.CHROME_DRIVERS.append(get_link_driver)
 
     get_link_driver.get(config.PS_URL)
-    input_field = get_link_driver.find_element(
-        By.CSS_SELECTOR, "input"
-    )
+    input_field = get_link_driver.find_element(By.CSS_SELECTOR, "input")
     input_field.send_keys(site_url)  # Replace with your desired URL
     form = get_link_driver.find_element(By.CSS_SELECTOR, "form")
     form.submit()
@@ -153,6 +159,7 @@ def epss_get_links_gps(site_url, result_links):
     result_links.append(res)
     get_link_driver.quit()
 
+
 # get report from Pingdom
 def epss_get_links_pingdom(site_url, result_links):
     while 1:
@@ -170,6 +177,7 @@ def epss_get_links_pingdom(site_url, result_links):
             break
         except Exception as e:
             continue
+
 
 # get report from GTMetrix with API
 # docs: https://gtmetrix.com/api/docs/2.0/#api-test-start
@@ -203,7 +211,7 @@ def epss_get_links_gtmetrix(site_url, result_links):
 
             if resp.status_code == 401:
                 tkinter.messagebox.showwarning(
-                    title=config.gt_api_warn_title, message="Invalid API Key"
+                    title=config.txt_gt_api_warn_title, message="Invalid API Key"
                 )
                 config.use_gt_metrix = False
                 return
@@ -211,7 +219,8 @@ def epss_get_links_gtmetrix(site_url, result_links):
             # API key limited
             if resp.status_code == 402:
                 tkinter.messagebox.showwarning(
-                    title=config.gt_api_warn_title, message="Your API Key has reached limit"
+                    title=config.txt_gt_api_warn_title,
+                    message="Your API Key has reached limit",
                 )
                 config.use_gt_metrix = False
                 return
