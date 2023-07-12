@@ -1,7 +1,7 @@
 import os
 
 # constant
-ASSET_FOLDER = os.path.join(os.path.dirname(__file__), '../assets')
+ASSET_FOLDER = os.path.join(os.path.dirname(__file__), "../assets")
 PS_URL = "https://pagespeed.web.dev/"
 GM_URL = "https://gtmetrix.com/"
 PD_URL = "https://tools.pingdom.com/"
@@ -15,7 +15,7 @@ API_KEY = ""
 OP_DIR = ""
 INPUT_LINKS = ""
 RESULT_LINKS = []
-IMG_EXT = '.png'
+IMG_EXT = ".png"
 CHROME_DRIVERS = []
 
 # variables
@@ -37,15 +37,20 @@ window_height = 750
 window_width = 590
 
 # Error Text
-please_valid_folder = "Please enter a valid folder"
-invalid_folder_title = "Invalid folder path"
-no_folder_title = "No folder selected"
-please_choose_folder = "Please choose folder"
-no_links_title = "No links inputted"
-please_input_links = "Please input links"
-empty_api_title = "Empty API Key"
-empty_api_message = "Empty API Key, GTMetrix will be ignored"
-invalid_input_title = "Invalid Input"
-invalid_input_message = "Some link is invalid, these link will be excluded"
-finish_title = "Finish"
-finish_message = "Result screenshots saved successfully!"
+txt_please_valid_folder = "Please enter a valid folder"
+txt_invalid_folder_title = "Invalid folder path"
+txt_no_folder_title = "No folder selected"
+txt_please_choose_folder = "Please choose folder"
+txt_no_links_title = "No links inputted"
+txt_please_input_links = "Please input links"
+txt_empty_api_title = "Empty API Key"
+txt_empty_api_message = "Empty API Key, GTMetrix will be ignored"
+txt_gt_api_warn_title = "Invalid API Key"
+txt_invalid_input_title = "Invalid Input"
+txt_invalid_inputs_message = "Some link is invalid, these link will be excluded"
+txt_invalid_input_message = "Please enter valid link"
+txt_finish_title = "Finish"
+txt_finish_message = "Result screenshots saved successfully!"
+txt_placeholder_folder = "Choose result folder"
+txt_placeholder_apikey = "API Key"
+

@@ -11,8 +11,8 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 import threading
-import os.path
 import validators
+import os.path
 
 from . import __version__
 from . import config
@@ -27,14 +27,16 @@ options.add_experimental_option(
 )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
 options.add_argument("--log-level=3")
 
+
 # get report links by type
 def epss_get_report_links(st_url, site_url, result_links):
     if helpers.epss_is_tool(link=st_url, tool="pagespeed"):
-        helpers.epss_get_links_gps(site_url, result_links) # Google Page Speed
+        helpers.epss_get_links_gps(site_url, result_links)  # Google Page Speed
     elif helpers.epss_is_tool(link=st_url, tool="gtmetrix") and config.use_gt_metrix:
-        helpers.epss_get_links_gtmetrix(site_url, result_links) # GTMetrix
+        helpers.epss_get_links_gtmetrix(site_url, result_links)  # GTMetrix
     else:
-        helpers.epss_get_links_pingdom(site_url, result_links) # Pingdom
+        helpers.epss_get_links_pingdom(site_url, result_links)  # Pingdom
+
 
 # report thread
 def epss_report_thread(site_url):
@@ -43,7 +45,7 @@ def epss_report_thread(site_url):
     for st_url in config.URLS:
         worker_thread = threading.Thread(
             target=epss_get_report_links,
-            args=(st_url,site_url,result_links),
+            args=(st_url, site_url, result_links),
         )
         worker_threads.append(worker_thread)
         if not worker_thread.is_alive():
@@ -53,12 +55,15 @@ def epss_report_thread(site_url):
     result_links.append(site_url)
     config.RESULT_LINKS.append(result_links)
 
+
 # collect user input link
 def epss_get_input_links():
     config.RESULT_LINKS = []
     pb_label.config(text="Analyzing requests")
     threads = []
     for link in config.INPUT_LINKS:
+        if not validators.url(link):
+            continue
         thread = threading.Thread(target=epss_report_thread, args=(link,))
         threads.append(thread)
         if not thread.is_alive():
@@ -67,6 +72,7 @@ def epss_get_input_links():
         thread.join()
 
     return config.RESULT_LINKS
+
 
 # take screenshots
 # Ref: https://stackoverflow.com/a/52572919/
@@ -83,6 +89,7 @@ def epss_take_screenshots(file_name, driver):
         f"{config.OP_DIR}\{file_name}"
     )  # avoids scrollbar
     driver.set_window_size(original_size["width"], original_size["height"])
+
 
 # create file names from input links
 def epss_create_file_name_groups():
@@ -111,9 +118,10 @@ def epss_create_file_name_groups():
         pingdom_name = (str(pingdom_i) + "-" + "pingdom" + "-" + current_date + "-" + slug + config.IMG_EXT)
         pingdom_i = pingdom_i + 1
         filenames.append(pingdom_name)
-        
+
         filename_groups.append(filenames)
     return filename_groups
+
 
 # get corresponding name group for result group
 def epss_get_file_name_group(link):
@@ -122,14 +130,13 @@ def epss_get_file_name_group(link):
         if link == filenames[0]:
             return filenames
 
+
 # thread execution
 def epss_screenshots_thread(group):
     screenshots_driver = helpers.epss_get_webdriver()
     screenshots_driver.execute_cdp_cmd(
         "Network.setUserAgentOverride",
-        {
-            "userAgent": config.USER_AGENT
-        },
+        {"userAgent": config.USER_AGENT},
     )
     config.CHROME_DRIVERS.append(screenshots_driver)
     for link in group:
@@ -143,7 +150,10 @@ def epss_screenshots_thread(group):
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
                 file_name = file_names[1] if form_factor == "desktop" else file_names[2]
                 html_selector = "div.PePDG"
-            elif helpers.epss_is_tool(link=link, tool="gtmetrix") and config.use_gt_metrix:
+            elif (
+                helpers.epss_is_tool(link=link, tool="gtmetrix")
+                and config.use_gt_metrix
+            ):
                 file_name = file_names[3]
                 html_selector = "main.page-report-content"
             elif helpers.epss_is_tool(link=link, tool="pingdom"):
@@ -155,10 +165,13 @@ def epss_screenshots_thread(group):
                 screenshots_driver, html_selector
             )
 
-            if can_take_screenshot and helpers.epss_is_tool(link=link, tool="pagespeed"):
-                time.sleep(5) # make sure the report circle is finished
+            if can_take_screenshot and helpers.epss_is_tool(
+                link=link, tool="pagespeed"
+            ):
+                time.sleep(5)  # make sure the report circle is finished
 
             if can_take_screenshot:
+                time.sleep(2)
                 epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
 
             config.success_link.append(link)
@@ -181,6 +194,7 @@ def epss_execute_screenshots(links):
     for thread in screenshots_threads:
         thread.join()
 
+
 """
 UI settings
 """
@@ -194,7 +208,7 @@ def epss_main():
         pb.stop()
         pb_frame.grid_forget()
         tkinter.messagebox.showinfo(
-            title="Finish", message="Result screenshots saved successfully!"
+            title=config.txt_finish_title, message=config.txt_finish_message
         )
         test_button.config(text="Take screenshots", state="normal")
         gtmetrix_checkbox.config(state="normal")
@@ -205,20 +219,41 @@ def epss_main():
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 
+
 # start test
 def epss_start():
     links = links_text.get("1.0", "end-1c")
-    if os.path.exists(folder_entry.get()):
-        config.OP_DIR = folder_entry.get()
     if bool(links) and os.path.exists(folder_entry.get()):
+        config.OP_DIR = folder_entry.get()
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
+        valid_links = []
         for link in config.INPUT_LINKS:
-            if not validators.url(link):
-                tkinter.messagebox.showwarning(config.invalid_input_title, config.invalid_input_message)
-        config.API_KEY = gtmetrix_entry.get()
-        if config.use_gt_metrix and (not bool(config.API_KEY) or config.API_KEY == "API Key"):
-            tkinter.messagebox.showwarning(config.empty_api_title, config.empty_api_message)
-            config.use_gt_metrix = False
+            if validators.url(link):
+                valid_links.append(link)
+        if valid_links != config.INPUT_LINKS:
+            if len(valid_links) != 0:
+                tkinter.messagebox.showwarning(
+                    config.txt_invalid_input_title, config.txt_invalid_inputs_message
+                )
+            else:
+                tkinter.messagebox.showerror(
+                    config.txt_invalid_input_title, config.txt_invalid_input_message
+                )
+                return
+        if config.use_gt_metrix:
+            config.API_KEY = gtmetrix_entry.get()
+            if not bool(config.API_KEY) or config.API_KEY == config.txt_placeholder_apikey:
+                tkinter.messagebox.showwarning(
+                    config.txt_empty_api_title, config.txt_empty_api_message
+                )
+                config.use_gt_metrix = False
+        elif (
+            not config.use_gt_metrix
+            and gtmetrix_entry.get()
+            and gtmetrix_entry.get() != config.txt_placeholder_apikey
+        ):
+            config.use_gt_metrix = True
+            config.API_KEY = gtmetrix_entry.get()
         execute_thread = threading.Thread(target=epss_main, args=())
         execute_thread.daemon = True
         execute_thread.start()
@@ -231,15 +266,16 @@ def epss_start():
         main_label.grid(pady=(14,0))
         pb.start()
     else:
-        message = config.please_choose_folder if not bool(config.OP_DIR) else config.please_input_links
-        title = config.no_links_title
+        message = config.txt_please_input_links
+        title = config.txt_no_links_title
         if not os.path.exists(folder_entry.get()):
-            message = config.please_valid_folder
-            title = config.invalid_folder_title
-        if folder_entry.get() == "Choose result folder" or not bool(folder_entry.get()):
-            message = config.please_choose_folder
-            title = config.no_folder_title
+            message = config.txt_please_valid_folder
+            title = config.txt_invalid_folder_title
+        if folder_entry.get() == config.txt_placeholder_folder or not bool(folder_entry.get()):
+            message = config.txt_please_choose_folder
+            title = config.txt_no_folder_title
         tkinter.messagebox.showerror(title=title, message=message)
+
 
 # close window handling
 def epss_on_closing():
@@ -252,6 +288,7 @@ def epss_on_closing():
         # quit the interface
         main.destroy()
 
+
 """
 UI
 """
@@ -260,19 +297,21 @@ main = tkinter.Tk()
 
 # UI meta
 main.title("Easy Page Speed Screenshots")
-main.iconbitmap(
-    tkinter.PhotoImage(config.ASSET_FOLDER + '/images/favicon.ico')
-)
+main.iconbitmap(tkinter.PhotoImage(config.ASSET_FOLDER + "/images/favicon.ico"))
 main.resizable(False, False)
-main.tk.call('tk', 'scaling', 1.0)
+main.tk.call("tk", "scaling", 1.0)
 main.config(bg=config.primary_color)
 
 main_frame = tkinter.Frame(main)
-main_frame.grid(row=0, column=0, padx=20, pady=(20,0))
+main_frame.grid(row=0, column=0, padx=20, pady=(20, 0))
 main_frame.config(bg=config.primary_color)
 
 main_label = tkinter.Label(
-    main_frame, text="Easy Page Speed Screenshots", bg=config.primary_color, fg=config.txt_color, font=(config.font, 25, "bold")
+    main_frame,
+    text="Easy Page Speed Screenshots",
+    bg=config.primary_color,
+    fg=config.txt_color,
+    font=(config.font, 25, "bold"),
 )
 main_label.grid(row=0, column=0, pady=20)
 main_label.config(bg=config.primary_color)
@@ -292,56 +331,106 @@ gtmetrix_frame.grid(row=3, sticky="ew")
 test_frame.grid(row=6, sticky="ew")
 
 # select folder
-folder_entry = entry.EntryWithPlaceholder(folder_frame, "Choose result folder")
+folder_entry = entry.EntryWithPlaceholder(folder_frame, config.txt_placeholder_folder)
 folder_entry.grid(row=1, column=0, ipadx=7, ipady=7)
 
-button_image = tkinter.PhotoImage(file=config.ASSET_FOLDER + '/images/icon-folder.png')
-folder_button = tkinter.Button(folder_frame, image=button_image, borderwidth=0, bg=config.color_white, highlightthickness=0, relief='flat', command=lambda: helpers.epss_browse_button(folder_entry), height=20, width=20)
+button_image = tkinter.PhotoImage(file=config.ASSET_FOLDER + "/images/icon-folder.png")
+folder_button = tkinter.Button(
+    folder_frame,
+    image=button_image,
+    borderwidth=0,
+    bg=config.color_white,
+    highlightthickness=0,
+    relief="flat",
+    command=lambda: helpers.epss_browse_button(folder_entry),
+    height=20,
+    width=20,
+)
 folder_button.place(x=510, y=8)
 
 folder_frame.config(bg=config.primary_color, pady=15)
 
 # links
-links_label = tkinter.Label(links_frame, text="URLs for the page speed screenshots", font=(config.font, config.body_txt))
+links_label = tkinter.Label(
+    links_frame,
+    text="URLs for the page speed screenshots",
+    font=(config.font, config.body_txt),
+)
 links_label.grid(row=0, column=0, sticky="ew", pady=3)
 links_label.config(bg=config.primary_color)
 
-links_text = tkinter.Text(links_frame, height=20, font=(config.font, config.body_txt), width=config.app_width, highlightbackground=config.color_black, borderwidth=2, relief='solid')
+links_text = tkinter.Text(
+    links_frame,
+    height=20,
+    font=(config.font, config.body_txt),
+    width=config.app_width,
+    highlightbackground=config.color_black,
+    borderwidth=2,
+    relief="solid",
+)
 links_text.grid(row=1, column=0, pady=10, ipadx=7, ipady=7)
 links_frame.config(bg=config.primary_color)
 
 # gtmetrix
 gtmetrix_frame.config(bg=config.primary_color, pady=5)
 gtmetrix_checkbox = tkinter.Checkbutton(
-    gtmetrix_frame, activebackground=config.primary_color, command=lambda: helpers.epss_toggle_api_key_field(gtmetrix_api_frame)
+    gtmetrix_frame,
+    activebackground=config.primary_color,
+    command=lambda: helpers.epss_toggle_api_key_field(gtmetrix_api_frame),
 )
 gtmetrix_checkbox.config(bg=config.primary_color)
 gtmetrix_checkbox.grid(row=0, column=0, pady=7)
 
-gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt))
+gtmetrix_label = tkinter.Label(
+    gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt)
+)
 gtmetrix_label.grid(row=0, column=1)
 gtmetrix_label.config(bg=config.primary_color)
 
-gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, "API Key", 60)
-gtmetrix_entry.grid(row=0, column=0, ipadx=3, ipady=5)
+gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, config.txt_placeholder_apikey, 40)
+gtmetrix_entry.grid(row=0, column=0, ipadx=7, ipady=5)
 
 gtmetrix_api_frame.config(bg=config.primary_color)
 
 # test button
-test_button = tkinter.Button(test_frame, text="Take screenshots", width=config.app_width, fg = config.color_white, highlightbackground=config.color_black, borderwidth=2, bg = config.txt_color, relief='solid', font=(config.font, config.body_txt),command=epss_start)
+test_button = tkinter.Button(
+    test_frame,
+    text="Take screenshots",
+    width=config.app_width,
+    fg=config.color_white,
+    highlightbackground=config.color_black,
+    borderwidth=2,
+    bg=config.txt_color,
+    relief="solid",
+    font=(config.font, config.body_txt),
+    command=epss_start,
+)
 test_button.grid(row=0, column=0, ipadx=5, ipady=7, pady=20)
 test_frame.config(bg=config.primary_color)
 
 # copyright
-main_label = tkinter.Label(main_frame, text="Copyright © ViiVue 2023", font=(config.font, 11))
-main_label.grid(row=7, column=0, pady=(20,0))
+main_label = tkinter.Label(
+    main_frame, text="Copyright © ViiVue 2023", font=(config.font, 11)
+)
+main_label.grid(row=7, column=0, pady=(20, 0))
 main_label.config(bg=config.primary_color)
 
 # progress bar
 pb_style = ttk.Style()
-pb_style.theme_use('clam')
-pb_style.configure("default.Horizontal.TProgressbar", troughcolor=config.color_black, background=config.primary_color, bordercolor=config.color_black)
-pb = ttk.Progressbar(pb_frame, style="default.Horizontal.TProgressbar", orient="horizontal", mode="indeterminate", length=545)
+pb_style.theme_use("clam")
+pb_style.configure(
+    "default.Horizontal.TProgressbar",
+    troughcolor=config.color_black,
+    background=config.primary_color,
+    bordercolor=config.color_black,
+)
+pb = ttk.Progressbar(
+    pb_frame,
+    style="default.Horizontal.TProgressbar",
+    orient="horizontal",
+    mode="indeterminate",
+    length=545,
+)
 pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
 pb_label.grid(row=1, column=0)
@@ -352,10 +441,14 @@ pb_frame.config(bg=config.primary_color)
 screen_width = main.winfo_screenwidth()
 screen_height = main.winfo_screenheight()
 
-x_cordinate = int((screen_width/2) - (config.window_width/2))
-y_cordinate = int((screen_height/2) - (config.window_height/2))
+x_cordinate = int((screen_width / 2) - (config.window_width / 2))
+y_cordinate = int((screen_height / 2) - (config.window_height / 2))
 
-main.geometry("{}x{}+{}+{}".format(config.window_width, config.window_height, x_cordinate, y_cordinate))
+main.geometry(
+    "{}x{}+{}+{}".format(
+        config.window_width, config.window_height, x_cordinate, y_cordinate
+    )
+)
 
 def epss_on_closing():
     if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
