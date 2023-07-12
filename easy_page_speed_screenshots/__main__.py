@@ -387,8 +387,7 @@ gtmetrix_checkbox.grid(row=0, column=0, padx=(0, 7), pady=7)
 gtmetrix_label = tkinter.Label(
     gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt)
 )
-gtmetrix_label.grid(row=0, column=0)
-gtmetrix_label.place(x=20, y=5)
+gtmetrix_label.grid(row=0, column=1)
 gtmetrix_label.config(bg=config.primary_color)
 
 gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, config.txt_placeholder_apikey, 40)
@@ -433,7 +432,7 @@ pb = ttk.Progressbar(
     style="default.Horizontal.TProgressbar",
     orient="horizontal",
     mode="indeterminate",
-    length=550,
+    length=545,
 )
 pb.grid(row=0, column=0)
 pb_label = tkinter.Label(pb_frame)
