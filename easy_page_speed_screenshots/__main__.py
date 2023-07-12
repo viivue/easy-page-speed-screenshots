@@ -228,10 +228,14 @@ def epss_start():
         for link in config.INPUT_LINKS:
             if not validators.url(link):
                 tkinter.messagebox.showwarning(config.invalid_input_title, config.invalid_input_message)
-        config.API_KEY = gtmetrix_entry.get()
-        if config.use_gt_metrix and (not bool(config.API_KEY) or config.API_KEY == "API Key"):
-            tkinter.messagebox.showwarning(config.empty_api_title, config.empty_api_message)
-            config.use_gt_metrix = False
+        if config.use_gt_metrix:
+            config.API_KEY = gtmetrix_entry.get()
+            if not bool(config.API_KEY) or config.API_KEY == "API Key":
+                tkinter.messagebox.showwarning(config.empty_api_title, config.empty_api_message)
+                config.use_gt_metrix = False
+        elif not config.use_gt_metrix and gtmetrix_entry.get() and gtmetrix_entry.get() != "API Key":
+            config.use_gt_metrix = True
+            config.API_KEY = gtmetrix_entry.get()
         execute_thread = threading.Thread(target=epss_main, args=())
         execute_thread.daemon = True
         execute_thread.start()
