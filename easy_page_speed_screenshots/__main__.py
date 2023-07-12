@@ -252,12 +252,6 @@ def epss_start():
             message = config.please_choose_folder
             title = config.no_folder_title
         tkinter.messagebox.showerror(title=title, message=message)
-        pb_frame.grid(row=5, column=0)
-        pb.start()
-    else:
-        message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
-        title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
-        tkinter.messagebox.showerror(title=title, message=message)
 
 # close window handling
 def epss_on_closing():
