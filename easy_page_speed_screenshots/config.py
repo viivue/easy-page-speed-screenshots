@@ -37,20 +37,21 @@ window_height = 750
 window_width = 590
 
 # Error Text
+txt_error_title = "Error"
+txt_warning_title = "Warning"
 txt_please_valid_folder = "Please enter a valid folder"
-txt_invalid_folder_title = "Invalid folder path"
-txt_no_folder_title = "No folder selected"
 txt_please_choose_folder = "Please choose folder"
-txt_no_links_title = "No links inputted"
 txt_please_input_links = "Please input links"
-txt_empty_api_title = "Empty API Key"
-txt_empty_api_message = "Empty API Key, GTMetrix will be ignored"
-txt_gt_api_warn_title = "Invalid API Key"
-txt_invalid_input_title = "Invalid Input"
-txt_invalid_inputs_message = "Some link is invalid, these link will be excluded"
-txt_invalid_input_message = "Please enter valid link"
+txt_empty_api_message = "Empty API Key. GTMetrix will be skipped."
+txt_gt_invalid_api = "Invalid API Key"
+txt_gt_reached_limit = "Your API Key has reached limit"
+txt_invalid_links_message = "The invalid links will be skipped"
+txt_invalid_link_message = "Please enter a valid site URL starting with 'http'"
 txt_finish_title = "Finish"
 txt_finish_message = "Result screenshots saved successfully!"
-txt_placeholder_folder = "Choose result folder"
+txt_quit_title = "Quit"
+txt_quit_message = "Are you sure you want to exit?"
+
+txt_placeholder_folder = "Choose output directory"
 txt_placeholder_apikey = "API Key"
 

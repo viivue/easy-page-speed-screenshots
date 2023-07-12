@@ -233,18 +233,18 @@ def epss_start():
         if valid_links != config.INPUT_LINKS:
             if len(valid_links) != 0:
                 tkinter.messagebox.showwarning(
-                    config.txt_invalid_input_title, config.txt_invalid_inputs_message
+                    config.txt_warning_title, config.txt_invalid_links_message
                 )
             else:
                 tkinter.messagebox.showerror(
-                    config.txt_invalid_input_title, config.txt_invalid_input_message
+                    config.txt_error_title, config.txt_invalid_link_message
                 )
                 return
         if config.use_gt_metrix:
             config.API_KEY = gtmetrix_entry.get()
             if not bool(config.API_KEY) or config.API_KEY == config.txt_placeholder_apikey:
                 tkinter.messagebox.showwarning(
-                    config.txt_empty_api_title, config.txt_empty_api_message
+                    config.txt_warning_title, config.txt_empty_api_message
                 )
                 config.use_gt_metrix = False
         elif (
@@ -267,19 +267,19 @@ def epss_start():
         pb.start()
     else:
         message = config.txt_please_input_links
-        title = config.txt_no_links_title
+        title = config.txt_error_title
         if not os.path.exists(folder_entry.get()):
-            message = config.txt_please_valid_folder
+            message = config.txt_error_title
             title = config.txt_invalid_folder_title
         if folder_entry.get() == config.txt_placeholder_folder or not bool(folder_entry.get()):
             message = config.txt_please_choose_folder
-            title = config.txt_no_folder_title
+            title = config.txt_error_title
         tkinter.messagebox.showerror(title=title, message=message)
 
 
 # close window handling
 def epss_on_closing():
-    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+    if tkinter.messagebox.askokcancel(config.txt_quit_title, config.txt_quit_message):
         # close chromedriver if quit at random point
         for driver in config.CHROME_DRIVERS:
             if driver.service.is_connectable():

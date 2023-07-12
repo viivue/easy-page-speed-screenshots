@@ -211,7 +211,7 @@ def epss_get_links_gtmetrix(site_url, result_links):
 
             if resp.status_code == 401:
                 tkinter.messagebox.showwarning(
-                    title=config.txt_gt_api_warn_title, message=config.txt_gt_api_warn_title
+                    title=config.txt_warning_title, message=config.txt_gt_invalid_api
                 )
                 config.use_gt_metrix = False
                 return
@@ -219,8 +219,8 @@ def epss_get_links_gtmetrix(site_url, result_links):
             # API key limited
             if resp.status_code == 402:
                 tkinter.messagebox.showwarning(
-                    title=config.txt_gt_api_warn_title,
-                    message="Your API Key has reached limit",
+                    title=config.txt_warning_title,
+                    message=config.txt_gt_reached_limit,
                 )
                 config.use_gt_metrix = False
                 return
