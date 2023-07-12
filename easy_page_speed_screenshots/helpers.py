@@ -11,6 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
+import os.path
 
 from . import config
 
@@ -25,6 +26,12 @@ options.add_argument("--log-level=3")
 """
 General
 """
+
+# close chromedriver if not quit
+def epss_close_drivers():
+    for driver in config.CHROME_DRIVERS: 
+        if driver.service.is_connectable():
+            driver.quit()
 
 # check if specific content exists
 def epss_content_loaded(driver, selector):
