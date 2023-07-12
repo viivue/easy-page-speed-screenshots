@@ -227,13 +227,17 @@ def epss_start():
         config.OP_DIR = folder_entry.get()
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
         has_valid = False
+        all_valid = True
         for link in config.INPUT_LINKS:
             if validators.url(link):
                 has_valid = True
+            else:
+                all_valid = False
         if has_valid:
-            tkinter.messagebox.showwarning(
-                config.txt_invalid_input_title, config.txt_invalid_inputs_message
-            )
+            if not all_valid:
+                tkinter.messagebox.showwarning(
+                    config.txt_invalid_input_title, config.txt_invalid_inputs_message
+                )
         else:
             tkinter.messagebox.showerror(
                 config.txt_invalid_input_title, config.txt_invalid_input_message
