@@ -226,23 +226,20 @@ def epss_start():
     if bool(links) and os.path.exists(folder_entry.get()):
         config.OP_DIR = folder_entry.get()
         config.INPUT_LINKS = [line.strip() for line in links.splitlines()]
-        has_valid = False
-        all_valid = True
+        valid_links = []
         for link in config.INPUT_LINKS:
             if validators.url(link):
-                has_valid = True
-            else:
-                all_valid = False
-        if has_valid:
-            if not all_valid:
+                valid_links.append(link)
+        if valid_links != config.INPUT_LINKS:
+            if len(valid_links) != 0:
                 tkinter.messagebox.showwarning(
                     config.txt_invalid_input_title, config.txt_invalid_inputs_message
                 )
-        else:
-            tkinter.messagebox.showerror(
-                config.txt_invalid_input_title, config.txt_invalid_input_message
-            )
-            return
+            else:
+                tkinter.messagebox.showerror(
+                    config.txt_invalid_input_title, config.txt_invalid_input_message
+                )
+                return
         if config.use_gt_metrix:
             config.API_KEY = gtmetrix_entry.get()
             if not bool(config.API_KEY) or config.API_KEY == config.txt_placeholder_apikey:
