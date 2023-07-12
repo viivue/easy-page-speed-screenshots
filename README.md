@@ -1,4 +1,8 @@
-# Easy Page Speed Screenshots
+<div align="center">
+<img width="64px" src="https://github.com/viivue/easy-page-speed-screenshots/blob/master/assets/images/favicon.png" align="center" alt="EPSS Logo" />
+<h1 align="center">Easy Page Speed Screenshots</h1>
+<p align="center">📑 Python tool to take page speed result screenshots</p>
+</div>
 
 ## Installation
 
@@ -8,19 +12,17 @@
 
 ### 2. Python
 - Download & Install [the latest Python version](https://www.python.org/downloads/).
-- Clone GitHub repo:
-```
-git clone https://github.com/viivue/easy-page-speed-screenshots.git
-```
 - Run `cmd`
 ```
+git clone https://github.com/viivue/easy-page-speed-screenshots.git
 pip install -r requirements.txt
 python run.py
 ```
 
-## Usage
-
-## FAQ
+### 3. Demo
+<div align="center">
+  <img width="592px" src="https://github.com/viivue/easy-page-speed-screenshots/blob/master/assets/images/screenshot.png" align="center" alt="EPSS Screenshot" />
+</div>
 
 ## License
 
