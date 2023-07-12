@@ -1,7 +1,6 @@
 import tkinter
 import tkinter.messagebox
 from tkinter import ttk
-from tkinter import filedialog
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
@@ -253,6 +252,24 @@ def epss_start():
             message = config.please_choose_folder
             title = config.no_folder_title
         tkinter.messagebox.showerror(title=title, message=message)
+        pb_frame.grid(row=5, column=0)
+        pb.start()
+    else:
+        message = "Please select screenshot folder" if not bool(config.OP_DIR) else "Please input links"
+        title = "No folder selected" if not bool(config.OP_DIR) else "No links inputted"
+        tkinter.messagebox.showerror(title=title, message=message)
+
+# close window handling
+def epss_on_closing():
+    if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+        # close chromedriver if quit at random point
+
+        for driver in config.CHROME_DRIVERS: 
+            if driver.service.is_connectable():
+                driver.quit()
+
+        # quit the interface
+        main.destroy()
 
 """
 UI
