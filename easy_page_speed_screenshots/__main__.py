@@ -282,7 +282,7 @@ main_label.config(bg=config.primary_color)
 folder_frame = tkinter.Frame(main_frame)
 links_frame = tkinter.Frame(main_frame)
 gtmetrix_frame = tkinter.Frame(main_frame)
-gtmetrix_api_frame = tkinter.Frame(main_frame)
+gtmetrix_api_frame = tkinter.Frame(gtmetrix_frame)
 test_frame = tkinter.Frame(main_frame)
 pb_frame = tkinter.Frame(main_frame)
 
@@ -317,15 +317,14 @@ gtmetrix_checkbox = tkinter.Checkbutton(
     gtmetrix_frame, activebackground=config.primary_color, command=lambda: helpers.epss_toggle_api_key_field(gtmetrix_api_frame)
 )
 gtmetrix_checkbox.config(bg=config.primary_color)
-gtmetrix_checkbox.grid(row=0, column=0, padx=(0,7), pady=7)
+gtmetrix_checkbox.grid(row=0, column=0, pady=7)
 
 gtmetrix_label = tkinter.Label(gtmetrix_frame, text="Use GTmetrix", font=(config.font, config.body_txt))
-gtmetrix_label.grid(row=0, column=0)
-gtmetrix_label.place(x=20, y=5)
+gtmetrix_label.grid(row=0, column=1)
 gtmetrix_label.config(bg=config.primary_color)
 
-gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, "API Key", 40)
-gtmetrix_entry.grid(row=0, column=0, ipadx=7, ipady=7)
+gtmetrix_entry = entry.EntryWithPlaceholder(gtmetrix_api_frame, "API Key", 60)
+gtmetrix_entry.grid(row=0, column=0, ipadx=3, ipady=5)
 
 gtmetrix_api_frame.config(bg=config.primary_color)
 
