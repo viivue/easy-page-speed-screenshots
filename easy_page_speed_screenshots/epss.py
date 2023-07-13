@@ -1,6 +1,6 @@
 import tkinter
 import tkinter.messagebox
-from tkinter import ttk
+from tkinter import IntVar, ttk
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
@@ -246,13 +246,15 @@ def epss_start():
                 tkinter.messagebox.showwarning(
                     config.txt_warning_title, config.txt_empty_api_message
                 )
-                config.use_gt_metrix = False
+                helpers.epss_toggle_api_key_field(gtmetrix_api_frame)
+                cb_var.set(0)
         elif (
             not config.use_gt_metrix
             and gtmetrix_entry.get()
             and gtmetrix_entry.get() != config.txt_placeholder_apikey
         ):
-            config.use_gt_metrix = True
+            helpers.epss_toggle_api_key_field(gtmetrix_api_frame)
+            cb_var.set(1)
             config.API_KEY = gtmetrix_entry.get()
         config.INPUT_LINKS = valid_links
         execute_thread = threading.Thread(target=epss_main, args=())
@@ -295,6 +297,7 @@ UI
 """
 
 main = tkinter.Tk()
+cb_var = IntVar()
 
 # UI meta
 main.title("Easy Page Speed Screenshots")
@@ -378,6 +381,7 @@ gtmetrix_checkbox = tkinter.Checkbutton(
     gtmetrix_frame,
     activebackground=config.primary_color,
     command=lambda: helpers.epss_toggle_api_key_field(gtmetrix_api_frame),
+    variable=cb_var
 )
 gtmetrix_checkbox.config(bg=config.primary_color)
 gtmetrix_checkbox.grid(row=0, column=0, pady=7)
