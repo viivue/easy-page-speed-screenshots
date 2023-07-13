@@ -158,6 +158,9 @@ def epss_get_links_gps(site_url, result_links):
 
     result_links.append(res)
     get_link_driver.quit()
+    if not get_link_driver.service.is_connectable():
+        index = config.CHROME_DRIVERS.index(get_link_driver)
+        config.CHROME_DRIVERS.pop(index)
 
 
 # get report from Pingdom
