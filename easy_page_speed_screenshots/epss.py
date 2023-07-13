@@ -178,10 +178,7 @@ def epss_screenshots_thread(group):
         except Exception as e:
             continue
 
-    screenshots_driver.quit()
-    if not screenshots_driver.service.is_connectable():
-        index = config.CHROME_DRIVERS.index(screenshots_driver)
-        config.CHROME_DRIVERS.pop(index)
+    helpers.epss_close_driver(screenshots_driver)
 
 
 # execute screenshots for all link input
@@ -287,14 +284,11 @@ def epss_start():
 def epss_on_closing():
     if tkinter.messagebox.askokcancel(config.txt_quit_title, config.txt_quit_message):
         # close chromedriver if quit at random point
-        start_time = time.time()
         for driver in config.CHROME_DRIVERS:
             if driver.service.is_connectable():
                 driver.quit()
-        print("Total time", (time.time() - start_time))
         # quit the interface
         main.destroy()
-
 
 """
 UI

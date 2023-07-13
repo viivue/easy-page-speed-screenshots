@@ -8,28 +8,16 @@ except Exception:
 
 # constant
 
-# Asset folder path
-if getattr(sys, 'frozen', False):
+# Path
+if getattr(sys, 'frozen', False): # check if current run time is exe file
     ASSET_FOLDER = os.path.join(base_path, 'assets')
-else:
-    ASSET_FOLDER = os.path.join(base_path, '../assets')
-
-# Favicon Path
-if getattr(sys, 'frozen', False):
     FAVICON_PATH = base_path + "\\favicon.ico"
-else:
-    FAVICON_PATH = ASSET_FOLDER + "/images/favicon.ico"
-
-# Icon Folder Path
-if getattr(sys, 'frozen', False):
     ICON_FOLDER_PATH = base_path + "\icon-folder.png"
-else:
-    ICON_FOLDER_PATH = ASSET_FOLDER + "/images/icon-folder.png"
-
-# Chrome Driver Path
-if getattr(sys, 'frozen', False):
     DRIVER_PATH = base_path + '\chromedriver.exe'
-else:
+else: # script file
+    ASSET_FOLDER = os.path.join(base_path, '../assets')
+    FAVICON_PATH = ASSET_FOLDER + "/images/favicon.ico"
+    ICON_FOLDER_PATH = ASSET_FOLDER + "/images/icon-folder.png"
     DRIVER_PATH = ASSET_FOLDER + '/driver/chromedriver.exe'
 
 PS_URL = "https://pagespeed.web.dev/"
