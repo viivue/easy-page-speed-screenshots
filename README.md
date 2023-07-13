@@ -12,11 +12,22 @@
 
 ### 2. Python
 - Download & Install [the latest Python version](https://www.python.org/downloads/).
-- Run `cmd`
+- Install `tkinter`
+  - Windows: `pip install tk`
+  - MacOS: `brew install python-tk`
+  - Ubuntu: `sudo apt-get install python3-tk`
+  - Fedora: `sudo dnf install python3-tkinter`
+- Clone this repository
 ```
 git clone https://github.com/viivue/easy-page-speed-screenshots.git
+```
+- Install requirements
+```
 pip install -r requirements.txt
-python run.py
+```
+- Then to run it, execute the following in the terminal
+```
+python easy-page-speed-screenshots.py
 ```
 
 ### 3. Demo
