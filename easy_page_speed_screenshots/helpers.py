@@ -48,7 +48,7 @@ def epss_content_loaded(driver, selector):
 # get webdriver with options
 def epss_get_webdriver():
     return webdriver.Chrome(
-        executable_path=config.ASSET_FOLDER + "/driver/chromedriver.exe",
+        executable_path=config.DRIVER_PATH,
         options=options,
     )
 
