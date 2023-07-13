@@ -30,7 +30,10 @@ General
 # close driver
 def epss_close_driver(driver):
     driver.quit()
-    if not driver.service.is_connectable():
+    if not driver.service.is_connectable(): # check if the driver is still alive
+        # get the index, and remove by index
+        # this function run in thread, so remove at fix index (like end or start of array) will cause bug
+        # using index will allow remove specific element
         index = config.CHROME_DRIVERS.index(driver)
         config.CHROME_DRIVERS.pop(index)
 
