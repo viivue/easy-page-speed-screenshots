@@ -254,6 +254,7 @@ def epss_start():
         ):
             config.use_gt_metrix = True
             config.API_KEY = gtmetrix_entry.get()
+        config.INPUT_LINKS = valid_links
         execute_thread = threading.Thread(target=epss_main, args=())
         execute_thread.daemon = True
         execute_thread.start()
