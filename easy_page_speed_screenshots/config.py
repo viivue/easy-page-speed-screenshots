@@ -1,6 +1,8 @@
 import os
 import sys
 
+DEV_MODE = False
+
 try:
     base_path = sys._MEIPASS
 except Exception:
