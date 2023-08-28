@@ -53,7 +53,7 @@ def epss_content_loaded(driver, selector):
 # get webdriver with options
 def epss_get_webdriver():
     chrome_service = ChromeService()
-    chrome_service.creationflags = CREATE_NO_WINDOW
+    chrome_service.creation_flags = CREATE_NO_WINDOW
     return webdriver.Chrome(
         service=chrome_service,
         options=options,
