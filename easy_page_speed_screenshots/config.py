@@ -6,21 +6,19 @@ DEV_MODE = False
 try:
     base_path = sys._MEIPASS
 except Exception:
-    base_path = os.path.dirname(__file__)
+    base_path = os.path.dirname(os.path.dirname(__file__))
 
 # constant
 
 # Path
-if getattr(sys, 'frozen', False): # check if current run time is exe file
-    ASSET_FOLDER = os.path.join(base_path, 'assets')
+if getattr(sys, "frozen", False):  # check if current run time is exe file
+    ASSET_FOLDER = os.path.join(base_path, "assets")
     FAVICON_PATH = base_path + "\\favicon.ico"
     ICON_FOLDER_PATH = base_path + "\icon-folder.png"
-    DRIVER_PATH = base_path + '\chromedriver.exe'
-else: # script file
-    ASSET_FOLDER = os.path.join(base_path, '../assets')
-    FAVICON_PATH = ASSET_FOLDER + "/images/favicon.ico"
-    ICON_FOLDER_PATH = ASSET_FOLDER + "/images/icon-folder.png"
-    DRIVER_PATH = ASSET_FOLDER + '/driver/chromedriver.exe'
+else:  # script file
+    ASSET_FOLDER = base_path + "\\assets"
+    FAVICON_PATH = ASSET_FOLDER + "\images\\favicon.ico"
+    ICON_FOLDER_PATH = ASSET_FOLDER + "\images\icon-folder.png"
 
 PS_URL = "https://pagespeed.web.dev/"
 GM_URL = "https://gtmetrix.com/"
@@ -74,4 +72,3 @@ txt_quit_message = "Are you sure you want to exit?"
 
 txt_placeholder_folder = "Choose output directory"
 txt_placeholder_apikey = "API Key"
-

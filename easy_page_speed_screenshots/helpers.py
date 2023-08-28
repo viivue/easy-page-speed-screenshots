@@ -12,6 +12,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 import os.path
+from selenium.webdriver.chrome.service import Service as ChromeService
+from subprocess import CREATE_NO_WINDOW
 
 from . import config
 
@@ -50,8 +52,10 @@ def epss_content_loaded(driver, selector):
 
 # get webdriver with options
 def epss_get_webdriver():
+    chrome_service = ChromeService()
+    chrome_service.creationflags = CREATE_NO_WINDOW
     return webdriver.Chrome(
-        executable_path=config.DRIVER_PATH,
+        service=chrome_service,
         options=options,
     )
 
