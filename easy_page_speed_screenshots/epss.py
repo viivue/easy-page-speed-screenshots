@@ -13,6 +13,10 @@ from datetime import datetime
 import threading
 import validators
 import os.path
+import requests
+import json
+import pyperclip
+from selenium.webdriver.common.keys import Keys
 
 from . import __version__
 from . import config
@@ -149,7 +153,51 @@ def epss_screenshots_thread(group):
                 parsed_url = urlparse(link)
                 form_factor = parse_qs(parsed_url.query)["form_factor"][0]
                 file_name = file_names[1] if form_factor == "desktop" else file_names[2]
-                html_selector = "div.PePDG"
+                #html_selector = "div.PePDG"
+
+                html_selector = ""
+
+                 # https://googlechrome.github.io/lighthouse/viewer/
+                #             screenshots_driver.find_element_by_id("IdOfInputTypeFile").send_keys(os.getcwd()+"/image.png")
+#                 r = requests.get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url='+link)
+#                 print(r.json())
+#                 screenshots_driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 't')
+                gps_json = ''
+                gps_json = screenshots_driver.get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url='+link)
+                if screenshots_driver.execute_script("return document.readyState").equals("complete"):
+                    print('test')
+                    screenshots_driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'a')
+                    screenshots_driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'c')
+                    #pyperclip.copy(gps_json.json())
+                    gps_json = gps_json.json()
+                    screenshots_driver.execute_script("window.open('','_blank');")
+                    #screenshots_driver.switch_to.new_window('tab')
+                    screenshots_driver.get("https://googlechrome.github.io/lighthouse/viewer/")
+                    screenshots_driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'v')
+                link = "https://googlechrome.github.io/lighthouse/viewer/"
+
+
+#                 screenshots_driver.get("https://googlechrome.github.io/lighthouse/viewer/")
+#                 pyperclip.copy(rendered_content.json())
+#                 screenshots_driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'v')
+#                 screenshots_driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 't')
+
+                #print(rendered_content.json())
+#                 pyperclip.copy(rendered_content.json())
+#                 clipboard_text= pyperclip.paste()
+#                 print(clipboard_text)
+#                 driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 't')
+#                 driver.get("https://googlechrome.github.io/lighthouse/viewer/")
+#                 driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'v')
+
+
+#                 driver.get("https://googlechrome.github.io/lighthouse/viewer/")
+#                 pyperclip.paste()
+
+                #spam = pyperclip.paste()
+#                 file = open({config.OP_DIR}+'\test.txt', 'w+')
+#                 file.write(rendered_content.json())
+#                 file.close()
             elif (
                 helpers.epss_is_tool(link=link, tool="gtmetrix")
                 and config.use_gt_metrix
@@ -202,20 +250,34 @@ UI settings
 # main function
 def epss_main():
     try:
-        links = epss_get_input_links()
-        links = helpers.epss_add_form_factor(links=links)
-        epss_execute_screenshots(links=links)
-        pb.stop()
-        pb_frame.grid_forget()
-        tkinter.messagebox.showinfo(
-            title=config.txt_finish_title, message=config.txt_finish_message
+#         links = epss_get_input_links()
+#         links = helpers.epss_add_form_factor(links=links)
+#         epss_execute_screenshots(links=links)
+#         pb.stop()
+#         pb_frame.grid_forget()
+#         tkinter.messagebox.showinfo(
+#             title=config.txt_finish_title, message=config.txt_finish_message
+#         )
+#         test_button.config(text="Take screenshots", state="normal")
+#         gtmetrix_checkbox.config(state="normal")
+#         folder_button.config(state="normal")
+#         links_text.config(state="normal")
+#         gtmetrix_entry.config(state="normal")
+#         test_frame.grid(row=6, sticky="ew")
+
+        screenshots_driver = helpers.epss_get_webdriver()
+        screenshots_driver.execute_cdp_cmd(
+            "Network.setUserAgentOverride",
+            {"userAgent": config.USER_AGENT},
         )
-        test_button.config(text="Take screenshots", state="normal")
-        gtmetrix_checkbox.config(state="normal")
-        folder_button.config(state="normal")
-        links_text.config(state="normal")
-        gtmetrix_entry.config(state="normal")
-        test_frame.grid(row=6, sticky="ew")
+        config.CHROME_DRIVERS.append(screenshots_driver)
+
+        screenshots_driver.get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://github.com')
+        pyperclip.copy(screenshots_driver.find_element(By.TAG_NAME, 'pre').text)
+
+        screenshots_driver.get("https://googlechrome.github.io/lighthouse/viewer/")
+        screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.CONTROL + 'v')
+        screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.COMMAND + 'v')
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 

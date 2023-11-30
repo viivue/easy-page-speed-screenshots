@@ -19,11 +19,11 @@ from . import config
 
 # webdriver options
 options = webdriver.ChromeOptions()
-options.add_argument("--headless=new")
-options.add_experimental_option(
-    "excludeSwitches", ["enable-logging"]
-)  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
-options.add_argument("--log-level=3")
+#options.add_argument("--headless=new")
+# options.add_experimental_option(
+#     "excludeSwitches", ["enable-logging"]
+# )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
+# options.add_argument("--log-level=3")
 
 """
 General
@@ -53,7 +53,7 @@ def epss_content_loaded(driver, selector):
 # get webdriver with options
 def epss_get_webdriver():
     chrome_service = ChromeService()
-    chrome_service.creation_flags = CREATE_NO_WINDOW
+    #chrome_service.creation_flags = CREATE_NO_WINDOW
     return webdriver.Chrome(
         service=chrome_service,
         options=options,
