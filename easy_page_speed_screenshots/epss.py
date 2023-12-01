@@ -16,6 +16,7 @@ import os.path
 import requests
 import json
 import pyperclip
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from . import __version__
@@ -23,23 +24,14 @@ from . import config
 from . import entry
 from . import helpers
 
-# webdriver options
-# options = webdriver.ChromeOptions()
-# options.add_argument("--headless=new")
-# options.add_experimental_option(
-#     "excludeSwitches", ["enable-logging"]
-# )  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
-# options.add_argument("--log-level=3")
-
-
 # get report links by type
 def epss_get_report_links(st_url, site_url, result_links):
     if helpers.epss_is_tool(link=st_url, tool="google"):
         helpers.epss_get_links_gps(site_url, result_links)  # Google Page Speed
-    elif helpers.epss_is_tool(link=st_url, tool="gtmetrix") and config.use_gt_metrix:
-        helpers.epss_get_links_gtmetrix(site_url, result_links)  # GTMetrix
-    else:
-        helpers.epss_get_links_pingdom(site_url, result_links)  # Pingdom
+#     elif helpers.epss_is_tool(link=st_url, tool="gtmetrix") and config.use_gt_metrix:
+#         helpers.epss_get_links_gtmetrix(site_url, result_links)  # GTMetrix
+#     else:
+#         helpers.epss_get_links_pingdom(site_url, result_links)  # Pingdom
 
 
 # report thread
@@ -149,8 +141,6 @@ def epss_screenshots_thread(group):
         if link in config.INPUT_LINKS:
             continue
         try:
-            print(link)
-            print(helpers.epss_is_tool(link=link, tool="google"))
             if helpers.epss_is_tool(link=link, tool="google"):
                 #parsed_url = urlparse(link)
                 #form_factor = parse_qs(parsed_url.query)["form_factor"][0]
@@ -181,16 +171,17 @@ def epss_screenshots_thread(group):
                 link=link, tool="google"
             ):
                 #time.sleep(5)  # make sure the report circle is finished
-                print(link)
 
                 screenshots_driver.get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url='+link)
-                time.sleep(1)
                 pyperclip.copy(screenshots_driver.find_element(By.TAG_NAME, 'pre').text)
 
                 screenshots_driver.get("https://googlechrome.github.io/lighthouse/viewer/")
-                time.sleep(1)
                 screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.CONTROL + 'v')
                 #screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.COMMAND + 'v')
+                #print(pyperclip.paste())
+
+#                 actions = ActionChains(self.driver)
+#                 ActionChains(driver).key_down(Keys.LEFT_CONTROL).key_down('v').key_up('v').key_up(Keys.LEFT_CONTROL).perform()
 
                 original_size = screenshots_driver.get_window_size()
                 required_width = screenshots_driver.execute_script(
