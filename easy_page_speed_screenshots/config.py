@@ -20,7 +20,8 @@ else:  # script file
     FAVICON_PATH = ASSET_FOLDER + "\images\\favicon.ico"
     ICON_FOLDER_PATH = ASSET_FOLDER + "\images\icon-folder.png"
 
-PS_URL = "https://pagespeed.web.dev/"
+#PS_URL = "https://pagespeed.web.dev/"
+PS_URL = "https://googlechrome.github.io/lighthouse/viewer/"
 GM_URL = "https://gtmetrix.com/"
 PD_URL = "https://tools.pingdom.com/"
 URLS = [
