@@ -173,12 +173,30 @@ def epss_screenshots_thread(group):
                 #time.sleep(5)  # make sure the report circle is finished
 
                 screenshots_driver.get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url='+link)
-                pyperclip.copy(screenshots_driver.find_element(By.TAG_NAME, 'pre').text)
+                #pyperclip.copy(screenshots_driver.find_element(By.TAG_NAME, 'pre').text)
+                pre_text = screenshots_driver.find_element(By.TAG_NAME, 'pre').text
 
+                f = open("D:\python\screenshots\demofile3.json", "w+")
+                f.write(pre_text)
+                f.close()
+
+                #wait = WebDriverWait(driver, 20)
                 screenshots_driver.get("https://googlechrome.github.io/lighthouse/viewer/")
-                screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.CONTROL + 'v')
+                #screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.CONTROL + 'v')
+
+                #screenshots_driver.find_element(By.CLASS_NAME, "viewer-placeholder__file-button").send_keys("D:\python\screenshots\demofile3.txt")
+
+                #wait = WebDriverWait(driver, 5)
+                #wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".viewer-placeholder__file-button"))).send_keys('D:\python\screenshots\demofile3.txt')
+
+                #screenshots_driver.findElement(By.CLASS_NAME, "viewer-placeholder__file-button").click()
+                screenshots_driver.find_element(By.CLASS_NAME, "hidden-file-input").send_keys("D:\python\screenshots\demofile3.json")
+                #screenshots_driver.findElement(By.CLASS_NAME, "viewer-placeholder__file-button").click()
+
+                #time.sleep(1)
+                #wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'body'))).send_keys(pyperclip.paste())
                 #screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.COMMAND + 'v')
-                #print(pyperclip.paste())
+                print(pyperclip.paste())
 
 #                 actions = ActionChains(self.driver)
 #                 ActionChains(driver).key_down(Keys.LEFT_CONTROL).key_down('v').key_up('v').key_up(Keys.LEFT_CONTROL).perform()
