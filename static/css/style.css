@@ -319,9 +319,15 @@ h2 {
 
 .results-details {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 2rem;
     margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+    .results-details {
+        grid-template-columns: 1fr;
+    }
 }
 
 .url-list, .file-list {

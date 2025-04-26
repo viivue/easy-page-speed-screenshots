@@ -37,7 +37,19 @@
             </div>
 
             <div class="generated-files">
-                <h2>Generated Files</h2>
+                <h2>Generated Screenshots</h2>
+                <ul class="file-list">
+                    {% for file in screenshot_files %}
+                    <li>
+                        <span class="success">✓</span>
+                        {{ file }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="test-results">
+                <h2>Test Results</h2>
                 <ul class="file-list">
                     {% for file in generated_files %}
                     <li>

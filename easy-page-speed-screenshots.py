@@ -474,42 +474,18 @@ def index():
                     ): (url, "PSI") for idx, url in enumerate(input_urls)
                 }
 
-                # Process with GTmetrix if enabled
-                if use_gtmetrix:
-                    gtm_futures = {
-                        executor.submit(
-                            run_gtmetrix_screenshot,
-                            url,
-                            idx + 1,
-                            output_dir,
-                            gtmetrix_key
-                        ): (url, "GTmetrix") for idx, url in enumerate(input_urls)
-                    }
-                    # Combine all futures
-                    all_futures = {**psi_futures, **gtm_futures}
-                else:
-                    all_futures = psi_futures
-
-                # Process results as they complete
-                for future in all_futures:
-                    url, tool = all_futures[future]
-                    try:
-                        result = future.result()
-                        results.append({
-                            "input": url,
-                            "tool": tool,
-                            "result": result
-                        })
-                    except Exception as e:
-                        logger.error(f"Error processing {url} with {tool}: {str(e)}")
-                        results.append({
-                            "input": url,
-                            "tool": tool,
-                            "result": None
-                        })
-
-            # Prepare file list for template
+            # Prepare file lists for template
             generated_files = []
+            screenshot_files = []  # New list for actual screenshot files
+
+            # Get all files in the output directory
+            for file in os.listdir(output_dir):
+                if file.endswith('.png'):
+                    screenshot_files.append(file)  # Add to screenshot files list
+
+            # Sort screenshot files to ensure consistent order
+            screenshot_files.sort()
+
             for result in results:
                 if result["result"]:
                     filename = os.path.basename(result["result"])
@@ -534,6 +510,7 @@ def index():
                                 session_id=session_id,
                                 input_urls=input_urls,
                                 generated_files=generated_files,
+                                screenshot_files=screenshot_files,  # Add screenshot files to template
                                 success_count=success_count,
                                 failed_count=failed_count)
 
