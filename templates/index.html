@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Page Speed Screenshots</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Easy Page Speed Screenshots" />
+        <h1>Easy Page Speed Screenshots</h1>
+        <p class="tagline">Capture performance snapshots with a single click</p>
+    </div>
+
+    <form method="post" action="">
+        <div class="main-content">
+            <div class="url-section">
+                <h2>URLs for the page speed screenshots</h2>
+                <div class="url-input">
+                    <textarea name="urls" placeholder="Enter URLs (one per line)"></textarea>
+                </div>
+            </div>
+
+            <div class="options">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="gtmetrix-checkbox" name="use_gtmetrix" onclick="toggleGTMetrixKey()">
+                    Use GTMetrix
+                </label>
+                <div class="gtmetrix-key" id="gtmetrix-key-container">
+                    <input type="text" name="gtmetrix_key" placeholder="Enter your GTMetrix API key">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Take screenshots</button>
+        </div>
+    </form>
+
+    <div class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="feature-grid">
+            <div class="feature">
+                <div class="feature-icon">1</div>
+                <h3>Enter URLs</h3>
+                <p>Add all the website URLs you want to analyze (one per line)</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">2</div>
+                <h3>Choose Options</h3>
+                <p>Select GTMetrix for additional performance insights</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">3</div>
+                <h3>Get Results</h3>
+                <p>Receive detailed performance screenshots for each URL</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-links">
+            <a href="https://github.com/viivue/easy-page-speed-screenshots" target="_blank" title="GitHub">
+                GitHub
+            </a>
+        </div>
+        <p>© ViiVue 2025</p>
+    </div>
+</div>
+</body>
+</html>

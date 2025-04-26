@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results - Easy Page Speed Screenshots</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <a href="/">
+            <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Easy Page Speed Screenshots" />
+        </a>
+        <h1>Test Results</h1>
+    </div>
+
+    <div class="main-content">
+        <div class="results-summary">
+            <h2>Summary</h2>
+            <p>{{ success_count }} tests completed successfully, {{ failed_count }} failed</p>
+            <a href="/download/{{ session_id }}" class="btn btn-primary">Download All Screenshots</a>
+        </div>
+
+        <div class="results-details">
+            <div class="tested-urls">
+                <h2>Tested URLs</h2>
+                <ul class="url-list">
+                    {% for url in input_urls %}
+                    <li>{{ url }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="generated-files">
+                <h2>Generated Files</h2>
+                <ul class="file-list">
+                    {% for file in generated_files %}
+                    <li>
+                        {% if file.success %}
+                        <span class="success">✓</span>
+                        {% else %}
+                        <span class="failed">✗</span>
+                        {% endif %}
+                        {{ file.name }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-links">
+            <a href="https://github.com/viivue/easy-page-speed-screenshots" target="_blank" title="GitHub">
+                GitHub
+            </a>
+        </div>
+        <p>© ViiVue 2025</p>
+    </div>
+</div>
+</body>
+</html>
