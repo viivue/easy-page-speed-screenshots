@@ -14,7 +14,7 @@
 <div class="container">
     <div class="header">
         <a href="/">
-            <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Easy Page Speed Screenshots" />
+            <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Easy Page Speed Screenshots" class="logo" />
         </a>
         <h1>Results</h1>
     </div>
@@ -22,50 +22,61 @@
     <div class="main-content">
         <div class="results-summary">
             <h2>Summary</h2>
-            <p>{{ success_count }} tests completed successfully, {{ failed_count }} failed</p>
-            <a href="/download/{{ session_id }}" class="btn btn-primary">Download All Screenshots</a>
+            <div class="test-count">
+                <span class="success-count">{{ success_count }}</span> tests completed successfully,
+                <span class="failed-count">{{ failed_count }}</span> failed
+            </div>
+            <a href="/download/{{ session_id }}" class="download-btn">Download All Screenshots</a>
         </div>
 
         <div class="results-details">
-            <h2>Test Results</h2>
-            <table class="results-table">
-                <thead>
-                    <tr>
-                        <th>Tested URL</th>
-                        <th>File Name</th>
-                        <th>Tool</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for url in input_urls %}
-                        {% set url_files = generated_files|selectattr("url", "equalto", url)|list %}
-                        {% if url_files %}
-                            {% for file in url_files %}
-                            <tr>
-                                {% if loop.first %}
-                                <td rowspan="{{ url_files|length }}">{{ url }}</td>
-                                {% endif %}
-                                <td>{{ file.name }}</td>
-                                <td>{{ file.tool }}</td>
-                                <td>
-                                    {% if file.success %}
-                                    <span class="success">✓ Success</span>
-                                    {% else %}
-                                    <span class="failed">✗ Failed</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
+            <div class="results-header">
+                <h2>Test Results</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="results-table">
+                    <thead>
                         <tr>
-                            <td>{{ url }}</td>
-                            <td colspan="3"><span class="failed">✗ No results</span></td>
+                            <th>Tested URL</th>
+                            <th>File Name</th>
+                            <th>Tool</th>
+                            <th>Status</th>
                         </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for url in input_urls %}
+                            {% set url_files = generated_files|selectattr("url", "equalto", url)|list %}
+                            {% if url_files %}
+                                {% for file in url_files %}
+                                <tr>
+                                    {% if loop.first %}
+                                    <td class="url-cell" rowspan="{{ url_files|length }}">
+                                        <a href="{{ url }}" target="_blank" title="{{ url }}">{{ url }}</a>
+                                    </td>
+                                    {% endif %}
+                                    <td><span class="file-name">{{ file.name }}</span></td>
+                                    <td>{{ file.tool }}</td>
+                                    <td>
+                                        {% if file.success %}
+                                        <span class="success">Success</span>
+                                        {% else %}
+                                        <span class="failed">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td class="url-cell">
+                                    <a href="{{ url }}" target="_blank" title="{{ url }}">{{ url }}</a>
+                                </td>
+                                <td colspan="3"><span class="failed">No results</span></td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
