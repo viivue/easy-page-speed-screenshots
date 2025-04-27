@@ -36,6 +36,7 @@ SCREENSHOT_TIMEOUT = 120  # Timeout for waiting for elements (seconds)
 EXPAND_DELAY = 0.1  # Time between expanding sections (seconds)
 LOAD_DELAY = 2  # Additional waiting time after elements load (seconds)
 
+
 # Clean URL for filename
 def clean_url_for_filename(url):
     # Remove protocol and replace problematic characters
@@ -47,11 +48,13 @@ def clean_url_for_filename(url):
 
     return cleaned
 
+
 # Naming pattern function
 def generate_filename(index, tool, url, device):
     date_str = datetime.now().strftime("%Y%m%d")
     decoded_url = clean_url_for_filename(url)
     return f"{index}-{tool}-{date_str}-{decoded_url}-{device}"
+
 
 # Function to expand all sections
 def expand_all_sections(driver):
@@ -77,6 +80,7 @@ def expand_all_sections(driver):
                 continue
     except Exception as e:
         logger.warning(f"No expandable elements or failed to expand: {e}")
+
 
 # Function to take a CDP full-page screenshot
 def take_cdp_screenshot(driver, output_path):
@@ -169,8 +173,9 @@ def take_cdp_screenshot(driver, output_path):
         logger.error(f"Error taking screenshot: {e}")
         return False
 
+
 # Process a single tab (Desktop or Mobile)
-def process_tab(driver, device_type, url, index, output_dir):
+def process_tab(driver, device_type, url, index, total_urls, output_dir):
     try:
         # Switch to appropriate tab
         tab_id = f"{device_type.lower()}_tab"
@@ -224,8 +229,9 @@ def process_tab(driver, device_type, url, index, output_dir):
         logger.error(f"Error processing {device_type} tab for {url}: {e}")
         return False
 
+
 # Function to run PSI test and take full-page screenshots for both Desktop and Mobile tabs
-def run_psi_test_and_screenshot(url, index, output_dir):
+def run_psi_test_and_screenshot(url, index, total_urls, output_dir):
     options = Options()
     options.add_argument('--headless=new')
     options.add_argument('--disable-gpu')
@@ -277,6 +283,7 @@ def run_psi_test_and_screenshot(url, index, output_dir):
     finally:
         if driver:
             driver.quit()
+
 
 # Function to run GTmetrix test and take a screenshot
 def run_gtmetrix_screenshot(url, index, output_dir, api_key, location):
@@ -391,17 +398,20 @@ def run_gtmetrix_screenshot(url, index, output_dir, api_key, location):
         if driver and driver.service.is_connectable():
             driver.quit()
 
+
 # Function to generate index for PSI screenshots
 def get_psi_index(url_index, device_type):
     # For first URL: Desktop=1, Mobile=2, Second URL: Desktop=3, Mobile=4
     base = (url_index - 1) * 2
     return base + (1 if device_type.lower() == "desktop" else 2)
 
+
 # Function to generate index for GTmetrix screenshots
 def get_gtm_index(url_index, total_urls):
     # Start GTmetrix indices after all PSI screenshots
     # If 2 URLs: PSI ends at 4, GTmetrix starts at 5
     return (total_urls * 2) + url_index
+
 
 # Clean up old session directories
 def cleanup_old_sessions():
@@ -411,7 +421,7 @@ def cleanup_old_sessions():
 
         # Get all session directories
         sessions = [d for d in os.listdir(OUTPUT_DIR)
-                   if os.path.isdir(os.path.join(OUTPUT_DIR, d))]
+                    if os.path.isdir(os.path.join(OUTPUT_DIR, d))]
 
         # Sort by creation time (oldest first)
         sessions.sort(key=lambda x: os.path.getctime(os.path.join(OUTPUT_DIR, x)))
@@ -423,6 +433,7 @@ def cleanup_old_sessions():
                 logger.info(f"Cleaned up old session: {old_session}")
     except Exception as e:
         logger.error(f"Error during cleanup: {e}")
+
 
 # Route to download the ZIP file
 @app.route("/download/<session_id>")
@@ -455,6 +466,7 @@ def download_results(session_id):
             except:
                 pass
 
+
 # Web Interface
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -462,6 +474,7 @@ def index():
         try:
             input_urls = request.form.get("urls", "").splitlines()
             input_urls = [url.strip() for url in input_urls if url.strip()]
+            total_urls = len(input_urls)
             use_gtmetrix = request.form.get("use_gtmetrix") == "on"
             gtmetrix_key = request.form.get("gtmetrix_key", "").strip()
 
@@ -484,21 +497,22 @@ def index():
                         run_psi_test_and_screenshot,
                         url,
                         idx + 1,
+                        total_urls,  # Pass total_urls
                         output_dir
                     ): (url, "PSI") for idx, url in enumerate(input_urls)
                 }
 
                 # Process with GTmetrix if enabled
                 if use_gtmetrix:
-                    gtmetrix_location = request.form.get("gtmetrix_location")
                     gtm_futures = {
                         executor.submit(
                             run_gtmetrix_screenshot,
                             url,
                             idx + 1,
+                            total_urls,  # Pass total_urls
                             output_dir,
                             gtmetrix_key,
-                            gtmetrix_location  # Add location parameter
+                            gtmetrix_location
                         ): (url, "GTmetrix") for idx, url in enumerate(input_urls)
                     }
                     all_futures = {**psi_futures, **gtm_futures}
@@ -557,12 +571,12 @@ def index():
             cleanup_old_sessions()
 
             return render_template("results.html",
-                                session_id=session_id,
-                                input_urls=input_urls,
-                                generated_files=generated_files,
-                                screenshot_files=screenshot_files,
-                                success_count=success_count,
-                                failed_count=failed_count)
+                                   session_id=session_id,
+                                   input_urls=input_urls,
+                                   generated_files=generated_files,
+                                   screenshot_files=screenshot_files,
+                                   success_count=success_count,
+                                   failed_count=failed_count)
 
         except Exception as e:
             error_msg = f"Error during processing: {str(e)}"
@@ -571,10 +585,12 @@ def index():
 
     return render_template("index.html")
 
+
 # Health check endpoint
 @app.route("/health")
 def health_check():
     return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
+
 
 if __name__ == "__main__":
     # Ensure output directory exists
