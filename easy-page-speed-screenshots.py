@@ -267,11 +267,11 @@ def run_psi_test_and_screenshot(url, index, total_urls, output_dir):
         )
         time.sleep(LOAD_DELAY)
 
-        # Process Desktop tab - use the same index
-        desktop_success = process_tab(driver, "Desktop", url, index, output_dir)
+        # Process Desktop tab - pass total_urls
+        desktop_success = process_tab(driver, "Desktop", url, index, total_urls, output_dir)
 
-        # Process Mobile tab - index handling is done inside process_tab
-        mobile_success = process_tab(driver, "Mobile", url, index, output_dir)
+        # Process Mobile tab - pass total_urls
+        mobile_success = process_tab(driver, "Mobile", url, index, total_urls, output_dir)
 
         if desktop_success and mobile_success:
             return url  # At least one screenshot was successful
@@ -286,7 +286,7 @@ def run_psi_test_and_screenshot(url, index, total_urls, output_dir):
 
 
 # Function to run GTmetrix test and take a screenshot
-def run_gtmetrix_screenshot(url, index, output_dir, api_key, location):
+def run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, location):
     if not api_key:
         logger.error("GTmetrix API key not provided")
         return None
@@ -375,9 +375,8 @@ def run_gtmetrix_screenshot(url, index, output_dir, api_key, location):
                     driver.set_window_size(1440, total_height)
 
                     # Calculate the correct index for GTmetrix screenshots
-                    gtm_index = get_gtm_index(index, total_urls)
+                    gtm_index = get_gtm_index(index, total_urls)  # Pass total_urls
                     filename = f"{gtm_index}-gtm-{datetime.now().strftime('%Y%m%d')}-{clean_url_for_filename(url)}.png"
-                    screenshot_path = os.path.join(output_dir, filename)
 
                     # Save screenshot
                     driver.save_screenshot(screenshot_path)
@@ -504,6 +503,7 @@ def index():
 
                 # Process with GTmetrix if enabled
                 if use_gtmetrix:
+                    gtmetrix_location = request.form.get("gtmetrix_location")
                     gtm_futures = {
                         executor.submit(
                             run_gtmetrix_screenshot,
