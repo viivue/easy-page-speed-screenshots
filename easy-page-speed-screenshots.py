@@ -544,19 +544,43 @@ def index():
                 screenshot_files = [f for f in os.listdir(output_dir) if f.endswith('.png')]
                 screenshot_files.sort()
 
-            # Prepare file lists for template
+            # Prepare file lists for template with improved result tracking
             generated_files = []
             for result in results:
+                url = result["input"]
+                tool = result["tool"]
+
                 if result["result"]:
-                    filename = os.path.basename(result["result"])
-                    generated_files.append({
-                        "name": filename,
-                        "success": True
-                    })
+                    if tool == "PSI":
+                        # Add both desktop and mobile results
+                        index = len(generated_files) // 2 + 1
+                        generated_files.extend([
+                            {
+                                "url": url,
+                                "name": generate_filename(index * 2 - 1, "gps", url, "desktop"),
+                                "success": True,
+                                "tool": "PageSpeed Desktop"
+                            },
+                            {
+                                "url": url,
+                                "name": generate_filename(index * 2, "gps", url, "mobile"),
+                                "success": True,
+                                "tool": "PageSpeed Mobile"
+                            }
+                        ])
+                    else:  # GTmetrix
+                        generated_files.append({
+                            "url": url,
+                            "name": os.path.basename(result["result"]),
+                            "success": True,
+                            "tool": "GTmetrix"
+                        })
                 else:
                     generated_files.append({
-                        "name": f"Failed: {result['input']} ({result['tool']})",
-                        "success": False
+                        "url": url,
+                        "name": "Failed",
+                        "success": False,
+                        "tool": tool
                     })
 
             # Count actual completed screenshots

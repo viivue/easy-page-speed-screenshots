@@ -363,3 +363,33 @@ h2 {
     color: #c62828;
     margin-right: 0.5rem;
 }
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.results-table th,
+.results-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.results-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+.results-table td {
+    vertical-align: top;
+}
+
+.success {
+    color: #2ecc71;
+}
+
+.failed {
+    color: #e74c3c;
+}
