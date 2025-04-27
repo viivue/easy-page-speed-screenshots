@@ -37,7 +37,7 @@ CONFIG = {
     'MAX_SESSIONS_TO_KEEP': 5,
     'SCREENSHOT_TIMEOUT': 120,
     'EXPAND_DELAY': 0.1,
-    'LOAD_DELAY': 2,
+    'LOAD_DELAY': 5,
     'DEBUG': False,
     'USER_AGENT': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 }
