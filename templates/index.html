@@ -7,14 +7,15 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap"
+          rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Easy Page Speed Screenshots" />
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Easy Page Speed Screenshots"/>
         <h1>Easy Page Speed Screenshots</h1>
         <p class="tagline">Capture performance snapshots with a single click</p>
     </div>
@@ -30,11 +31,24 @@
 
             <div class="options">
                 <label class="checkbox-container">
-                    <input type="checkbox" id="gtmetrix-checkbox" name="use_gtmetrix" onclick="toggleGTMetrixKey()">
+                    <input type="checkbox" id="gtmetrix-checkbox" name="use_gtmetrix">
                     Use GTMetrix
                 </label>
-                <div class="gtmetrix-key" id="gtmetrix-key-container">
-                    <input type="text" name="gtmetrix_key" placeholder="Enter your GTMetrix API key">
+                <div id="gtmetrix-options" style="display: none;">
+                    <div class="gtmetrix-key">
+                        <input type="text" id="gtmetrix-key" name="gtmetrix_key"
+                               placeholder="Enter your GTMetrix API key">
+                    </div>
+                    <div class="gtmetrix-location">
+                        <select name="gtmetrix_location" id="gtmetrix-location">
+                            <option value="1">Vancouver, Canada</option>
+                            <option value="2">London, United Kingdom</option>
+                            <option value="3">Sydney, Australia</option>
+                            <option value="4">Dallas, USA</option>
+                            <option value="5">Mumbai, India</option>
+                            <option value="6">Singapore</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 

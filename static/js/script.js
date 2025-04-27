@@ -1,10 +1,19 @@
-function toggleGTMetrixKey() {
+document.addEventListener('DOMContentLoaded', function(){
     const checkbox = document.getElementById('gtmetrix-checkbox');
-    const keyContainer = document.getElementById('gtmetrix-key-container');
+    const options = document.getElementById('gtmetrix-options');
+    const apiKeyInput = document.getElementById('gtmetrix-key');
+    const locationSelect = document.getElementById('gtmetrix-location');
 
-    if (checkbox.checked) {
-        keyContainer.classList.add('visible');
-    } else {
-        keyContainer.classList.remove('visible');
+    if(!checkbox || !options || !apiKeyInput || !locationSelect){
+        console.error('Required GTMetrix elements not found');
+        return;
     }
-}
+
+    // Set initial state
+    options.style.display = checkbox.checked ? 'flex' : 'none';
+
+    // Handle checkbox toggle
+    checkbox.addEventListener('change', async function(){
+        options.style.display = this.checked ? 'flex' : 'none';
+    });
+});

@@ -278,7 +278,7 @@ def run_psi_test_and_screenshot(url, index, output_dir):
             driver.quit()
 
 # Function to run GTmetrix test and take a screenshot
-def run_gtmetrix_screenshot(url, index, output_dir, api_key):
+def run_gtmetrix_screenshot(url, index, output_dir, api_key, location):
     if not api_key:
         logger.error("GTmetrix API key not provided")
         return None
@@ -297,7 +297,7 @@ def run_gtmetrix_screenshot(url, index, output_dir, api_key):
                 "type": "test",
                 "attributes": {
                     "url": url,
-                    "location": 2,
+                    "location": location,
                     "browser": 3
                 }
             }
@@ -475,13 +475,15 @@ def index():
 
                 # Process with GTmetrix if enabled
                 if use_gtmetrix:
+                    gtmetrix_location = request.form.get("gtmetrix_location")
                     gtm_futures = {
                         executor.submit(
                             run_gtmetrix_screenshot,
                             url,
                             idx + 1,
                             output_dir,
-                            gtmetrix_key
+                            gtmetrix_key,
+                            gtmetrix_location  # Add location parameter
                         ): (url, "GTmetrix") for idx, url in enumerate(input_urls)
                     }
                     all_futures = {**psi_futures, **gtm_futures}
