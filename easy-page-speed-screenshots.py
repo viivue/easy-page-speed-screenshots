@@ -35,7 +35,7 @@ MAX_SESSIONS_TO_KEEP = 5  # Number of session directories to keep
 SCREENSHOT_TIMEOUT = 120  # Timeout for waiting for elements (seconds)
 EXPAND_DELAY = 0.1  # Time between expanding sections (seconds)
 LOAD_DELAY = 2  # Additional waiting time after elements load (seconds)
-
+DEBUG = False  # Set to True to enable debug mode
 
 # Clean URL for filename
 def clean_url_for_filename(url):
@@ -623,4 +623,4 @@ if __name__ == "__main__":
 
     # Start the Flask app
     port = int(os.environ.get("PORT", 5001))
-    app.run(host="127.0.0.1", port=port, debug=False)
+    app.run(host="127.0.0.1", port=port, debug=DEBUG)
