@@ -456,13 +456,12 @@ def index():
             if use_gtmetrix and not gtmetrix_key:
                 return "Error: GTmetrix API key is required when using GTmetrix."
 
-            # Create a unique session ID based on timestamp
+            # Create a unique session ID and output directory
             session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_dir = os.path.join(OUTPUT_DIR, session_id)
             os.makedirs(output_dir, exist_ok=True)
 
             results = []
-            # Process each URL with PSI
             with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
                 # Process with PageSpeed Insights
                 psi_futures = {
@@ -474,18 +473,47 @@ def index():
                     ): (url, "PSI") for idx, url in enumerate(input_urls)
                 }
 
+                # Process with GTmetrix if enabled
+                if use_gtmetrix:
+                    gtm_futures = {
+                        executor.submit(
+                            run_gtmetrix_screenshot,
+                            url,
+                            idx + 1,
+                            output_dir,
+                            gtmetrix_key
+                        ): (url, "GTmetrix") for idx, url in enumerate(input_urls)
+                    }
+                    all_futures = {**psi_futures, **gtm_futures}
+                else:
+                    all_futures = psi_futures
+
+                # Process results as they complete
+                for future in all_futures:
+                    url, tool = all_futures[future]
+                    try:
+                        result = future.result()
+                        results.append({
+                            "input": url,
+                            "tool": tool,
+                            "result": result
+                        })
+                    except Exception as e:
+                        logger.error(f"Error processing {url} with {tool}: {str(e)}")
+                        results.append({
+                            "input": url,
+                            "tool": tool,
+                            "result": None
+                        })
+
+            # Get screenshot files
+            screenshot_files = []
+            if os.path.exists(output_dir):
+                screenshot_files = [f for f in os.listdir(output_dir) if f.endswith('.png')]
+                screenshot_files.sort()
+
             # Prepare file lists for template
             generated_files = []
-            screenshot_files = []  # New list for actual screenshot files
-
-            # Get all files in the output directory
-            for file in os.listdir(output_dir):
-                if file.endswith('.png'):
-                    screenshot_files.append(file)  # Add to screenshot files list
-
-            # Sort screenshot files to ensure consistent order
-            screenshot_files.sort()
-
             for result in results:
                 if result["result"]:
                     filename = os.path.basename(result["result"])
@@ -499,9 +527,14 @@ def index():
                         "success": False
                     })
 
-            # Count successful and failed tests
-            success_count = sum(1 for r in results if r["result"])
-            failed_count = len(results) - success_count
+            # Count actual completed screenshots
+            success_count = len(screenshot_files)
+            expected_count = len(input_urls)
+            if use_gtmetrix:
+                expected_count *= 2  # Two screenshots per URL (PSI Desktop/Mobile)
+            else:
+                expected_count *= 2  # Two screenshots per URL (PSI Desktop/Mobile)
+            failed_count = expected_count - success_count
 
             # Clean up old sessions
             cleanup_old_sessions()
@@ -510,7 +543,7 @@ def index():
                                 session_id=session_id,
                                 input_urls=input_urls,
                                 generated_files=generated_files,
-                                screenshot_files=screenshot_files,  # Add screenshot files to template
+                                screenshot_files=screenshot_files,
                                 success_count=success_count,
                                 failed_count=failed_count)
 
