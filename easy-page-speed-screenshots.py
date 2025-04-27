@@ -379,6 +379,7 @@ def run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, locatio
                     filename = f"{gtm_index}-gtm-{datetime.now().strftime('%Y%m%d')}-{clean_url_for_filename(url)}.png"
 
                     # Save screenshot
+                    screenshot_path = os.path.join(output_dir, filename)
                     driver.save_screenshot(screenshot_path)
                     logger.info(f"GTmetrix screenshot saved: {screenshot_path}")
                     return screenshot_path
