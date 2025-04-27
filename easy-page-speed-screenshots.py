@@ -186,8 +186,13 @@ def process_tab(driver, device_type, url, index, output_dir):
         # Expand all sections
         expand_all_sections(driver)
 
-        # Take the screenshot
-        filename = generate_filename(index, "gps", url.strip(), device_type.lower())
+        # Calculate correct file index:
+        # For first URL: Desktop=1, Mobile=2
+        # For second URL: Desktop=4, Mobile=5
+        # etc.
+        base_index = ((index - 1) * 3) + 1
+        file_index = base_index if device_type.lower() == "desktop" else base_index + 1
+        filename = generate_filename(file_index, "gps", url.strip(), device_type.lower())
         output_path = os.path.join(output_dir, f"{filename}.png")
 
         # Reduce unnecessary spacing before taking screenshot
@@ -260,11 +265,11 @@ def run_psi_test_and_screenshot(url, index, output_dir):
         )
         time.sleep(LOAD_DELAY)
 
-        # Process Desktop tab - use the provided index for desktop
-        desktop_success = process_tab(driver, "Desktop", url, index * 2 - 1, output_dir)
+        # Process Desktop tab - use the same index
+        desktop_success = process_tab(driver, "Desktop", url, index, output_dir)
 
-        # Process Mobile tab - index will be incremented in process_tab function
-        mobile_success = process_tab(driver, "Mobile", url, index * 2, output_dir)
+        # Process Mobile tab - index handling is done inside process_tab
+        mobile_success = process_tab(driver, "Mobile", url, index, output_dir)
 
         if desktop_success and mobile_success:
             return url  # At least one screenshot was successful
@@ -367,7 +372,12 @@ def run_gtmetrix_screenshot(url, index, output_dir, api_key, location):
                     driver.set_window_size(1440, total_height)
 
                     # Save screenshot
-                    filename = f"{index}-gtm-{datetime.now().strftime('%Y%m%d')}-{clean_url_for_filename(url)}.png"
+                    # Calculate correct GTmetrix index:
+                    # For first URL: 3
+                    # For second URL: 6
+                    # etc.
+                    gtm_index = index * 3
+                    filename = f"{gtm_index}-gtm-{datetime.now().strftime('%Y%m%d')}-{clean_url_for_filename(url)}.png"
                     screenshot_path = os.path.join(output_dir, filename)
 
                     driver.save_screenshot(screenshot_path)
