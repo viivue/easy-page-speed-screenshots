@@ -36,6 +36,7 @@ SCREENSHOT_TIMEOUT = 120  # Timeout for waiting for elements (seconds)
 EXPAND_DELAY = 0.1  # Time between expanding sections (seconds)
 LOAD_DELAY = 2  # Additional waiting time after elements load (seconds)
 DEBUG = False  # Set to True to enable debug mode
+USER_AGENT  = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 
 # Clean URL for filename
 def clean_url_for_filename(url):
@@ -357,9 +358,13 @@ def run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, locatio
                 options.add_argument('--headless=new')
                 options.add_argument('--disable-gpu')
                 options.add_argument('--window-size=1440,900')
-                options.add_argument('--no-sandbox')
-                options.add_argument('--disable-dev-shm-usage')
                 options.add_argument(f"user-agent={user_agent}")
+
+                # Environment-specific options
+                if os.getenv("GOOGLE_CHROME_BIN"):
+                    options.binary_location = os.getenv("GOOGLE_CHROME_BIN")
+                    options.add_argument("--no-sandbox")
+                    options.add_argument("--disable-dev-shm-usage")
 
                 # Create Chrome driver
                 service = Service(os.getenv("CHROMEDRIVER_PATH", ChromeDriverManager().install()))
@@ -609,12 +614,6 @@ def index():
             return f"Error: {error_msg}"
 
     return render_template("index.html")
-
-
-# Health check endpoint
-@app.route("/health")
-def health_check():
-    return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
 
 
 if __name__ == "__main__":
