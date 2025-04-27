@@ -186,12 +186,8 @@ def process_tab(driver, device_type, url, index, output_dir):
         # Expand all sections
         expand_all_sections(driver)
 
-        # Calculate correct file index:
-        # For first URL: Desktop=1, Mobile=2
-        # For second URL: Desktop=4, Mobile=5
-        # etc.
-        base_index = ((index - 1) * 3) + 1
-        file_index = base_index if device_type.lower() == "desktop" else base_index + 1
+        # Calculate the correct index for PSI screenshots
+        file_index = get_psi_index(index, device_type)
         filename = generate_filename(file_index, "gps", url.strip(), device_type.lower())
         output_path = os.path.join(output_dir, f"{filename}.png")
 
@@ -371,15 +367,12 @@ def run_gtmetrix_screenshot(url, index, output_dir, api_key, location):
                     total_height = driver.execute_script("return document.body.scrollHeight")
                     driver.set_window_size(1440, total_height)
 
-                    # Save screenshot
-                    # Calculate correct GTmetrix index:
-                    # For first URL: 3
-                    # For second URL: 6
-                    # etc.
-                    gtm_index = index * 3
+                    # Calculate the correct index for GTmetrix screenshots
+                    gtm_index = get_gtm_index(index, total_urls)
                     filename = f"{gtm_index}-gtm-{datetime.now().strftime('%Y%m%d')}-{clean_url_for_filename(url)}.png"
                     screenshot_path = os.path.join(output_dir, filename)
 
+                    # Save screenshot
                     driver.save_screenshot(screenshot_path)
                     logger.info(f"GTmetrix screenshot saved: {screenshot_path}")
                     return screenshot_path
@@ -397,6 +390,18 @@ def run_gtmetrix_screenshot(url, index, output_dir, api_key, location):
     finally:
         if driver and driver.service.is_connectable():
             driver.quit()
+
+# Function to generate index for PSI screenshots
+def get_psi_index(url_index, device_type):
+    # For first URL: Desktop=1, Mobile=2, Second URL: Desktop=3, Mobile=4
+    base = (url_index - 1) * 2
+    return base + (1 if device_type.lower() == "desktop" else 2)
+
+# Function to generate index for GTmetrix screenshots
+def get_gtm_index(url_index, total_urls):
+    # Start GTmetrix indices after all PSI screenshots
+    # If 2 URLs: PSI ends at 4, GTmetrix starts at 5
+    return (total_urls * 2) + url_index
 
 # Clean up old session directories
 def cleanup_old_sessions():
