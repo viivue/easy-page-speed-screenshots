@@ -42,17 +42,20 @@ CONFIG = {
     'USER_AGENT': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 }
 
+
 # Clean URL for filename
 def epss_clean_url_for_filename(url):
     cleaned = re.sub(r'https?://', '', url)
     cleaned = re.sub(r'[^a-zA-Z0-9]', '-', cleaned).strip("-")
     return cleaned
 
+
 # Generate filename
 def epss_generate_filename(index, tool, url, device):
     date_str = datetime.now().strftime("%Y%m%d")
     decoded_url = epss_clean_url_for_filename(url)
     return f"{index}-{tool}-{date_str}-{decoded_url}-{device}"
+
 
 # Initialize Chrome driver
 def epss_init_driver():
@@ -73,6 +76,7 @@ def epss_init_driver():
     driver.set_page_load_timeout(CONFIG['SCREENSHOT_TIMEOUT'])
     return driver
 
+
 # Expand all sections
 def epss_expand_all_sections(driver):
     try:
@@ -89,6 +93,7 @@ def epss_expand_all_sections(driver):
                 logger.warning(f"Failed to expand element: {e}")
     except Exception as e:
         logger.warning(f"No expandable elements or failed to expand: {e}")
+
 
 # Take CDP full-page screenshot
 def epss_take_cdp_screenshot(driver, output_path):
@@ -165,6 +170,7 @@ def epss_take_cdp_screenshot(driver, output_path):
         logger.error(f"Error taking screenshot: {e}")
         return False
 
+
 # Process a single tab (Desktop or Mobile)
 def epss_process_tab(driver, device_type, url, index, output_dir):
     try:
@@ -213,6 +219,7 @@ def epss_process_tab(driver, device_type, url, index, output_dir):
         logger.error(f"Error processing {device_type} tab for {url}: {e}")
         return False
 
+
 # Run PSI test and screenshot
 def epss_run_psi_test_and_screenshot(url, index, total_urls, output_dir):
     driver = None
@@ -239,6 +246,7 @@ def epss_run_psi_test_and_screenshot(url, index, total_urls, output_dir):
     finally:
         if driver:
             driver.quit()
+
 
 # Run GTmetrix test and screenshot
 def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, location):
@@ -297,14 +305,17 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
         if driver and driver.service.is_connectable():
             driver.quit()
 
+
 # Generate PSI index
 def epss_get_psi_index(url_index, device_type):
     base = (url_index - 1) * 2
     return base + (1 if device_type.lower() == "desktop" else 2)
 
+
 # Generate GTmetrix index
 def epss_get_gtm_index(url_index, total_urls):
     return (total_urls * 2) + url_index
+
 
 # Clean up old sessions
 def epss_cleanup_old_sessions():
@@ -318,6 +329,7 @@ def epss_cleanup_old_sessions():
             logger.info(f"Cleaned up old session: {old_session}")
     except Exception as e:
         logger.error(f"Error during cleanup: {e}")
+
 
 # Download ZIP file
 @app.route("/download/<session_id>")
@@ -347,6 +359,7 @@ def epss_download_results(session_id):
             except:
                 pass
 
+
 # Web Interface
 @app.route("/", methods=["GET", "POST"])
 def epss_index():
@@ -369,13 +382,15 @@ def epss_index():
             results = []
             with ThreadPoolExecutor(max_workers=CONFIG['MAX_WORKERS']) as executor:
                 psi_futures = {
-                    executor.submit(epss_run_psi_test_and_screenshot, url, idx + 1, total_urls, output_dir): (url, "PSI")
+                    executor.submit(epss_run_psi_test_and_screenshot, url, idx + 1, total_urls, output_dir): (url,
+                                                                                                              "PSI")
                     for idx, url in enumerate(input_urls)
                 }
                 if use_gtmetrix:
                     gtmetrix_location = request.form.get("gtmetrix_location")
                     gtm_futures = {
-                        executor.submit(epss_run_gtmetrix_screenshot, url, idx + 1, total_urls, output_dir, gtmetrix_key, gtmetrix_location): (url, "GTmetrix")
+                        executor.submit(epss_run_gtmetrix_screenshot, url, idx + 1, total_urls, output_dir,
+                                        gtmetrix_key, gtmetrix_location): (url, "GTmetrix")
                         for idx, url in enumerate(input_urls)
                     }
                     all_futures = {**psi_futures, **gtm_futures}
@@ -391,7 +406,8 @@ def epss_index():
                         logger.error(f"Error processing {url} with {tool}: {e}")
                         results.append({"input": url, "tool": tool, "result": None})
 
-            screenshot_files = sorted([f for f in os.listdir(output_dir) if f.endswith('.png')]) if os.path.exists(output_dir) else []
+            screenshot_files = sorted([f for f in os.listdir(output_dir) if f.endswith('.png')]) if os.path.exists(
+                output_dir) else []
             generated_files = []
             for result in results:
                 url, tool = result["input"], result["tool"]
@@ -399,11 +415,14 @@ def epss_index():
                     if tool == "PSI":
                         index = len(generated_files) // 2 + 1
                         generated_files.extend([
-                            {"url": url, "name": epss_generate_filename(index * 2 - 1, "gps", url, "desktop"), "success": True, "tool": "PageSpeed Desktop"},
-                            {"url": url, "name": epss_generate_filename(index * 2, "gps", url, "mobile"), "success": True, "tool": "PageSpeed Mobile"}
+                            {"url": url, "name": epss_generate_filename(index * 2 - 1, "gps", url, "desktop"),
+                             "success": True, "tool": "PageSpeed Desktop"},
+                            {"url": url, "name": epss_generate_filename(index * 2, "gps", url, "mobile"),
+                             "success": True, "tool": "PageSpeed Mobile"}
                         ])
                     else:
-                        generated_files.append({"url": url, "name": os.path.basename(result["result"]), "success": True, "tool": "GTmetrix"})
+                        generated_files.append({"url": url, "name": os.path.basename(result["result"]), "success": True,
+                                                "tool": "GTmetrix"})
                 else:
                     generated_files.append({"url": url, "name": "Failed", "success": False, "tool": tool})
 
@@ -420,6 +439,7 @@ def epss_index():
             return f"Error: {e}"
 
     return render_template("index.html")
+
 
 if __name__ == "__main__":
     os.makedirs(CONFIG['OUTPUT_DIR'], exist_ok=True)
