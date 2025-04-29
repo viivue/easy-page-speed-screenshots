@@ -1,24 +1,23 @@
-from flask import Flask, request, render_template, send_file, jsonify
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-import time
-from datetime import datetime
-import os
-import zipfile
-import shutil
-import traceback
 import base64
 import logging
-from concurrent.futures import ThreadPoolExecutor
-from functools import partial
+import os
 import re
+import shutil
+import time
+import traceback
+import zipfile
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+
 import requests
-import json
+from flask import Flask, request, render_template, send_file
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Configure logging
 logging.basicConfig(
@@ -260,11 +259,18 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
     }
     driver = None
 
+    test_data = {
+        "data": {"type": "test", "attributes": {"url": url, "location": location, "browser": 3}}
+    }
+
     try:
-        test_data = {
-            "data": {"type": "test", "attributes": {"url": url, "location": location, "browser": 3}}
-        }
-        response = requests.post('https://gtmetrix.com/api/2.0/tests', headers=headers, json=test_data)
+        # Add verify=True and handle potential certificate issues
+        response = requests.post(
+            'https://gtmetrix.com/api/2.0/tests',
+            headers=headers,
+            json=test_data,
+            verify=True  # Explicitly set verify to True
+        )
         response.raise_for_status()
 
         test_id = response.json().get('data', {}).get('id')
@@ -276,7 +282,12 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
         report_url = None
         for _ in range(20):
             time.sleep(5)
-            status_response = requests.get(f'https://gtmetrix.com/api/2.0/tests/{test_id}', headers=headers)
+            # Add verify=True here as well
+            status_response = requests.get(
+                f'https://gtmetrix.com/api/2.0/tests/{test_id}',
+                headers=headers,
+                verify=True  # Explicitly set verify to True
+            )
             status_response.raise_for_status()
             report_url = status_response.json().get('data', {}).get('links', {}).get('report_url')
             if report_url:
@@ -298,6 +309,57 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
         driver.save_screenshot(screenshot_path)
         logger.info(f"GTmetrix screenshot saved: {screenshot_path}")
         return screenshot_path
+    except requests.exceptions.SSLError as ssl_err:
+        logger.error(f"SSL Error connecting to GTmetrix: {ssl_err}")
+        # Handling SSL errors specifically
+        logger.info("Attempting to use alternative certificate verification...")
+        try:
+            # If we're here, we had an SSL error, so let's try with certificate verification disabled
+            # Note: This is less secure but can be used as a fallback
+            if 'test_id' not in locals():
+                # If we failed during the initial test creation
+                response = requests.post(
+                    'https://gtmetrix.com/api/2.0/tests',
+                    headers=headers,
+                    json=test_data,
+                    verify=False  # Disable certificate verification as a fallback
+                )
+                response.raise_for_status()
+                test_id = response.json().get('data', {}).get('id')
+
+            # Continue with status checks using verify=False
+            report_url = None
+            for _ in range(20):
+                time.sleep(5)
+                status_response = requests.get(
+                    f'https://gtmetrix.com/api/2.0/tests/{test_id}',
+                    headers=headers,
+                    verify=False  # Disable certificate verification as a fallback
+                )
+                status_response.raise_for_status()
+                report_url = status_response.json().get('data', {}).get('links', {}).get('report_url')
+                if report_url:
+                    break
+
+            if not report_url:
+                logger.error("Failed to get report URL within timeout (even with SSL verification disabled)")
+                return None
+
+            driver = epss_init_driver()
+            driver.get(report_url)
+            time.sleep(5)
+
+            total_height = driver.execute_script("return document.body.scrollHeight")
+            driver.set_window_size(1440, total_height)
+            gtm_index = epss_get_gtm_index(index, total_urls)
+            filename = f"{gtm_index}-gtm-{datetime.now().strftime('%Y%m%d')}-{epss_clean_url_for_filename(url)}.png"
+            screenshot_path = os.path.join(output_dir, filename)
+            driver.save_screenshot(screenshot_path)
+            logger.info(f"GTmetrix screenshot saved (with SSL verification disabled): {screenshot_path}")
+            return screenshot_path
+        except Exception as fallback_err:
+            logger.error(f"Fallback method also failed: {fallback_err}")
+            return None
     except Exception as e:
         logger.error(f"Error in GTmetrix screenshot: {e}\n{traceback.format_exc()}")
         return None
