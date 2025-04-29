@@ -274,7 +274,7 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
 
         logger.info(f"GTmetrix test created with ID: {test_id}")
         report_url = None
-        for _ in range(60):
+        for _ in range(20):
             time.sleep(5)
             status_response = requests.get(f'https://gtmetrix.com/api/2.0/tests/{test_id}', headers=headers)
             status_response.raise_for_status()
