@@ -17,16 +17,28 @@ RUN apt-get update && apt-get install -y \
     libxtst6 \
     libxi6 \
     libgtk-3-0 \
+    libasound2 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxrandr2 \
+    libpango-1.0-0 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Google Chrome and verify binary
 RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb || { echo "Failed to download Chrome"; exit 1; } && \
-    dpkg -i /tmp/chrome.deb || apt-get install -yf && \
+    dpkg -i /tmp/chrome.deb || apt-get install -yf || { echo "Failed to install Chrome"; exit 1; } && \
     rm /tmp/chrome.deb && \
     chmod +x /usr/bin/google-chrome-stable || chmod +x /usr/bin/google-chrome || true && \
     ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome && \
-    ls -l /usr/bin/google-chrome* && \
-    google-chrome --version || google-chrome-stable --version
+    find /usr -name '*chrome*' && \
+    ls -l /usr/bin/google-chrome* || echo "No Chrome binaries in /usr/bin" && \
+    which google-chrome || echo "google-chrome not found" && \
+    which google-chrome-stable || echo "google-chrome-stable not found" && \
+    google-chrome --version || google-chrome-stable --version || echo "Failed to get Chrome version"
 
 # Install a specific ChromeDriver version (for Chrome 125.x)
 RUN CHROMEDRIVER_VERSION=125.0.6422.60 && \
@@ -34,7 +46,7 @@ RUN CHROMEDRIVER_VERSION=125.0.6422.60 && \
     unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/ || { echo "Failed to unzip ChromeDriver"; exit 1; } && \
     mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver && \
     rm -rf /tmp/chromedriver.zip /tmp/chromedriver-linux64 && \
-    ls -l /usr/local/bin/chromedriver && \
+    ls -l /usr/local/bin/chromedriver || { echo "ChromeDriver not found"; exit 1; } && \
     chmod +x /usr/local/bin/chromedriver || { echo "Failed to make ChromeDriver executable"; exit 1; }
 
 # Copy application code
