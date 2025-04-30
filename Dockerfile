@@ -28,17 +28,13 @@ RUN apt-get update && apt-get install -y \
     libatk-bridge2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome and verify binary
+# Install Chromium (or Chrome) and verify binary
 RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb || { echo "Failed to download Chrome"; exit 1; } && \
     dpkg -i /tmp/chrome.deb || apt-get install -yf || { echo "Failed to install Chrome"; exit 1; } && \
     rm /tmp/chrome.deb && \
-    chmod +x /usr/bin/google-chrome-stable || chmod +x /usr/bin/google-chrome || true && \
-    ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome && \
-    find /usr -name '*chrome*' && \
-    ls -l /usr/bin/google-chrome* || echo "No Chrome binaries in /usr/bin" && \
-    which google-chrome || echo "google-chrome not found" && \
-    which google-chrome-stable || echo "google-chrome-stable not found" && \
-    google-chrome --version || google-chrome-stable --version || echo "Failed to get Chrome version"
+    ln -sf /usr/lib/chromium-browser/chrome /usr/bin/google-chrome && \
+    ls -l /usr/bin/google-chrome || echo "Failed to create Chrome symlink" && \
+    /usr/lib/chromium-browser/chrome --version || echo "Failed to get Chromium version"
 
 # Install a specific ChromeDriver version (for Chrome 125.x)
 RUN CHROMEDRIVER_VERSION=125.0.6422.60 && \
@@ -60,7 +56,7 @@ EXPOSE 10000
 
 # Set environment variables
 ENV PORT=10000
-ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome-stable
+ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome
 ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
 
 # Run the application with Gunicorn
