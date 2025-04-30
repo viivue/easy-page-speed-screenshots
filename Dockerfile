@@ -19,18 +19,23 @@ RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome
-RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+# Install Google Chrome and verify binary
+RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb || { echo "Failed to download Chrome"; exit 1; } && \
     dpkg -i /tmp/chrome.deb || apt-get install -yf && \
-    rm /tmp/chrome.deb
+    rm /tmp/chrome.deb && \
+    chmod +x /usr/bin/google-chrome-stable || chmod +x /usr/bin/google-chrome || true && \
+    ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome && \
+    ls -l /usr/bin/google-chrome* && \
+    google-chrome --version || google-chrome-stable --version
 
-# Install a specific ChromeDriver version (e.g., 125.0.6422.141)
-# Check the Chrome version installed and match it: run `google-chrome --version` in a container if needed
-RUN CHROMEDRIVER_VERSION=125.0.6422.141 && \
-    wget -q -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip && \
-    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver.zip && \
-    chmod +x /usr/local/bin/chromedriver
+# Install a specific ChromeDriver version (for Chrome 125.x)
+RUN CHROMEDRIVER_VERSION=125.0.6422.60 && \
+    wget -q -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip || { echo "Failed to download ChromeDriver"; exit 1; } && \
+    unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/ || { echo "Failed to unzip ChromeDriver"; exit 1; } && \
+    mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver && \
+    rm -rf /tmp/chromedriver.zip /tmp/chromedriver-linux64 && \
+    ls -l /usr/local/bin/chromedriver && \
+    chmod +x /usr/local/bin/chromedriver || { echo "Failed to make ChromeDriver executable"; exit 1; }
 
 # Copy application code
 COPY . .
