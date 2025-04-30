@@ -26,7 +26,7 @@ RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-
 
 # Install a specific ChromeDriver version (e.g., 125.0.6422.141)
 # Check the Chrome version installed and match it: run `google-chrome --version` in a container if needed
-RUN CHROMEDRIVER_VERSION=125.0.6422.141 && \
+RUN CHROMEDRIVER_VERSION=100.0.4896.20 && \
     wget -q -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
     rm /tmp/chromedriver.zip && \
