@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     unzip \
+    gnupg \
     libglib2.0-0 \
     libnss3 \
     libgconf-2-4 \
@@ -26,15 +27,21 @@ RUN apt-get update && apt-get install -y \
     libpango-1.0-0 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
+    libgbm1 \
+    libxshmfence1 \
+    libgl1 \
+    libegl1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Chromium (or Chrome) and verify binary
-RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb || { echo "Failed to download Chrome"; exit 1; } && \
-    dpkg -i /tmp/chrome.deb || apt-get install -yf || { echo "Failed to install Chrome"; exit 1; } && \
-    rm /tmp/chrome.deb && \
-    ln -sf /usr/lib/chromium-browser/chrome /usr/bin/google-chrome && \
+# Install Google Chrome via APT repository
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && apt-get install -y google-chrome-stable || { echo "Failed to install Chrome"; exit 1; } && \
+    ls -l /usr/bin/google-chrome-stable || echo "Chrome binary not found" && \
+    chmod +x /usr/bin/google-chrome-stable || echo "Failed to make Chrome executable" && \
+    ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome && \
     ls -l /usr/bin/google-chrome || echo "Failed to create Chrome symlink" && \
-    /usr/lib/chromium-browser/chrome --version || echo "Failed to get Chromium version"
+    google-chrome --version || echo "Failed to get Chrome version"
 
 # Install a specific ChromeDriver version (for Chrome 125.x)
 RUN CHROMEDRIVER_VERSION=125.0.6422.60 && \
@@ -56,7 +63,7 @@ EXPOSE 10000
 
 # Set environment variables
 ENV PORT=10000
-ENV GOOGLE_CHROME_BIN=/usr/lib/chromium-browser/chrome
+ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome
 ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
 
 # Run the application with Gunicorn
