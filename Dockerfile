@@ -23,12 +23,15 @@ RUN apt-get update && apt-get install -y \
 RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
     dpkg -i /tmp/chrome.deb || apt-get install -yf && \
     rm /tmp/chrome.deb && \
-    [ -f /usr/bin/google-chrome ] || [ -f /usr/bin/google-chrome-stable ] || { echo "Chrome binary not found"; exit 1; }
+    chmod +x /usr/bin/google-chrome-stable || chmod +x /usr/bin/google-chrome || true && \
+    ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome && \
+    ls -l /usr/bin/google-chrome* && \
+    google-chrome --version || google-chrome-stable --version
 
 # Install a specific ChromeDriver version (e.g., 125.0.6422.141)
 # Check the Chrome version installed and match it: run `google-chrome --version` in a container if needed
-RUN CHROMEDRIVER_VERSION=114.0.5735.90 && \
-    wget -q -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
+RUN CHROMEDRIVER_VERSION=136.0.7103.49 && \
+    wget -q -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
     rm /tmp/chromedriver.zip && \
     chmod +x /usr/local/bin/chromedriver
