@@ -60,7 +60,7 @@ EXPOSE 10000
 
 # Set environment variables
 ENV PORT=10000
-ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome
+ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome-stable
 ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
 
 # Run the application with Gunicorn
