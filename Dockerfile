@@ -23,10 +23,7 @@ RUN apt-get update && apt-get install -y \
 RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
     dpkg -i /tmp/chrome.deb || apt-get install -yf && \
     rm /tmp/chrome.deb && \
-    chmod +x /usr/bin/google-chrome-stable || chmod +x /usr/bin/google-chrome || true && \
-    ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome && \
-    ls -l /usr/bin/google-chrome* && \
-    google-chrome --version || google-chrome-stable --version
+    [ -f /usr/bin/google-chrome ] || [ -f /usr/bin/google-chrome-stable ] || { echo "Chrome binary not found"; exit 1; }
 
 # Install a specific ChromeDriver version (e.g., 125.0.6422.141)
 # Check the Chrome version installed and match it: run `google-chrome --version` in a container if needed
