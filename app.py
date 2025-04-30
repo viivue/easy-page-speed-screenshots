@@ -32,7 +32,7 @@ app = Flask(__name__)
 # Configuration
 CONFIG = {
     'OUTPUT_DIR': "temp_screenshots",
-    'MAX_WORKERS': 2,
+    'MAX_WORKERS': 1,
     'MAX_SESSIONS_TO_KEEP': 5,
     'SCREENSHOT_TIMEOUT': 120,
     'EXPAND_DELAY': 0.1,
@@ -505,5 +505,4 @@ def epss_index():
 
 if __name__ == "__main__":
     os.makedirs(CONFIG['OUTPUT_DIR'], exist_ok=True)
-    port = int(os.environ.get("PORT", 5001))
-    app.run(host="127.0.0.1", port=port, debug=CONFIG['DEBUG'])
+    app.run(host="127.0.0.1", port=int(os.environ.get("PORT", 5001)), debug=CONFIG['DEBUG'])
