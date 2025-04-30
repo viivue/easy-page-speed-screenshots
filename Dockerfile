@@ -22,11 +22,12 @@ RUN apt-get update && apt-get install -y \
 # Install Google Chrome
 RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
     dpkg -i /tmp/chrome.deb || apt-get install -yf && \
-    rm /tmp/chrome.deb
+    rm /tmp/chrome.deb && \
+    [ -f /usr/bin/google-chrome ] || [ -f /usr/bin/google-chrome-stable ] || { echo "Chrome binary not found"; exit 1; }
 
 # Install a specific ChromeDriver version (e.g., 125.0.6422.141)
 # Check the Chrome version installed and match it: run `google-chrome --version` in a container if needed
-RUN CHROMEDRIVER_VERSION=100.0.4896.20 && \
+RUN CHROMEDRIVER_VERSION=114.0.5735.90 && \
     wget -q -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
     rm /tmp/chromedriver.zip && \
@@ -43,7 +44,7 @@ EXPOSE 10000
 
 # Set environment variables
 ENV PORT=10000
-ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome-stable
+ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome
 ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
 
 # Run the application with Gunicorn
