@@ -259,6 +259,7 @@ def epss_run_psi_test_and_screenshot(url, index, total_urls, output_dir):
 
 
 # Run GTmetrix test and screenshot
+# Run GTmetrix test and screenshot
 def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, location):
     if not api_key:
         logger.error("GTmetrix API key not provided")
@@ -275,7 +276,8 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
     }
 
     try:
-        # Add verify=True and handle potential certificate issues
+        # Log the CA bundle path being used
+        logger.info(f"Using CA bundle for GTmetrix API: {certifi.where()}")
         response = requests.post(
             'https://gtmetrix.com/api/2.0/tests',
             headers=headers,
@@ -293,7 +295,6 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
         report_url = None
         for _ in range(20):
             time.sleep(5)
-            # Add verify=True here as well
             status_response = requests.get(
                 f'https://gtmetrix.com/api/2.0/tests/{test_id}',
                 headers=headers,
@@ -322,13 +323,14 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
         return screenshot_path
     except requests.exceptions.SSLError as ssl_err:
         logger.error(f"SSL Error connecting to GTmetrix: {ssl_err}")
+        # Log OpenSSL version for debugging
+        import ssl
+        logger.info(f"OpenSSL version: {ssl.OPENSSL_VERSION}")
         # Handling SSL errors specifically
         logger.info("Attempting to use alternative certificate verification...")
         try:
-            # If we're here, we had an SSL error, so let's try with certificate verification disabled
-            # Note: This is less secure but can be used as a fallback
+            # If we failed during the initial test creation
             if 'test_id' not in locals():
-                # If we failed during the initial test creation
                 response = requests.post(
                     'https://gtmetrix.com/api/2.0/tests',
                     headers=headers,
@@ -345,7 +347,7 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
                 status_response = requests.get(
                     f'https://gtmetrix.com/api/2.0/tests/{test_id}',
                     headers=headers,
-                    verify=False  # Disable certificate verification as a fallback
+                    verify=False
                 )
                 status_response.raise_for_status()
                 report_url = status_response.json().get('data', {}).get('links', {}).get('report_url')
