@@ -33,18 +33,19 @@ RUN apt-get update && apt-get install -y \
     libegl1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome via APT repository
+# Install Google Chrome via APT repository, pinned to version 136.0.7103.59
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && apt-get install -y google-chrome-stable || { echo "Failed to install Chrome"; exit 1; } && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable=136.0.7103.59-1 || { echo "Failed to install Chrome 136.0.7103.59, trying latest version"; apt-get install -y google-chrome-stable; } && \
     ls -l /usr/bin/google-chrome-stable || echo "Chrome binary not found" && \
     chmod +x /usr/bin/google-chrome-stable || echo "Failed to make Chrome executable" && \
     ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome && \
     ls -l /usr/bin/google-chrome || echo "Failed to create Chrome symlink" && \
     google-chrome --version && echo "Chrome installation completed successfully"
 
-# Install a specific ChromeDriver version (for Chrome 127.x)
-RUN CHROMEDRIVER_VERSION=127.0.6533.72 && \
+# Install a specific ChromeDriver version (for Chrome 136.0.7103.59)
+RUN CHROMEDRIVER_VERSION=136.0.7103.59 && \
     wget -q -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip || { echo "Failed to download ChromeDriver"; exit 1; } && \
     unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/ || { echo "Failed to unzip ChromeDriver"; exit 1; } && \
     mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver && \
