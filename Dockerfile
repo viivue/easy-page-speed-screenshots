@@ -1,38 +1,43 @@
-# Use official Python slim image for a smaller footprint
-FROM python:3.9-slim
+# Use official Python slim image based on Debian Bullseye
+FROM python:3.9-slim-bullseye
 
 # Set working directory
 WORKDIR /app
 
 # Install system dependencies for Chrome, ChromeDriver, and utilities
-RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    unzip \
-    gnupg \
-    libglib2.0-0 \
-    libnss3 \
-    libgconf-2-4 \
-    libfontconfig1 \
-    libxrender1 \
-    libxtst6 \
-    libxi6 \
-    libgtk-3-0 \
-    libasound2 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxrandr2 \
-    libpango-1.0-0 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libgbm1 \
-    libxshmfence1 \
-    libgl1 \
-    libegl1 \
-    ca-certificates \
-    libssl-dev \  # Install OpenSSL development libraries \
+RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
+    # Retry apt-get update up to 3 times with a delay
+    for i in 1 2 3; do \
+        apt-get update && break || { echo "apt-get update failed, retrying ($i/3)"; sleep 5; }; \
+    done && \
+    apt-get install -y --no-install-recommends \
+        wget \
+        curl \
+        unzip \
+        gnupg \
+        libglib2.0-0 \
+        libnss3 \
+        libfontconfig1 \
+        libxrender1 \
+        libxtst6 \
+        libxi6 \
+        libgtk-3-0 \
+        libasound2 \
+        libx11-xcb1 \
+        libxcomposite1 \
+        libxcursor1 \
+        libxdamage1 \
+        libxrandr2 \
+        libpango-1.0-0 \
+        libatk1.0-0 \
+        libatk-bridge2.0-0 \
+        libgbm1 \
+        libxshmfence1 \
+        libgl1 \
+        libegl1 \
+        ca-certificates \
+        libssl-dev \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
