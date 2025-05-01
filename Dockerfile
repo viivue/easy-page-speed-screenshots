@@ -31,8 +31,9 @@ RUN apt-get update && apt-get install -y \
     libxshmfence1 \
     libgl1 \
     libegl1 \
-    ca-certificates \  # Add ca-certificates package \
-    && update-ca-certificates \  # Update CA certificates \
+    ca-certificates \
+    libssl-dev \  # Install OpenSSL development libraries \
+    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Google Chrome via APT repository, pinned to version 136.0.7103.59
@@ -70,4 +71,4 @@ ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome
 ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
 
 # Run the application with Gunicorn, with increased timeout and limited workers
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "--timeout", "300", "--workers", "1", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "--timeout", "120", "--workers", "1", "app:app"]
