@@ -45,7 +45,7 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     google-chrome --version && echo "Chrome installation completed successfully"
 
 # Install a specific ChromeDriver version (for Chrome 136.0.7103.59)
-RUN CHROMEDRIVER_VERSION=136.0.7103.49 && \
+RUN CHROMEDRIVER_VERSION=136.0.7103.59 && \
     wget -q -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip || { echo "Failed to download ChromeDriver"; exit 1; } && \
     unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/ || { echo "Failed to unzip ChromeDriver"; exit 1; } && \
     mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver && \
