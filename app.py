@@ -34,7 +34,7 @@ CONFIG = {
     'OUTPUT_DIR': "temp_screenshots",
     'MAX_WORKERS': 1,
     'MAX_SESSIONS_TO_KEEP': 5,
-    'SCREENSHOT_TIMEOUT': 120,
+    'SCREENSHOT_TIMEOUT': 60,
     'EXPAND_DELAY': 0.1,
     'LOAD_DELAY': 5,
     'DEBUG': False,
