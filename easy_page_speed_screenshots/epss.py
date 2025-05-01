@@ -13,29 +13,25 @@ from datetime import datetime
 import threading
 import validators
 import os.path
+import requests
+import json
+import pyperclip
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 from . import __version__
 from . import config
 from . import entry
 from . import helpers
 
-# webdriver options
-options = webdriver.ChromeOptions()
-options.add_argument("--headless=new")
-options.add_experimental_option(
-    "excludeSwitches", ["enable-logging"]
-)  # disable output the 'DevTools listening on ws://127.0.0.1:56567/devtools/browser/' line
-options.add_argument("--log-level=3")
-
-
 # get report links by type
 def epss_get_report_links(st_url, site_url, result_links):
-    if helpers.epss_is_tool(link=st_url, tool="pagespeed"):
+    if helpers.epss_is_tool(link=st_url, tool="google"):
         helpers.epss_get_links_gps(site_url, result_links)  # Google Page Speed
-    elif helpers.epss_is_tool(link=st_url, tool="gtmetrix") and config.use_gt_metrix:
-        helpers.epss_get_links_gtmetrix(site_url, result_links)  # GTMetrix
-    else:
-        helpers.epss_get_links_pingdom(site_url, result_links)  # Pingdom
+#     elif helpers.epss_is_tool(link=st_url, tool="gtmetrix") and config.use_gt_metrix:
+#         helpers.epss_get_links_gtmetrix(site_url, result_links)  # GTMetrix
+#     else:
+#         helpers.epss_get_links_pingdom(site_url, result_links)  # Pingdom
 
 
 # report thread
@@ -145,11 +141,15 @@ def epss_screenshots_thread(group):
         if link in config.INPUT_LINKS:
             continue
         try:
-            if helpers.epss_is_tool(link=link, tool="pagespeed"):
-                parsed_url = urlparse(link)
-                form_factor = parse_qs(parsed_url.query)["form_factor"][0]
-                file_name = file_names[1] if form_factor == "desktop" else file_names[2]
-                html_selector = "div.PePDG"
+            if helpers.epss_is_tool(link=link, tool="google"):
+                #parsed_url = urlparse(link)
+                #form_factor = parse_qs(parsed_url.query)["form_factor"][0]
+                #file_name = file_names[1] if form_factor == "desktop" else file_names[2]
+                #html_selector = "div.PePDG"
+
+                file_name = file_names[1]
+                html_selector = "body"
+                #link = "https://googlechrome.github.io/lighthouse/viewer/"
             elif (
                 helpers.epss_is_tool(link=link, tool="gtmetrix")
                 and config.use_gt_metrix
@@ -161,16 +161,59 @@ def epss_screenshots_thread(group):
                 html_selector = "app-report.ng-star-inserted"
 
             screenshots_driver.get(link)
-            can_take_screenshot = helpers.epss_content_loaded(
-                screenshots_driver, html_selector
-            )
+#             can_take_screenshot = helpers.epss_content_loaded(
+#                 screenshots_driver, html_selector
+#             )
 
-            if can_take_screenshot and helpers.epss_is_tool(
-                link=link, tool="pagespeed"
+            can_take_screenshot = True
+
+            if helpers.epss_is_tool(
+                link=link, tool="google"
             ):
-                time.sleep(5)  # make sure the report circle is finished
+                #time.sleep(5)  # make sure the report circle is finished
 
-            if can_take_screenshot:
+                screenshots_driver.get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url='+link)
+                #pyperclip.copy(screenshots_driver.find_element(By.TAG_NAME, 'pre').text)
+                pre_text = screenshots_driver.find_element(By.TAG_NAME, 'pre').text
+
+                f = open("D:\python\screenshots\demofile3.json", "w+")
+                f.write(pre_text)
+                f.close()
+
+                #wait = WebDriverWait(driver, 20)
+                screenshots_driver.get("https://googlechrome.github.io/lighthouse/viewer/")
+                #screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.CONTROL + 'v')
+
+                #screenshots_driver.find_element(By.CLASS_NAME, "viewer-placeholder__file-button").send_keys("D:\python\screenshots\demofile3.txt")
+
+                #wait = WebDriverWait(driver, 5)
+                #wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".viewer-placeholder__file-button"))).send_keys('D:\python\screenshots\demofile3.txt')
+
+                #screenshots_driver.findElement(By.CLASS_NAME, "viewer-placeholder__file-button").click()
+                screenshots_driver.find_element(By.CLASS_NAME, "hidden-file-input").send_keys("D:\python\screenshots\demofile3.json")
+                #screenshots_driver.findElement(By.CLASS_NAME, "viewer-placeholder__file-button").click()
+
+                #time.sleep(1)
+                #wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'body'))).send_keys(pyperclip.paste())
+                #screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.COMMAND + 'v')
+                print(pyperclip.paste())
+
+#                 actions = ActionChains(self.driver)
+#                 ActionChains(driver).key_down(Keys.LEFT_CONTROL).key_down('v').key_up('v').key_up(Keys.LEFT_CONTROL).perform()
+
+                original_size = screenshots_driver.get_window_size()
+                required_width = screenshots_driver.execute_script(
+                    "return document.body.parentNode.scrollWidth"
+                )
+                required_height = screenshots_driver.execute_script(
+                    "return document.body.parentNode.scrollHeight"
+                )
+                screenshots_driver.set_window_size(1440, required_height)
+                screenshots_driver.find_element(By.TAG_NAME, "body").screenshot(
+                    f"{config.OP_DIR}\{file_name}"
+                )  # avoids scrollbar
+                screenshots_driver.set_window_size(original_size["width"], original_size["height"])
+            else:
                 time.sleep(2)
                 epss_take_screenshots(file_name=file_name, driver=screenshots_driver)
 
@@ -203,7 +246,7 @@ UI settings
 def epss_main():
     try:
         links = epss_get_input_links()
-        links = helpers.epss_add_form_factor(links=links)
+        #links = helpers.epss_add_form_factor(links=links)
         epss_execute_screenshots(links=links)
         pb.stop()
         pb_frame.grid_forget()
@@ -216,6 +259,20 @@ def epss_main():
         links_text.config(state="normal")
         gtmetrix_entry.config(state="normal")
         test_frame.grid(row=6, sticky="ew")
+
+#         screenshots_driver = helpers.epss_get_webdriver()
+#         screenshots_driver.execute_cdp_cmd(
+#             "Network.setUserAgentOverride",
+#             {"userAgent": config.USER_AGENT},
+#         )
+#         config.CHROME_DRIVERS.append(screenshots_driver)
+#
+#         screenshots_driver.get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://github.com')
+#         pyperclip.copy(screenshots_driver.find_element(By.TAG_NAME, 'pre').text)
+#
+#         screenshots_driver.get("https://googlechrome.github.io/lighthouse/viewer/")
+#         screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.CONTROL + 'v')
+#         screenshots_driver.find_element(By.TAG_NAME, "body").send_keys(Keys.COMMAND + 'v')
     except Exception as e:
         tkinter.messagebox.showerror(title=e, message=e)
 
