@@ -282,8 +282,12 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
             'https://gtmetrix.com/api/2.0/tests',
             headers=headers,
             json=test_data,
-            verify=certifi.where()
+            verify=certifi.where(),
+            timeout=30  # 30-second timeout
         )
+        if response.status_code == 429:
+            logger.error("GTmetrix API rate limit exceeded")
+            return None
         response.raise_for_status()
 
         test_id = response.json().get('data', {}).get('id')
@@ -298,7 +302,8 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
             status_response = requests.get(
                 f'https://gtmetrix.com/api/2.0/tests/{test_id}',
                 headers=headers,
-                verify=certifi.where()
+                verify=certifi.where(),
+                timeout=30  # 30-second timeout
             )
             status_response.raise_for_status()
             report_url = status_response.json().get('data', {}).get('links', {}).get('report_url')
@@ -455,10 +460,10 @@ def epss_index():
             os.makedirs(output_dir, exist_ok=True)
 
             results = []
+            gtmetrix_failed = False
             with ThreadPoolExecutor(max_workers=CONFIG['MAX_WORKERS']) as executor:
                 psi_futures = {
-                    executor.submit(epss_run_psi_test_and_screenshot, url, idx + 1, total_urls, output_dir): (url,
-                                                                                                              "PSI")
+                    executor.submit(epss_run_psi_test_and_screenshot, url, idx + 1, total_urls, output_dir): (url, "PSI")
                     for idx, url in enumerate(input_urls)
                 }
                 if use_gtmetrix:
@@ -477,9 +482,16 @@ def epss_index():
                     try:
                         result = future.result()
                         results.append({"input": url, "tool": tool, "result": result})
+                        if tool == "GTmetrix" and result is None:
+                            gtmetrix_failed = True
                     except Exception as e:
                         logger.error(f"Error processing {url} with {tool}: {e}")
                         results.append({"input": url, "tool": tool, "result": None})
+                        if tool == "GTmetrix":
+                            gtmetrix_failed = True
+
+            if gtmetrix_failed:
+                logger.warning("GTmetrix tests failed for one or more URLs. Falling back to PSI-only results.")
 
             screenshot_files = sorted([f for f in os.listdir(output_dir) if f.endswith('.png')]) if os.path.exists(
                 output_dir) else []
@@ -497,7 +509,7 @@ def epss_index():
                         ])
                     else:
                         generated_files.append({"url": url, "name": os.path.basename(result["result"]), "success": True,
-                                                "tool": "GTmetrix"})
+                                               "tool": "GTmetrix"})
                 else:
                     generated_files.append({"url": url, "name": "Failed", "success": False, "tool": tool})
 
