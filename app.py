@@ -70,7 +70,9 @@ def epss_init_driver():
     options.add_argument('--disable-background-timer-throttling')
     options.add_argument('--disable-renderer-backgrounding')
     options.add_argument('--disable-sync')
-    options.add_argument('--window-size=1280,720')  # Smaller window size to reduce memory
+    options.add_argument('--window-size=1024,600')  # Further reduce window size
+    options.add_argument('--disable-features=TranslateUI,BlinkGenPropertyTrees')  # Disable additional features
+    options.add_argument('--memory-pressure-level=critical')  # Force Chrome to free memory aggressively
     options.add_argument(f"user-agent={CONFIG['USER_AGENT']}")
 
     chrome_bin = os.getenv("GOOGLE_CHROME_BIN")
