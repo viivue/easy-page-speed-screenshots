@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import requests
+import certifi
 from flask import Flask, request, render_template, send_file
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -279,7 +280,7 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
             'https://gtmetrix.com/api/2.0/tests',
             headers=headers,
             json=test_data,
-            verify=True  # Explicitly set verify to True
+            verify=certifi.where()
         )
         response.raise_for_status()
 
@@ -296,7 +297,7 @@ def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, lo
             status_response = requests.get(
                 f'https://gtmetrix.com/api/2.0/tests/{test_id}',
                 headers=headers,
-                verify=True  # Explicitly set verify to True
+                verify=certifi.where()
             )
             status_response.raise_for_status()
             report_url = status_response.json().get('data', {}).get('links', {}).get('report_url')
