@@ -20,6 +20,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
+import platform
+import os
+import pathlib
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -62,27 +66,74 @@ def epss_init_driver():
     options = Options()
     options.add_argument('--headless=new')
     options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')  # Required for Docker/Render
-    options.add_argument('--disable-dev-shm-usage')  # Reduces memory usage in Docker
+    options.add_argument('--no-sandbox')  # Required for Docker/Render, optional on Windows
+    options.add_argument('--disable-dev-shm-usage')  # For Docker, optional on Windows
     options.add_argument('--disable-extensions')
     options.add_argument('--disable-infobars')
     options.add_argument('--disable-background-networking')
     options.add_argument('--disable-background-timer-throttling')
     options.add_argument('--disable-renderer-backgrounding')
     options.add_argument('--disable-sync')
-    options.add_argument('--window-size=1440,600')  # Further reduce window size
-    options.add_argument('--disable-features=TranslateUI,BlinkGenPropertyTrees')  # Disable additional features
-    options.add_argument('--memory-pressure-level=critical')  # Force Chrome to free memory aggressively
+    options.add_argument('--window-size=1440,600')
+    options.add_argument('--disable-features=TranslateUI,BlinkGenPropertyTrees,NetworkService,NetworkServiceInProcess')
+    options.add_argument('--no-zygote')
+    options.add_argument('--memory-pressure-level=critical')
     options.add_argument(f"user-agent={CONFIG['USER_AGENT']}")
 
+    # Set Chrome binary path
     chrome_bin = os.getenv("GOOGLE_CHROME_BIN")
-    logger.info(f"GOOGLE_CHROME_BIN set to: {chrome_bin}")
-    if chrome_bin:
+    if platform.system() == "Windows":
+        if not chrome_bin or not os.path.exists(chrome_bin):
+            default_paths = [
+                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",  # 64-bit default
+                "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"  # 32-bit default
+            ]
+            for path in default_paths:
+                if os.path.exists(path):
+                    chrome_bin = path
+                    break
+        if chrome_bin and os.path.exists(chrome_bin):
+            options.binary_location = chrome_bin
+            logger.info(f"Using Chrome binary at: {chrome_bin}")
+        else:
+            logger.error("Chrome binary not found at default locations or GOOGLE_CHROME_BIN. Please install Google Chrome.")
+    elif platform.system() == "Darwin":  # macOS
+        if not chrome_bin or not os.path.exists(chrome_bin):
+            default_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            if os.path.exists(default_path):
+                chrome_bin = default_path
+        if chrome_bin and os.path.exists(chrome_bin):
+            options.binary_location = chrome_bin
+            logger.info(f"Using Chrome binary at: {chrome_bin}")
+        else:
+            logger.error("Chrome binary not found at default location or GOOGLE_CHROME_BIN. Please install Google Chrome.")
+    elif chrome_bin and os.path.exists(chrome_bin):
         options.binary_location = chrome_bin
+        logger.info(f"Using GOOGLE_CHROME_BIN: {chrome_bin}")
     else:
-        logger.error("GOOGLE_CHROME_BIN not set, Selenium may fail")
+        logger.warning("GOOGLE_CHROME_BIN not set or invalid, relying on system default")
 
-    service = Service(os.getenv("CHROMEDRIVER_PATH", ChromeDriverManager().install()))
+    # Set ChromeDriver path from embedded drivers
+    project_root = pathlib.Path(__file__).parent
+    drivers_dir = project_root / "drivers"
+    os_name = platform.system().lower()
+    if os_name == "windows":
+        chromedriver_path = drivers_dir / "chromedriver-win.exe"
+    elif os_name == "darwin":  # macOS
+        chromedriver_path = drivers_dir / "chromedriver-mac"
+    else:  # Linux
+        chromedriver_path = drivers_dir / "chromedriver-linux"
+
+    if chromedriver_path.exists():
+        # Make executable on Unix-like systems
+        if os_name != "windows":
+            chromedriver_path.chmod(0o755)
+        logger.info(f"Using embedded ChromeDriver at: {chromedriver_path}")
+        service = Service(str(chromedriver_path))
+    else:
+        logger.error(f"Embedded ChromeDriver not found at: {chromedriver_path}. Falling back to ChromeDriverManager.")
+        service = Service(ChromeDriverManager().install())
+
     driver = webdriver.Chrome(service=service, options=options)
     driver.execute_cdp_cmd('Page.enable', {})
     driver.set_page_load_timeout(CONFIG['SCREENSHOT_TIMEOUT'])
@@ -260,7 +311,6 @@ def epss_run_psi_test_and_screenshot(url, index, total_urls, output_dir):
             driver.quit()
 
 
-# Run GTmetrix test and screenshot
 # Run GTmetrix test and screenshot
 def epss_run_gtmetrix_screenshot(url, index, total_urls, output_dir, api_key, location):
     if not api_key:
