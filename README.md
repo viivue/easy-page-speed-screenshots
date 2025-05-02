@@ -3,12 +3,11 @@
 This application enables you to capture screenshots of web performance test results for given URLs, supporting multiple platforms including Windows, macOS, and Linux.
 
 ## Prerequisites
-- **Google Chrome**: Install Google Chrome on your machine. The app will attempt to locate Chrome at default paths, but you can set the `GOOGLE_CHROME_BIN` environment variable if it’s installed elsewhere.
+- **Google Chrome**: Install Google Chrome on your machine. (The app will attempt to locate Chrome at default paths, but you can set the `GOOGLE_CHROME_BIN` environment variable if it’s installed elsewhere)
   - Windows: Default path is `C:\Program Files\Google\Chrome\Application\chrome.exe` (64-bit) or `C:\Program Files (x86)\Google\Chrome\Application\chrome.exe` (32-bit).
   - macOS: Default path is `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
   - Linux: Install via your package manager (e.g., `apt-get install google-chrome-stable` on Debian-based systems).
 - **Python 3.9+**: Install Python from [https://www.python.org/downloads/](https://www.python.org/downloads/).
-- **Git**: Install Git to clone the repository (available at [https://git-scm.com/downloads](https://git-scm.com/downloads)).
 
 ## Installation and Setup
 Follow these steps to set up and run the application on your machine:
