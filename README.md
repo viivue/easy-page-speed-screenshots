@@ -50,11 +50,11 @@ Follow these steps to set up and run the application on your machine:
 
 2. **Enter URLs and Options**:
    - Enter one or more URLs (one per line) in the provided text area.
-   - Optionally, enable GTmetrix testing and provide a GTmetrix API key and location if desired.
+   - Optionally, enable GTMetrix testing and provide a GTMetrix API key and location if desired.
    - Click 'Submit' to start the screenshot process.
 
 3. **View Results**:
-   - Once processing is complete, the app will display a list of generated screenshots (PSI Desktop, PSI Mobile, and optionally GTmetrix) or indicate failures.
+   - Once processing is complete, the app will display a list of generated screenshots (PSI Desktop, PSI Mobile, and optionally GTMetrix) or indicate failures.
    - Screenshots are saved temporarily and can be viewed or downloaded from the results page.
 
 ## Notes
