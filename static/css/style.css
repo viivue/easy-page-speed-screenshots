@@ -171,6 +171,7 @@ h2 {
     border:2px solid var(--dark);
     box-shadow:5px 5px 0 var(--dark);
     border-radius:8px; padding:5px 23px;
+    margin-top: 1rem;
 }
 
 .new-analysis-btn:hover {
@@ -343,8 +344,6 @@ h2 {
     border-bottom: 1px solid var(--gray);
     background: white;
 }
-
-.results-table tr:last-child td { border-bottom: none; }
 
 .results-table tr:hover td { background: #fafafa; }
 
