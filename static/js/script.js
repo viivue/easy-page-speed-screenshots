@@ -10,10 +10,10 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     // Set initial state
-    options.style.display = checkbox.checked ? 'flex' : 'none';
+    options.style.opacity = checkbox.checked ? '1' : '0';
 
     // Handle checkbox toggle
     checkbox.addEventListener('change', async function(){
-        options.style.display = this.checked ? 'flex' : 'none';
+        options.style.opacity = this.checked ? '1' : '0';
     });
 });

@@ -1,61 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Easy Page Speed Screenshots</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap"
-          rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</head>
-<body>
-<div class="container">
-    <div class="header">
-        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Easy Page Speed Screenshots"/>
-        <h1>Easy Page Speed Screenshots</h1>
-        <p class="tagline">Capture performance snapshots with a single click</p>
+<!-- templates/index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<form method="post" action="">
+    <div class="url-section">
+        <h2>URLs for the page speed screenshots</h2>
+        <div class="url-input">
+            <textarea name="urls" placeholder="Enter URLs (one per line)"></textarea>
+        </div>
     </div>
 
-    <form method="post" action="">
-        <div class="main-content">
-            <div class="url-section">
-                <h2>URLs for the page speed screenshots</h2>
-                <div class="url-input">
-                    <textarea name="urls" placeholder="Enter URLs (one per line)"></textarea>
-                </div>
+    <div class="options">
+        <label class="checkbox-container">
+            <input type="checkbox" id="gtmetrix-checkbox" name="use_gtmetrix">
+            Use GTMetrix
+        </label>
+        <div id="gtmetrix-options" style="opacity: 0;">
+            <div class="gtmetrix-key">
+                <input type="text" id="gtmetrix-key" name="gtmetrix_key" placeholder="Enter your GTMetrix API key">
             </div>
-
-            <div class="options">
-                <label class="checkbox-container">
-                    <input type="checkbox" id="gtmetrix-checkbox" name="use_gtmetrix">
-                    Use GTMetrix
-                </label>
-                <div id="gtmetrix-options" style="display: none;">
-                    <div class="gtmetrix-key">
-                        <input type="text" id="gtmetrix-key" name="gtmetrix_key"
-                               placeholder="Enter your GTMetrix API key">
-                    </div>
-                    <div class="gtmetrix-location">
-                        <select name="gtmetrix_location" id="gtmetrix-location">
-                            <option value="1">Vancouver, Canada</option>
-                            <option value="2">London, UK</option>
-                            <option value="3">Sydney, Australia</option>
-                            <option value="4">San Antonio, TX, USA</option>
-                            <option value="5">Mumbai, India</option>
-                            <option value="6">São Paulo, Brazil</option>
-                            <option value="7">Hong Kong, China</option>
-                        </select>
-                    </div>
-                </div>
+            <div class="gtmetrix-location">
+                <select name="gtmetrix_location" id="gtmetrix-location">
+                    <option value="1">Vancouver, Canada</option>
+                    <option value="2">London, UK</option>
+                    <option value="3">Sydney, Australia</option>
+                    <option value="4">San Antonio, TX, USA</option>
+                    <option value="5">Mumbai, India</option>
+                    <option value="6">São Paulo, Brazil</option>
+                    <option value="7">Hong Kong, China</option>
+                </select>
             </div>
-
-            <button type="submit" class="btn btn-primary">Take screenshots</button>
         </div>
-    </form>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Take screenshots</button>
 
     <div class="how-it-works">
         <h2>How It Works</h2>
@@ -77,15 +55,9 @@
             </div>
         </div>
     </div>
+</form>
+{% endblock %}
 
-    <div class="footer">
-        <div class="footer-links">
-            <a href="https://github.com/viivue/easy-page-speed-screenshots" target="_blank" title="GitHub">
-                GitHub
-            </a>
-        </div>
-        <p>© ViiVue 2025</p>
-    </div>
-</div>
-</body>
-</html>
+{% block head %}
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}
