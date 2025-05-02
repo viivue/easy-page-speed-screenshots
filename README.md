@@ -26,18 +26,7 @@ Follow these steps to set up and run the application on your machine:
    ```
    This will install all necessary Python packages, including Selenium, Flask, and Gunicorn.
 
-3. **Verify Chrome Installation**:
-   - Ensure Google Chrome is installed and accessible. The app will try to find it at the default locations listed above.
-   - If Chrome is installed in a custom location, set the `GOOGLE_CHROME_BIN` environment variable:
-     - **Windows**:
-       - Open 'Environment Variables' (right-click 'This PC' > 'Properties' > 'Advanced system settings' > 'Environment Variables').
-       - Add or edit `GOOGLE_CHROME_BIN` and set it to the full path (e.g., `C:\Path\To\chrome.exe`).
-       - Alternatively, run in Command Prompt: `set GOOGLE_CHROME_BIN=C:\Path\To\chrome.exe` before starting the app.
-     - **macOS/Linux**:
-       - Run in Terminal: `export GOOGLE_CHROME_BIN=/path/to/chrome` (e.g., `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`).
-       - Add to your shell profile (e.g., `~/.bashrc` or `~/.zshrc`) for permanence: `echo 'export GOOGLE_CHROME_BIN=/path/to/chrome' >> ~/.bashrc` followed by `source ~/.bashrc`.
-
-4. **Run the Application**:
+3. **Run the Application**:
    - Start the app by running:
      ```bash
      python app.py
