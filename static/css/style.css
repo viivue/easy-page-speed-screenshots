@@ -165,22 +165,16 @@ h2 {
 }
 
 .new-analysis-btn {
-    display: inline;
-    color: var(--dark);
-    padding: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    text-decoration: underline;
-    border: none;
-    border-radius: 0;
-    transition: color 0.3s ease;
+    display:inline-flex; align-items:center; justify-content:center;
+    text-align:center; text-decoration:none;
+    background:#fff; color:var(--dark);
+    border:2px solid var(--dark);
+    box-shadow:5px 5px 0 var(--dark);
+    border-radius:8px; padding:5px 23px;
 }
 
 .new-analysis-btn:hover {
-    color: var(--yellow);
-    text-decoration: underline;
-    transform: none;
-    cursor: pointer;
+    background: var(--yellow);
 }
 
 .how-it-works {
