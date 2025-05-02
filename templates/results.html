@@ -1,12 +1,8 @@
-<!-- templates/results.html -->
 {% extends "base.html" %}
-
 {% block title %}Results - Easy Page Speed Screenshots{% endblock %}
-
 {% block content %}
 <div class="results-container">
     <h2>Screenshot Results</h2>
-
     <div class="table-responsive">
         <table class="results-table">
             <thead>
@@ -14,15 +10,13 @@
                     <th>URL</th>
                     <th>Status</th>
                     <th>Screenshots</th>
-                    {% if use_gtmetrix %}
-                    <th>GTmetrix Score</th>
-                    {% endif %}
+                    {% if use_gtmetrix %}<th>GTmetrix Score</th>{% endif %}
                 </tr>
             </thead>
             <tbody>
                 {% for result in results %}
                 <tr>
-                    <td>{{ result.url }}</td>
+                    <td class="url-cell">{{ result.url }}</td>
                     <td>
                         <span class="status-indicator {{ 'success' if result.success else 'failed' }}">
                             {{ 'Complete' if result.success else 'Failed' }}
@@ -32,22 +26,19 @@
                         {% if result.screenshots %}
                         <div class="screenshot-links">
                             {% for screenshot in result.screenshots %}
-                            <a href="{{ screenshot.url }}" target="_blank" class="btn btn-small">
-                                {{ screenshot.type }}
-                            </a>
+                            <a href="{{ screenshot.url }}" target="_blank" class="btn btn-small">{{ screenshot.type }}</a>
                             {% endfor %}
                         </div>
                         {% endif %}
                     </td>
                     {% if use_gtmetrix %}
-                    <td>{{ result.gtmetrix_score if result.gtmetrix_score else 'N/A' }}</td>
+                    <td>{{ result.gtmetrix_score | default('N/A') }}</td>
                     {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-
     <div class="actions">
         <a href="{{ url_for('home') }}" class="btn">New Analysis</a>
     </div>

@@ -1,21 +1,18 @@
-<!-- templates/index.html -->
 {% extends "base.html" %}
-
 {% block content %}
 <form method="post" action="">
     <div class="url-section">
-        <h2>URLs for the page speed screenshots</h2>
+        <h2>URLs for Page Speed Screenshots</h2>
         <div class="url-input">
-            <textarea name="urls" placeholder="Enter URLs (one per line)"></textarea>
+            <textarea name="urls" placeholder="Enter URLs (one per line)" required></textarea>
         </div>
     </div>
-
     <div class="options">
         <label class="checkbox-container">
             <input type="checkbox" id="gtmetrix-checkbox" name="use_gtmetrix">
             Use GTMetrix
         </label>
-        <div id="gtmetrix-options" style="opacity: 0;">
+        <div id="gtmetrix-options">
             <div class="gtmetrix-key">
                 <input type="text" id="gtmetrix-key" name="gtmetrix_key" placeholder="Enter your GTMetrix API key">
             </div>
@@ -32,32 +29,29 @@
             </div>
         </div>
     </div>
-
-    <button type="submit" class="btn btn-primary">Take screenshots</button>
-
+    <button type="submit" class="btn btn-primary">Take Screenshots</button>
     <div class="how-it-works">
         <h2>How It Works</h2>
         <div class="feature-grid">
             <div class="feature">
                 <div class="feature-icon">1</div>
                 <h3>Enter URLs</h3>
-                <p>Add all the website URLs you want to analyze (one per line)</p>
+                <p>Add website URLs to analyze (one per line).</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">2</div>
                 <h3>Choose Options</h3>
-                <p>Select GTMetrix for additional performance insights</p>
+                <p>Select GTMetrix for performance insights.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">3</div>
                 <h3>Get Results</h3>
-                <p>Receive detailed performance screenshots for each URL</p>
+                <p>View detailed performance screenshots.</p>
             </div>
         </div>
     </div>
 </form>
 {% endblock %}
-
 {% block head %}
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}

@@ -1,4 +1,3 @@
-<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,12 +15,11 @@
 <body>
 <div class="container">
     {% include 'template-parts/header.html' %}
-
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
-
     {% include 'template-parts/footer.html' %}
 </div>
+<script async src="/cdn-cgi/challenge-platform/scripts/jsd/main.js"></script>
 </body>
 </html>
