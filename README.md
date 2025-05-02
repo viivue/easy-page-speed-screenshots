@@ -15,10 +15,9 @@ Follow these steps to set up and run the application on your machine:
 
 1. **Clone the Repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/yourusername/easy-page-speed-screenshots.git
    cd easy-page-speed-screenshots
    ```
-   Replace `<repository-url>` with the actual URL of your Git repository (e.g., `https://github.com/yourusername/easy-page-speed-screenshots.git`).
 
 2. **Install Python Dependencies**:
    Ensure you have `pip` installed, then run:
