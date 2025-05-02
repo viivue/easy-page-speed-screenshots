@@ -63,19 +63,59 @@ Follow these steps to set up and run the application on your machine:
 - The app runs in single-process mode to reduce memory usage, which may trigger a warning (`Cannot use V8 Proxy resolver in single process mode`). This can be ignored unless you encounter network issues behind a proxy.
 - Logs are written to `app.log` in the project directory for troubleshooting.
 
-## Troubleshooting
-- **Chrome Not Found**:
-  - Ensure Chrome is installed in the default location, or set the `GOOGLE_CHROME_BIN` environment variable to the correct path.
-  - Check `app.log` for messages like “Chrome binary not found.”
-- **Permission Issues (macOS/Linux)**:
-  - Run `chmod +x drivers/chromedriver-*` if the app fails to set permissions.
-- **Network Errors**:
-  - If pages fail to load (e.g., behind a proxy), set the `GOOGLE_CHROME_BIN` environment variable and test with a direct connection.
-- **Windows Errors ([WinError 193])**:
-  - Ensure your Chrome and Python installations are 64-bit (check with `python -c "import platform; print(platform.architecture())"`).
-  - Reinstall Chrome or Python if mismatched.
-- **Memory Issues on Render**:
-  - If deploying to Render and encountering `SIGKILL` errors, consider upgrading to a higher memory plan (e.g., Standard tier with 2 GB RAM).
+## FAQs & Troubleshooting
+
+<details>
+<summary>What should I do if Chrome is not found?</summary>
+Ensure Google Chrome is installed in the default location for your operating system:
+
+- Windows: `C:\Program Files\Google\Chrome\Application\chrome.exe` (64-bit) or `C:\Program Files (x86)\Google\Chrome\Application\chrome.exe` (32-bit).
+- macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
+- Linux: Install via your package manager (e.g., `apt-get install google-chrome-stable`).
+
+If Chrome is installed elsewhere, set the `GOOGLE_CHROME_BIN` environment variable to the correct path (see Installation and Setup step 3). Check `app.log` for messages like “Chrome binary not found” to confirm the issue.
+</details>
+
+<details>
+<summary>Why am I seeing a permission issue on macOS or Linux?</summary>
+The app automatically sets execute permissions for the ChromeDriver binary, but this might fail depending on your system. To fix this manually:
+
+- Run `chmod +x drivers/chromedriver-mac` (macOS) or `chmod +x drivers/chromedriver-linux` (Linux) in the project directory.
+- Retry running the app.
+</details>
+
+<details>
+<summary>What should I do if pages fail to load (network errors)?</summary>
+Network errors might occur if you’re behind a proxy:
+
+- Test with a direct internet connection if possible.
+- Ensure the `GOOGLE_CHROME_BIN` environment variable is set correctly (see Installation and Setup step 3).
+- If using a proxy, you may need to configure proxy settings in the app (contact the app maintainer for assistance).
+</details>
+
+<details>
+<summary>Why am I seeing a "[WinError 193]" error on Windows?</summary>
+The `[WinError 193] %1 is not a valid Win32 application` error typically occurs due to an architecture mismatch:
+
+- Ensure both your Chrome and Python installations are 64-bit. Check Python’s architecture with:
+  ```bash
+  python -c "import platform; print(platform.architecture())"
+  ```
+  It should return `('64bit', 'WindowsPE')`.
+- If Python or Chrome is 32-bit, reinstall the 64-bit version:
+  - Python: Download from [https://www.python.org/downloads/](https://www.python.org/downloads/).
+  - Chrome: Download from [https://www.google.com/chrome/](https://www.google.com/chrome/).
+- Reinstall dependencies after upgrading Python: `pip install -r requirements.txt`.
+</details>
+
+<details>
+<summary>What if I encounter memory issues when deploying to Render?</summary>
+If deploying to Render and seeing `SIGKILL` errors (e.g., “Worker was sent SIGKILL! Perhaps out of memory?”):
+
+- Consider upgrading to a higher memory plan on Render (e.g., the Standard tier with 2 GB RAM).
+- Test with simpler URLs to confirm if the issue is related to page complexity.
+- Check `app.log` for memory usage details (logged via `psutil`) to identify peak usage.
+</details>
 
 ## Contributing
 - Report issues or suggest improvements by creating a pull request or opening an issue in the repository.
