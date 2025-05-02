@@ -1,6 +1,6 @@
 # Easy Page Speed Screenshots
 
-This application allows you to take screenshots of Page Speed Insights (PSI) and GTmetrix test results for given URLs. It is designed to work across Windows, macOS, and Linux environments, making it easy for your team to use.
+This application enables you to capture screenshots of web performance test results for given URLs, supporting multiple platforms including Windows, macOS, and Linux.
 
 ## Prerequisites
 - **Google Chrome**: Install Google Chrome on your machine. The app will attempt to locate Chrome at default paths, but you can set the `GOOGLE_CHROME_BIN` environment variable if it’s installed elsewhere.
