@@ -19,11 +19,10 @@ Follow these steps to set up and run the application on your machine:
    ```
 
 2. **Install Python Dependencies**:
-   Ensure you have `pip` installed, then run:
+   Ensure you have `pip` installed, then installing all necessary Python packages by running:
    ```bash
    pip install -r requirements.txt
    ```
-   This will install all necessary Python packages, including Selenium, Flask, and Gunicorn.
 
 3. **Run the Application**:
    - Start the app by running:
@@ -48,7 +47,6 @@ Follow these steps to set up and run the application on your machine:
 ## Notes
 - The app includes embedded ChromeDriver binaries in the `drivers` directory for Windows (`chromedriver-win.exe`), macOS (`chromedriver-mac`), and Linux (`chromedriver-linux`), so no manual ChromeDriver installation is required.
 - On macOS or Linux, the app automatically sets execute permissions for the ChromeDriver binary. If permission issues occur, run `chmod +x drivers/chromedriver-mac` or `chmod +x drivers/chromedriver-linux` manually.
-- The app runs in single-process mode to reduce memory usage, which may trigger a warning (`Cannot use V8 Proxy resolver in single process mode`). This can be ignored unless you encounter network issues behind a proxy.
 - Logs are written to `app.log` in the project directory for troubleshooting.
 
 ## FAQs & Troubleshooting
