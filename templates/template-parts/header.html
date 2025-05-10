@@ -1,0 +1,7 @@
+<header class="header">
+    <a href="/" class="header-logo">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" width="50" alt="Easy Page Speed Screenshots" class="logo" loading="lazy"/>
+    </a>
+    <h1>{% block header_title %}Easy Page Speed Screenshots{% endblock %}</h1>
+    <p class="tagline">{% block tagline %}Capture performance snapshots with a single click{% endblock %}</p>
+</header>
