@@ -24,16 +24,6 @@ import platform
 import os
 import pathlib
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.FileHandler("app.log"), logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
-
-app = Flask(__name__)
-
 # Configuration
 CONFIG = {
     'OUTPUT_DIR': "temp_screenshots",
@@ -45,6 +35,18 @@ CONFIG = {
     'DEBUG': False,
     'USER_AGENT': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 }
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[logging.FileHandler("app.log"), logging.StreamHandler()]
+)
+if not CONFIG['DEBUG']:
+    logging.disable(logging.CRITICAL)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
 
 
 # Clean URL for filename
