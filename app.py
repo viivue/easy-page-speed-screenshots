@@ -131,7 +131,10 @@ def epss_init_driver():
         if os_name != "windows":
             chromedriver_path.chmod(0o755)
         logger.info(f"Using embedded ChromeDriver at: {chromedriver_path}")
-        service = Service(str(chromedriver_path))
+        if os.path.exists(chrome_bin):
+            service = Service() # Selenium Manager will handle ChromeDriver
+        else:
+            service = Service(str(chromedriver_path))
     else:
         logger.error(f"Embedded ChromeDriver not found at: {chromedriver_path}. Falling back to ChromeDriverManager.")
         service = Service(ChromeDriverManager().install())
