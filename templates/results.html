@@ -13,6 +13,12 @@
             <span class="failed-count">{{ failed_count }}</span> failed
         </div>
         <a href="/download/{{ session_id }}" class="btn download-btn">Download All Screenshots</a>
+        {% if report_filename %}
+        <a href="{{ url_for('epss_download_report', session_id=session_id) }}" class="btn download-btn">Download Word report</a>
+        {% endif %}
+        {% if report_filename and not dropbox_configured %}
+        <p class="note">Dropbox is not configured, so the report links are empty. Run <code>python get_dropbox_token.py</code> and fill <code>.env</code>, then re-run.</p>
+        {% endif %}
     </div>
 
     <div class="results-details">
@@ -62,6 +68,18 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div class="results-details">
+        <div class="results-header">
+            <h3>Re-run URLs</h3>
+        </div>
+        <p>Copy these URLs to run the speed test again:</p>
+        <div style="position:relative;">
+            <pre id="rerun-urls" style="background:#f4f4f4;padding:1rem;border-radius:4px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">{% for url in input_urls %}{{ url }}
+{% endfor %}</pre>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('rerun-urls').innerText.trim()).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)})" style="position:absolute;top:0.5rem;right:0.5rem;padding:0.25rem 0.75rem;cursor:pointer;">Copy</button>
         </div>
     </div>
 
