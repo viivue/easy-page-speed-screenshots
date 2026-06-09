@@ -37,7 +37,7 @@ def _epss_proof_cell(cell, link, dropbox_configured):
 
 def epss_build_docx_report(rows, out_path, report_date=None, dropbox_configured=True):
     """
-    rows: list of {"date", "url", "desktop_link", "mobile_link"} — one entry per URL.
+    rows: list of {"url", "desktop_link", "mobile_link"} — one entry per URL.
     Links may be None. Returns None if python-docx is not installed.
     """
     if not _docx_available:
@@ -58,25 +58,24 @@ def epss_build_docx_report(rows, out_path, report_date=None, dropbox_configured=
         "The visible Google branding in the image is the tamper-evident record."
     )
 
-    table = doc.add_table(rows=1, cols=4)
+    table = doc.add_table(rows=1, cols=3)
     try:
         table.style = "Light Grid Accent 1"
     except KeyError:
         table.style = "Table Grid"
 
-    for i, h in enumerate(["Date", "Page", "Desktop", "Mobile"]):
+    for i, h in enumerate(["Page", "Desktop", "Mobile"]):
         table.rows[0].cells[i].text = h
 
     for r in rows:
         c = table.add_row().cells
-        c[0].text = r.get("date", report_date)
         url = r.get("url", "")
         if url:
-            _epss_add_hyperlink(c[1].paragraphs[0], url, url)
+            _epss_add_hyperlink(c[0].paragraphs[0], url, url)
         else:
-            c[1].text = ""
-        _epss_proof_cell(c[2], r.get("desktop_link"), dropbox_configured)
-        _epss_proof_cell(c[3], r.get("mobile_link"), dropbox_configured)
+            c[0].text = ""
+        _epss_proof_cell(c[1], r.get("desktop_link"), dropbox_configured)
+        _epss_proof_cell(c[2], r.get("mobile_link"), dropbox_configured)
 
     doc.save(out_path)
     return out_path

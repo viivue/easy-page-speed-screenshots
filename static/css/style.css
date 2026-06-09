@@ -424,6 +424,10 @@ h2 {
     border-bottom-color: var(--yellow);
 }
 
+.vii-results-details {
+    margin-top: 2.5rem;
+}
+
 .vii-rerun-label {
     font-size: 0.9rem;
     color: var(--medium-gray);
