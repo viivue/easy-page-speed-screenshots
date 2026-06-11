@@ -55,6 +55,23 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 
+# Fetch the <title> of a page for use as link text in reports
+def epss_fetch_page_title(url):
+    try:
+        resp = requests.get(url, timeout=10,
+                            headers={"User-Agent": CONFIG["USER_AGENT"]},
+                            verify=certifi.where())
+        match = re.search(r'<title[^>]*>(.*?)</title>', resp.text,
+                          re.IGNORECASE | re.DOTALL)
+        if match:
+            title = match.group(1).strip()
+            if title:
+                return title
+    except Exception:
+        pass
+    return url
+
+
 # Clean URL for filename
 def epss_clean_url_for_filename(url):
     cleaned = re.sub(r'https?://', '', url)
@@ -604,6 +621,7 @@ def epss_index():
                     url = gf["url"]
                     if url not in url_rows:
                         url_rows[url] = {"date": report_date, "url": url,
+                                         "title": epss_fetch_page_title(url),
                                          "desktop_link": None, "mobile_link": None}
                     if not gf.get("success"):
                         continue

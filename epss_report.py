@@ -27,17 +27,24 @@ def _epss_add_hyperlink(paragraph, url, text):
     return hyperlink
 
 
-def _epss_proof_cell(cell, link, dropbox_configured):
-    """Fill a proof cell with a hyperlink or a plain fallback string."""
-    if link:
-        _epss_add_hyperlink(cell.paragraphs[0], link, "Open in Dropbox")
+def _epss_result_cell(cell, desktop_link, mobile_link):
+    """Fill the Result cell with Desktop and Mobile lines, hyperlinked if available."""
+    p_desktop = cell.paragraphs[0]
+    if desktop_link:
+        _epss_add_hyperlink(p_desktop, desktop_link, "Desktop")
     else:
-        cell.text = "not uploaded" if not dropbox_configured else "upload failed"
+        p_desktop.add_run("Desktop")
+
+    p_mobile = cell.add_paragraph()
+    if mobile_link:
+        _epss_add_hyperlink(p_mobile, mobile_link, "Mobile")
+    else:
+        p_mobile.add_run("Mobile")
 
 
 def epss_build_docx_report(rows, out_path, report_date=None, dropbox_configured=True):
     """
-    rows: list of {"url", "desktop_link", "mobile_link"} — one entry per URL.
+    rows: list of {"url", "title", "desktop_link", "mobile_link"} — one entry per URL.
     Links may be None. Returns None if python-docx is not installed.
     """
     if not _docx_available:
@@ -50,7 +57,7 @@ def epss_build_docx_report(rows, out_path, report_date=None, dropbox_configured=
     ).runs[0].italic = True
     if not dropbox_configured:
         doc.add_paragraph(
-            "Dropbox was not configured for this run, so the proof columns are empty. "
+            "Dropbox was not configured for this run, so the result links are empty. "
             "Set the Dropbox credentials and re-run to populate links."
         )
     doc.add_paragraph(
@@ -58,24 +65,24 @@ def epss_build_docx_report(rows, out_path, report_date=None, dropbox_configured=
         "The visible Google branding in the image is the tamper-evident record."
     )
 
-    table = doc.add_table(rows=1, cols=3)
+    table = doc.add_table(rows=1, cols=2)
     try:
         table.style = "Light Grid Accent 1"
     except KeyError:
         table.style = "Table Grid"
 
-    for i, h in enumerate(["Page", "Desktop", "Mobile"]):
+    for i, h in enumerate(["URL", "Result"]):
         table.rows[0].cells[i].text = h
 
     for r in rows:
         c = table.add_row().cells
         url = r.get("url", "")
+        title = r.get("title") or url
         if url:
-            _epss_add_hyperlink(c[0].paragraphs[0], url, url)
+            _epss_add_hyperlink(c[0].paragraphs[0], url, title)
         else:
-            c[0].text = ""
-        _epss_proof_cell(c[1], r.get("desktop_link"), dropbox_configured)
-        _epss_proof_cell(c[2], r.get("mobile_link"), dropbox_configured)
+            c[0].text = title
+        _epss_result_cell(c[1], r.get("desktop_link"), r.get("mobile_link"))
 
     doc.save(out_path)
     return out_path
