@@ -8,3 +8,6 @@ venv/
 *.log
 temp_screenshots/
 *.zip
+.env
+*.docx
+/.idea

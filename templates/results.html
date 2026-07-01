@@ -2,25 +2,33 @@
 {% block title %}Results - Easy Page Speed Screenshots{% endblock %}
 {% block header_title %}Results{% endblock %}
 {% block content %}
-<div class="results-container">
+<div class="vii-results-container">
     <h2>Screenshot Results</h2>
-    <div class="results-summary">
-        <div class="results-header">
+    <div class="vii-results-summary">
+        <div class="vii-results-header">
             <h3>Summary</h3>
         </div>
-        <div class="test-count">
-            <span class="success-count">{{ success_count }}</span> tests completed successfully,
-            <span class="failed-count">{{ failed_count }}</span> failed
+        <div class="vii-test-count">
+            <span class="vii-success-count">{{ success_count }}</span> tests completed successfully,
+            <span class="vii-failed-count">{{ failed_count }}</span> failed
         </div>
-        <a href="/download/{{ session_id }}" class="btn download-btn">Download All Screenshots</a>
+        <div class="vii-download-actions">
+            <a href="/download/{{ session_id }}" class="vii-btn vii-download-btn">Download All Screenshots</a>
+            {% if report_filename %}
+            <a href="{{ url_for('epss_download_report', session_id=session_id) }}" class="vii-btn vii-download-btn">Download Word report</a>
+            {% endif %}
+        </div>
+        {% if report_filename and not dropbox_configured %}
+        <p class="vii-note">Dropbox is not configured, so the report links are empty. Run <code>python get_dropbox_token.py</code> and fill <code>.env</code>, then re-run.</p>
+        {% endif %}
     </div>
 
-    <div class="results-details">
-        <div class="results-header">
+    <div class="vii-results-details">
+        <div class="vii-results-header">
             <h3>Test Results</h3>
         </div>
-        <div class="table-responsive">
-            <table class="results-table">
+        <div class="vii-table-responsive">
+            <table class="vii-results-table">
                 <thead>
                     <tr>
                         <th>Tested URL</th>
@@ -36,27 +44,27 @@
                             {% for file in url_files %}
                             <tr>
                                 {% if loop.first %}
-                                <td class="url-cell" rowspan="{{ url_files|length }}">
+                                <td class="vii-url-cell" rowspan="{{ url_files|length }}">
                                     <a href="{{ url }}" target="_blank" title="{{ url }}">{{ url }}</a>
                                 </td>
                                 {% endif %}
-                                <td><span class="file-name">{{ file.name }}</span></td>
+                                <td><span class="vii-file-name">{{ file.name }}</span></td>
                                 <td>{{ file.tool }}</td>
                                 <td>
                                     {% if file.success %}
-                                    <span class="status-indicator success">Success</span>
+                                    <span class="vii-status-indicator vii-success">Success</span>
                                     {% else %}
-                                    <span class="status-indicator failed">Failed</span>
+                                    <span class="vii-status-indicator vii-failed">Failed</span>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                         <tr>
-                            <td class="url-cell">
+                            <td class="vii-url-cell">
                                 <a href="{{ url }}" target="_blank" title="{{ url }}">{{ url }}</a>
                             </td>
-                            <td colspan="3"><span class="failed">No results</span></td>
+                            <td colspan="3"><span class="vii-failed">No results</span></td>
                         </tr>
                         {% endif %}
                     {% endfor %}
@@ -65,8 +73,20 @@
         </div>
     </div>
 
-    <div class="actions">
-        <a href="/" class="btn new-analysis-btn" title="New Analysis">New Analysis</a>
+    <div class="vii-results-details">
+        <div class="vii-results-header">
+            <h3>Re-run URLs</h3>
+        </div>
+        <p class="vii-rerun-label">Copy these URLs to run the speed test again:</p>
+        <div class="vii-rerun-block">
+            <pre id="rerun-urls" class="vii-rerun-pre">{% for url in input_urls %}{{ url }}
+{% endfor %}</pre>
+            <button class="vii-rerun-copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('rerun-urls').innerText.trim()).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+        </div>
+    </div>
+
+    <div class="vii-actions">
+        <a href="/" class="vii-btn vii-new-analysis-btn" title="New Analysis">New Analysis</a>
     </div>
 </div>
 {% endblock %}

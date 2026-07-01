@@ -20,16 +20,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
 function toggleHowItWorks() {
     const content = document.getElementById('howItWorksContent');
-    const icon = document.querySelector('.toggle-icon');
-    const button = document.querySelector('.toggle-btn');
+    const icon = document.querySelector('.vii-toggle-icon');
+    const button = document.querySelector('.vii-toggle-btn');
 
     if (content.style.maxHeight && content.style.maxHeight !== '0px') {
         content.style.maxHeight = '0px';
-        icon.classList.remove('expanded');
+        icon.classList.remove('vii-expanded');
         button.setAttribute('aria-expanded', 'false');
     } else {
         content.style.maxHeight = content.scrollHeight + 'px';
-        icon.classList.add('expanded');
+        icon.classList.add('vii-expanded');
         button.setAttribute('aria-expanded', 'true');
     }
 }

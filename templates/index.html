@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
 <!-- Moved "How It Works" section before the URL section -->
-<section class="how-it-works">
+<section class="vii-how-it-works">
     <h2>
-        <button class="toggle-btn" onclick="toggleHowItWorks()">How It Works <span class="toggle-icon">▼</span></button>
+        <button class="vii-toggle-btn" onclick="toggleHowItWorks()">How It Works <span class="vii-toggle-icon">▼</span></button>
     </h2>
-    <div class="how-it-works-content" id="howItWorksContent">
-        <div class="feature-grid">
-            <div class="feature">
-                <div class="feature-icon">1</div>
+    <div class="vii-how-it-works-content" id="howItWorksContent">
+        <div class="vii-feature-grid">
+            <div class="vii-feature">
+                <div class="vii-feature-icon">1</div>
                 <h3>Enter URLs</h3>
                 <p>Add website URLs to analyze (one per line).</p>
             </div>
-            <div class="feature">
-                <div class="feature-icon">2</div>
+            <div class="vii-feature">
+                <div class="vii-feature-icon">2</div>
                 <h3>Choose Options</h3>
                 <p>Select GTMetrix for performance insights.</p>
             </div>
-            <div class="feature">
-                <div class="feature-icon">3</div>
+            <div class="vii-feature">
+                <div class="vii-feature-icon">3</div>
                 <h3>Get Results</h3>
                 <p>View detailed performance screenshots.</p>
             </div>
@@ -26,22 +26,22 @@
     </div>
 </section>
 
-<section class="url-section">
+<section class="vii-url-section">
     <h2>Website URLs</h2>
     <form method="POST" action="/">
-        <div class="url-input">
+        <div class="vii-url-input">
             <textarea name="urls" placeholder="Enter URLs (one per line)" required></textarea>
         </div>
-        <div class="options">
-            <label class="checkbox-container">
+        <div class="vii-options">
+            <label class="vii-checkbox-container">
                 <input type="checkbox" id="gtmetrix-checkbox" name="use_gtmetrix">
                 Use GTMetrix
             </label>
             <div id="gtmetrix-options">
-                <div class="gtmetrix-key">
+                <div class="vii-gtmetrix-key">
                     <input type="text" id="gtmetrix-key" name="gtmetrix_key" placeholder="Enter your GTMetrix API key">
                 </div>
-                <div class="gtmetrix-location">
+                <div class="vii-gtmetrix-location">
                     <select name="gtmetrix_location" id="gtmetrix-location">
                         <option value="1">Vancouver, Canada</option>
                         <option value="2">London, UK</option>
@@ -54,7 +54,7 @@
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Take Screenshots</button>
+        <button type="submit" class="vii-btn vii-btn-primary">Take Screenshots</button>
     </form>
 </section>
 {% endblock %}

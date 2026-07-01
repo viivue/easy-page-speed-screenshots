@@ -9,9 +9,14 @@ import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import requests
 import certifi
 from flask import Flask, request, render_template, send_file
+from epss_dropbox import epss_make_dropbox_client, epss_upload_and_link
+from epss_report import epss_build_docx_report
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -33,7 +38,8 @@ CONFIG = {
     'EXPAND_DELAY': 0.1,
     'LOAD_DELAY': 5,
     'DEBUG': False,
-    'USER_AGENT': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    'USER_AGENT': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    'DROPBOX_FOLDER': os.environ.get("DROPBOX_FOLDER", "/PageSpeed Reports"),
 }
 
 # Configure logging
@@ -47,6 +53,23 @@ if not CONFIG['DEBUG']:
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+
+# Fetch the <title> of a page for use as link text in reports
+def epss_fetch_page_title(url):
+    try:
+        resp = requests.get(url, timeout=10,
+                            headers={"User-Agent": CONFIG["USER_AGENT"]},
+                            verify=certifi.where())
+        match = re.search(r'<title[^>]*>(.*?)</title>', resp.text,
+                          re.IGNORECASE | re.DOTALL)
+        if match:
+            title = match.group(1).strip()
+            if title:
+                return title
+    except Exception:
+        pass
+    return url
 
 
 # Clean URL for filename
@@ -498,6 +521,15 @@ def epss_download_results(session_id):
                 pass
 
 
+@app.route("/report/<session_id>")
+def epss_download_report(session_id):
+    path = os.path.join(CONFIG['OUTPUT_DIR'], session_id, f"report_{session_id}.docx")
+    if not os.path.exists(path):
+        return "Report not found", 404
+    return send_file(path, as_attachment=True,
+                     download_name=f"pagespeed-report_{session_id}.docx")
+
+
 # Web Interface
 @app.route("/", methods=["GET", "POST"])
 def epss_index():
@@ -575,10 +607,55 @@ def epss_index():
             expected_count = len(input_urls) * (3 if use_gtmetrix else 2)
             failed_count = expected_count - success_count
 
+            # --- Dropbox upload + Word report ---
+            report_filename = None
+            dropbox_configured = False
+            date_str = session_id.split("_")[0]  # session_id starts YYYYMMDD
+            report_date = f"{date_str[0:4]}-{date_str[4:6]}-{date_str[6:8]}"
+            try:
+                dbx = epss_make_dropbox_client()
+                dropbox_configured = dbx is not None
+                # Group by URL: one report row per URL with desktop + mobile links
+                url_rows = {}
+                for gf in generated_files:
+                    url = gf["url"]
+                    if url not in url_rows:
+                        url_rows[url] = {"date": report_date, "url": url,
+                                         "title": epss_fetch_page_title(url),
+                                         "desktop_link": None, "mobile_link": None}
+                    if not gf.get("success"):
+                        continue
+                    disk_name = gf["name"] if gf["name"].endswith(".png") else gf["name"] + ".png"
+                    local_path = os.path.join(output_dir, disk_name)
+                    link = None
+                    if dbx and os.path.exists(local_path):
+                        try:
+                            link = epss_upload_and_link(
+                                dbx, local_path, CONFIG["DROPBOX_FOLDER"], ""
+                            )
+                        except Exception as e:
+                            logger.error(f"Dropbox upload failed for {disk_name}: {e}")
+                    if gf["tool"] == "PageSpeed Desktop":
+                        url_rows[url]["desktop_link"] = link
+                    elif gf["tool"] == "PageSpeed Mobile":
+                        url_rows[url]["mobile_link"] = link
+                report_rows = list(url_rows.values())
+
+                report_path = os.path.join(output_dir, f"report_{session_id}.docx")
+                result = epss_build_docx_report(report_rows, report_path,
+                                                report_date=report_date,
+                                                dropbox_configured=dropbox_configured)
+                if result:
+                    report_filename = os.path.basename(report_path)
+            except Exception as e:
+                logger.error(f"Report/upload step failed: {e}")
+            # --- end Dropbox upload + Word report ---
+
             epss_cleanup_old_sessions()
             return render_template("results.html", session_id=session_id, input_urls=input_urls,
                                    generated_files=generated_files, screenshot_files=screenshot_files,
-                                   success_count=success_count, failed_count=failed_count)
+                                   success_count=success_count, failed_count=failed_count,
+                                   report_filename=report_filename, dropbox_configured=dropbox_configured)
         except Exception as e:
             logger.error(f"Error during processing: {e}\n{traceback.format_exc()}")
             return f"Error: {e}"
